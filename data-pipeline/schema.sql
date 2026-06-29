@@ -14,6 +14,7 @@ PRAGMA foreign_keys = ON;
 DROP TABLE IF EXISTS ss_predicted_lineup_player;
 DROP TABLE IF EXISTS ss_vote;
 DROP TABLE IF EXISTS ss_match;
+DROP TABLE IF EXISTS af_odds;
 DROP TABLE IF EXISTS af_player_stat;
 DROP TABLE IF EXISTS af_lineup_player;
 DROP TABLE IF EXISTS af_lineup;
@@ -270,6 +271,18 @@ CREATE TABLE af_player_stat (
 );
 CREATE INDEX idx_pstat_fixture ON af_player_stat(fixture_id);
 CREATE INDEX idx_pstat_player ON af_player_stat(player_id);
+
+-- Pre-match 1X2 odds (Match Winner market) per bookmaker, per AF fixture.
+-- One row = one bookmaker's home/draw/away price. API-Football populates odds
+-- close to kick-off; rows only exist for fixtures the API has priced.
+CREATE TABLE af_odds (
+  fixture_id    INTEGER,
+  bookmaker     TEXT,                      -- bookmaker name (e.g. "Bet365")
+  home_odd      REAL,                      -- decimal odds: home win
+  draw_odd      REAL,
+  away_odd      REAL
+);
+CREATE INDEX idx_afodds_fixture ON af_odds(fixture_id);
 
 -- ---------------------------------------------------------------------------
 -- SofaScore (scraped via RapidAPI) — DEV SOURCE ONLY, own namespace.

@@ -282,3 +282,35 @@ export async function fetchAfFixturePlayers(fixtureId: number): Promise<AfPlayer
   }
   return out;
 }
+
+export interface AfOdds {
+  fixtureId: number;
+  bookmaker: string;
+  homeOdd: number | null;
+  drawOdd: number | null;
+  awayOdd: number | null;
+}
+
+/**
+ * Pre-match 1X2 odds for a fixture, one entry per bookmaker. Reads the
+ * "Match Winner" market (bet id 1) and maps Home/Draw/Away → decimal odds.
+ * Returns [] when the API hasn't priced the fixture yet (normal pre-tournament
+ * or far-out matches). Cached like the other per-fixture calls.
+ */
+export async function fetchAfFixtureOdds(fixtureId: number): Promise<AfOdds[]> {
+  const j = await afGet(`/odds?fixture=${fixtureId}`, `apifootball-odds-${fixtureId}.json`, { quiet: true });
+  const out: AfOdds[] = [];
+  for (const r of j.response || []) {
+    for (const bm of r.bookmakers || []) {
+      const mw = (bm.bets || []).find((b: any) => b.id === 1 || b.name === 'Match Winner');
+      if (!mw) continue;
+      const pick = (label: string) => {
+        const v = (mw.values || []).find((x: any) => x.value === label);
+        const n = v ? parseFloat(v.odd) : NaN;
+        return Number.isFinite(n) ? n : null;
+      };
+      out.push({ fixtureId, bookmaker: bm.name, homeOdd: pick('Home'), drawOdd: pick('Draw'), awayOdd: pick('Away') });
+    }
+  }
+  return out;
+}

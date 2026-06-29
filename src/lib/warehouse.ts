@@ -17,6 +17,7 @@ import h2hByTeamData from '../../data-pipeline/warehouse/export/h2h-by-team.json
 import afFixturesData from '../../data-pipeline/warehouse/export/af-fixtures.json';
 import ssByPairData from '../../data-pipeline/warehouse/export/ss-by-pair.json';
 import afMatchDetailData from '../../data-pipeline/warehouse/export/af-match-detail.json';
+import oddsByPairData from '../../data-pipeline/warehouse/export/odds-by-pair.json';
 
 export interface H2HRecord {
   played: number;
@@ -191,4 +192,25 @@ export function getMatchDetail(fixtureId: number): AfMatchDetail | null {
 /** All pairs that have SofaScore data — for generating H2H static paths. */
 export function getSsPairKeys(): string[] {
   return Object.keys(ssByPair);
+}
+
+// --- Bookmaker 1X2 odds (API-Football), by unordered team pair --------------
+export interface OddsBook {
+  bookmaker: string;
+  home: number;
+  draw: number;
+  away: number;
+}
+export interface OddsPair {
+  homeId: string;
+  awayId: string;
+  /** true once odds are the frozen pre-match snapshot (KO−1h), not the live feed. */
+  frozen: boolean;
+  books: OddsBook[];
+}
+const oddsByPair = oddsByPairData as Record<string, OddsPair>;
+
+/** Bookmaker odds for a pairing (order-independent), or null if unpriced. */
+export function getOddsPair(a: string, b: string): OddsPair | null {
+  return oddsByPair[[a, b].sort().join('__')] ?? null;
 }

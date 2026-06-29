@@ -19,6 +19,7 @@ const FREEZE_LEAD_MS = 60 * 60 * 1000; // 1 hour
 // the schema's DROP/CREATE rebuild on every pipeline run. Committed alongside
 // the exports so the static site renders the frozen value, not the live one.
 const SNAPSHOT_PATH = join(WAREHOUSE_DIR, 'vote-snapshots.json');
+const ODDS_SNAPSHOT_PATH = join(WAREHOUSE_DIR, 'odds-snapshots.json');
 
 function main() {
   ensureDir(EXPORT_DIR);
@@ -162,6 +163,54 @@ function main() {
     snapshots[key] = { home: v.vh, draw: v.vd, away: v.va, homeId: m.h, awayId: m.a, frozenAt: now };
   }
   writeFileSync(SNAPSHOT_PATH, JSON.stringify(snapshots, null, 0));
+
+  // ---- Bookmaker odds (API-Football), keyed by pair, oriented to home/away. --
+  // af_odds rows are per AF fixture; join to af_fixture for our team slugs and
+  // the kickoff, so odds freeze at KO-1h on the SAME rule as the votes.
+  type OddsBook = { bookmaker: string; home: number; draw: number; away: number };
+  type OddsEntry = { homeId: string; awayId: string; startTs: number | null; books: OddsBook[] };
+  const oddsRows = db
+    .prepare(
+      `SELECT o.bookmaker AS bm, o.home_odd AS h, o.draw_odd AS d, o.away_odd AS a,
+              f.home_team_id AS homeId, f.away_team_id AS awayId,
+              CAST(strftime('%s', f.date) AS INTEGER) AS startTs
+       FROM af_odds o JOIN af_fixture f ON f.id = o.fixture_id
+       WHERE f.home_team_id IS NOT NULL AND f.away_team_id IS NOT NULL
+         AND o.home_odd IS NOT NULL AND o.draw_odd IS NOT NULL AND o.away_odd IS NOT NULL`,
+    )
+    .all() as Array<{ bm: string; h: number; d: number; a: number; homeId: string; awayId: string; startTs: number | null }>;
+  const liveOdds: Record<string, OddsEntry> = {};
+  for (const r of oddsRows) {
+    const key = pairKey(r.homeId, r.awayId);
+    const e = (liveOdds[key] ??= { homeId: r.homeId, awayId: r.awayId, startTs: r.startTs, books: [] });
+    // de-dup bookmaker (API can return repeats); keep the first price seen.
+    if (e.books.some((b) => b.bookmaker === r.bm)) continue;
+    e.books.push({ bookmaker: r.bm, home: r.h, draw: r.d, away: r.a });
+  }
+
+  type OddsSnap = OddsEntry & { frozenAt: number };
+  const oddsSnapshots: Record<string, OddsSnap> = existsSync(ODDS_SNAPSHOT_PATH)
+    ? JSON.parse(readFileSync(ODDS_SNAPSHOT_PATH, 'utf8'))
+    : {};
+  for (const [key, e] of Object.entries(liveOdds)) {
+    if (oddsSnapshots[key]) continue; // already frozen
+    if (e.startTs == null) continue;
+    if (now < e.startTs * 1000 - FREEZE_LEAD_MS) continue; // not yet in the window
+    if (!e.books.length) continue;
+    oddsSnapshots[key] = { ...e, frozenAt: now };
+  }
+  writeFileSync(ODDS_SNAPSHOT_PATH, JSON.stringify(oddsSnapshots, null, 0));
+
+  // odds-by-pair.json — frozen snapshot preferred, else live. Sorted by home
+  // price (favourites' books first is irrelevant; site sorts/highlights).
+  const oddsByPair: Record<string, any> = {};
+  for (const key of new Set([...Object.keys(liveOdds), ...Object.keys(oddsSnapshots)])) {
+    const snap = oddsSnapshots[key];
+    const src = snap ?? liveOdds[key];
+    if (!src || !src.books.length) continue;
+    oddsByPair[key] = { homeId: src.homeId, awayId: src.awayId, frozen: !!snap, books: src.books };
+  }
+  write('odds-by-pair.json', oddsByPair);
 
   // Assemble per-pair: { votes, frozen, lineups }. `votes` prefers the frozen
   // snapshot when present, so the site always renders the pre-match value.

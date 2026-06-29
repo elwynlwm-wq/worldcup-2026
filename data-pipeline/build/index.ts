@@ -19,6 +19,7 @@ import {
   fetchAfFixtureEvents,
   fetchAfFixtureLineups,
   fetchAfFixturePlayers,
+  fetchAfFixtureOdds,
 } from '../fetch/apifootball';
 import { fetchSsMatches, fetchSsVotes, fetchSsLineup } from '../fetch/sofascore';
 import {
@@ -288,6 +289,28 @@ async function main() {
     })();
   }
   console.log(`  rich data: ${nStats} team-stat rows, ${nEvents} events, ${nLineups} lineups, ${nPStats} player-match rows`);
+
+  // ---- Pre-match 1X2 odds for upcoming fixtures (API-Football) -------------
+  // Odds only exist near kick-off, so the API returns [] for far-out matches —
+  // that's fine, we just store what's priced. Cached per fixture like the rest.
+  const insOdds = db.prepare(`INSERT INTO af_odds
+    (fixture_id,bookmaker,home_odd,draw_odd,away_odd)
+    VALUES (@fixture_id,@bookmaker,@home_odd,@draw_odd,@away_odd)`);
+  const upcoming = afFixtures.filter((f) => f.statusShort !== 'FT');
+  let nOdds = 0, nPriced = 0;
+  for (let i = 0; i < upcoming.length; i++) {
+    const f = upcoming[i];
+    if (i % 20 === 0) console.log(`  odds ${i}/${upcoming.length}…`);
+    const odds = await fetchAfFixtureOdds(f.id);
+    if (odds.length) nPriced++;
+    db.transaction(() => {
+      for (const o of odds) {
+        insOdds.run({ fixture_id: o.fixtureId, bookmaker: o.bookmaker, home_odd: o.homeOdd, draw_odd: o.drawOdd, away_odd: o.awayOdd });
+        nOdds++;
+      }
+    })();
+  }
+  console.log(`  odds: ${nOdds} bookmaker rows across ${nPriced}/${upcoming.length} priced fixtures`);
 
   // ---- SofaScore (DEV source): who-will-win votes + PREDICTED lineups -------
   // Scraped/resold — not for publishing. Reconcile SS matches → our team slugs

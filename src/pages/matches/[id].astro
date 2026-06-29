@@ -12,7 +12,7 @@ import ShowdownPanel from '../../components/ShowdownPanel.astro';
 import MatchPitch from '../../components/MatchPitch.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
-import { getAfFixtures, getSsPair, getH2H, getMatchDetail } from '../../lib/warehouse';
+import { getAfFixtures, getSsPair, getH2H, getMatchDetail, getOddsPair } from '../../lib/warehouse';
 import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
 
@@ -146,6 +146,22 @@ const compareRows: CmpRow[] = (() => {
 })();
 const compareGames = aggHome && aggAway ? Math.min(aggHome.played, aggAway.played) : 0;
 
+// Bookmaker 1X2 odds, oriented to THIS match's home/away. Each book → {h,d,a}
+// decimal price; we also flag the best (highest) price per outcome to highlight.
+const oddsPair = getOddsPair(h.id, a.id);
+type OddsBookRow = { bookmaker: string; h: number; d: number; a: number };
+const oddsBooks: OddsBookRow[] = (() => {
+  if (!oddsPair) return [];
+  const flip = oddsPair.homeId !== h.id; // stored orientation differs from ours
+  return oddsPair.books
+    .map((b) => ({ bookmaker: b.bookmaker, h: flip ? b.away : b.home, d: b.draw, a: flip ? b.home : b.away }))
+    .sort((x, y) => x.bookmaker.localeCompare(y.bookmaker));
+})();
+const bestH = oddsBooks.length ? Math.max(...oddsBooks.map((b) => b.h)) : 0;
+const bestD = oddsBooks.length ? Math.max(...oddsBooks.map((b) => b.d)) : 0;
+const bestA = oddsBooks.length ? Math.max(...oddsBooks.map((b) => b.a)) : 0;
+const oddsFrozen = !!oddsPair?.frozen;
+
 const stageLabel: Record<string, string> = { group: 'Group stage', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: 'Third place' };
 const fmtDate = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(iso)) : '');
 const fmtShort = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(iso)) : '');
@@ -224,6 +240,34 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
         </div>
       )}
       <ShowdownPanel home={h} away={a} fans={fans} mode="prediction" frozen={ended || live} />
+
+      {/* Bookmaker odds — real 1X2 prices, best per outcome highlighted. Only
+          shown when the API has priced this fixture. */}
+      {oddsBooks.length > 0 && (
+        <>
+          <h2 class="font-display mt-7 mb-1 text-[21px] font-extrabold">Bookmaker odds</h2>
+          <p class="mb-3 text-[14.5px]" style="color:var(--color-ink-2)">
+            {oddsFrozen ? 'Pre-match prices, frozen at kick-off.' : 'Compare the books — best price for each result is highlighted.'}
+          </p>
+          <div class="overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
+            <div class="flex items-center border-b px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide" style="border-color:var(--color-surface-3);background:var(--color-surface-2);color:var(--color-ink-3)">
+              <span class="flex-1">Bookmaker</span>
+              <span class="w-[64px] flex-none text-right">{h.shortCode}</span>
+              <span class="w-[64px] flex-none text-right">Draw</span>
+              <span class="w-[64px] flex-none text-right">{a.shortCode}</span>
+            </div>
+            {oddsBooks.map((b) => (
+              <div class="flex items-center border-b px-4 py-3 last:border-b-0" style="border-color:var(--color-surface-3)">
+                <b class="flex-1 text-[14px]">{b.bookmaker}</b>
+                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style={`color:${b.h === bestH ? '#0d6b46' : 'var(--color-ink)'}`}>{b.h.toFixed(2)}</span>
+                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style={`color:${b.d === bestD ? '#0d6b46' : 'var(--color-ink-4)'}`}>{b.d.toFixed(2)}</span>
+                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style={`color:${b.a === bestA ? '#0d6b46' : 'var(--color-ink)'}`}>{b.a.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <p class="mt-2 text-[12px]" style="color:var(--color-ink-4)">Odds via API-Football. Shown for information — not betting advice.</p>
+        </>
+      )}
     </section>
 
     {/* ============ LINEUPS ============ */}
