@@ -9,6 +9,7 @@ import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
 import { getUpcomingFixtures } from '../lib/warehouse';
 import { teamGrad, teamColors } from '../data/teamColors';
+import Flag from '../components/Flag.astro';
 import { getCollection } from 'astro:content';
 
 const getTeam = (id: string) => provider.getTeam(id)!;
@@ -175,12 +176,12 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
                 <div class="font-display text-[12px] font-extrabold uppercase tracking-[1.2px]" style="color:var(--color-gold)">Next up · {dateLabel(todayMatch.date)}</div>
                 <div class="mb-1.5 mt-5 flex items-center justify-between gap-3.5">
                   <div class="flex-1 text-center">
-                    <div class="mx-auto mb-[9px] h-[44px] w-[62px] rounded-[9px]" style={`background:${teamGrad(h.id)}`}></div>
+                    <div class="mx-auto mb-[9px] w-fit"><Flag team={h.id} w={62} class="!ring-1 !ring-white/40" /></div>
                     <div class="font-display text-[17px] font-extrabold">{h.name}</div>
                   </div>
                   <div class="font-display text-[22px] font-black" style="color:#6f6655">VS</div>
                   <div class="flex-1 text-center">
-                    <div class="mx-auto mb-[9px] h-[44px] w-[62px] rounded-[9px]" style={`background:${teamGrad(a.id)}`}></div>
+                    <div class="mx-auto mb-[9px] w-fit"><Flag team={a.id} w={62} class="!ring-1 !ring-white/40" /></div>
                     <div class="font-display text-[17px] font-extrabold">{a.name}</div>
                   </div>
                 </div>
@@ -219,9 +220,9 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
             <a href={matchHref(m)} class="kb-card-hover block rounded-[14px] border p-[15px]" style="background:#fff;border-color:#e9e1d2">
               <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
               <div class="mt-[11px] flex items-center justify-between">
-                <div class="flex items-center gap-[7px]"><span class="h-[19px] w-[26px] rounded-[4px]" style={`background:${teamGrad(h.id)}`}></span><b>{h.shortCode}</b></div>
+                <div class="flex items-center gap-[7px]"><Flag team={h.id} w={26} /><b>{h.shortCode}</b></div>
                 <span class="text-[12px] font-bold" style="color:#b3a890">vs</span>
-                <div class="flex items-center gap-[7px]"><b>{a.shortCode}</b><span class="h-[19px] w-[26px] rounded-[4px]" style={`background:${teamGrad(a.id)}`}></span></div>
+                <div class="flex items-center gap-[7px]"><b>{a.shortCode}</b><Flag team={a.id} w={26} /></div>
               </div>
               <div class="mt-[11px] flex h-[9px] overflow-hidden rounded-[6px]">
                 <span style={`width:${p.win}%;background:var(--color-royal)`}></span><span style={`width:${p.draw}%;background:#d8cfbf`}></span><span style={`width:${p.lose}%;background:#2b2e36`}></span>
