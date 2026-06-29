@@ -6,21 +6,43 @@
 import type { Team } from '../lib/model';
 import { predict } from '../lib/model';
 import { teamColors } from '../data/teamColors';
+import { getTeamPlayers } from '../lib/warehouse';
+import { provider } from '../lib/provider';
 import Flag from './Flag.astro';
+import Avatar from './analysis/Avatar.astro';
 
 interface Props {
   home: Team;
   away: Team;
   /** fan vote counts (SofaScore), already oriented home/away */
   fans?: { home: number; away: number } | null;
+  /** which slice to render — the H2H page splits the panel across tabs.
+   *  prediction = poll + forecast (the interactive bit);
+   *  insights   = forecast + "what's behind it" factors + star men;
+   *  full       = everything (default, e.g. the standalone predictor). */
+  mode?: 'prediction' | 'insights' | 'full';
 }
-const { home, away, fans = null } = Astro.props;
+const { home, away, fans = null, mode = 'full' } = Astro.props;
+
+const showPoll = mode !== 'insights';
+const showFactors = mode !== 'prediction';
+const showStars = mode !== 'prediction';
 
 const pr = predict(home, away);
 const pct = (x: number) => Math.round(x * 100);
 const fav = pr.win >= pr.lose ? home : away;
 const modelPick = pr.win >= pr.lose ? 'home' : 'away';
 const sign = (v: number) => (v > 0 ? '+' : '') + v;
+
+// star men to watch (insights) — top scorers per side, with pos/club + photo
+const POSNAME: Record<string, string> = { GK: 'GK', DF: 'DF', MF: 'MF', FW: 'FW' };
+const starsFor = (teamId: string) =>
+  provider.getSquad(teamId).slice().sort((a, b) => b.goals - a.goals).slice(0, 3);
+const photoFor = (() => {
+  const all = [...getTeamPlayers(home.id), ...getTeamPlayers(away.id)];
+  const byName = new Map(all.map((p) => [p.name, p.photo]));
+  return (name: string) => byName.get(name) ?? null;
+})();
 
 const hc = teamColors(home.id), ac = teamColors(away.id);
 const fanTotal = fans ? fans.home + fans.away : 0;
@@ -38,6 +60,8 @@ const matchKey = [home.id, away.id].sort().join('|');
 ---
 
 <div class="mt-5" data-showdown data-home={home.id} data-away={away.id} data-key={matchKey}>
+  {showPoll && (
+  <>
   {/* WHO DO YOU THINK WINS */}
   <div class="rounded-[18px] p-6 text-white" style="background:var(--color-night)">
     <div class="font-display text-center text-[15px] font-black tracking-wide">WHO DO YOU THINK WINS?</div>
@@ -82,8 +106,10 @@ const matchKey = [home.id, away.id].sort().join('|');
       </div>
     </div>
   </div>
+  </>
+  )}
 
-  {/* FORECAST */}
+  {/* FORECAST — shown in both prediction and insights */}
   <h2 class="font-display mt-[26px] mb-1 text-[21px] font-extrabold">{fav.name} are favoured</h2>
   <p class="mb-3 text-[14.5px]" style="color:var(--color-ink-2)">{fav.name} have about a {pct(Math.max(pr.win, pr.lose))}% chance of winning in 90 minutes.</p>
   <div class="font-display flex h-[34px] overflow-hidden rounded-[10px] text-[13px] font-extrabold">
@@ -95,6 +121,8 @@ const matchKey = [home.id, away.id].sort().join('|');
     <span>{home.shortCode} win</span><span>draw</span><span>{away.shortCode} win</span>
   </div>
 
+  {showFactors && (
+  <>
   {/* WHAT'S BEHIND IT */}
   <h2 class="font-display mt-[26px] mb-3 text-[21px] font-extrabold">What's behind it</h2>
   <div class="overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
@@ -114,6 +142,32 @@ const matchKey = [home.id, away.id].sort().join('|');
   <p class="mt-3 text-[13px] leading-relaxed" style="color:var(--color-ink-3)">
     Win probability from the Elo expected score on the adjusted rating, with a draw term that shrinks as the gap grows. A transparent heuristic — not betting advice.
   </p>
+  </>
+  )}
+
+  {showStars && (
+  <>
+  {/* STAR MEN TO WATCH */}
+  <h2 class="font-display mt-[26px] mb-3 text-[21px] font-extrabold">Star men to watch</h2>
+  <div class="grid items-start gap-4" style="grid-template-columns:1fr 1fr">
+    {[home, away].map((t) => (
+      <div>
+        <div class="mb-2.5 flex items-center gap-2"><Flag team={t.id} w={26} /><b class="text-[14px]">{t.name}</b></div>
+        <div class="flex flex-col gap-2">
+          {starsFor(t.id).map((p) => (
+            <a href={`/teams/${t.id}/`} class="flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+              <Avatar name={p.name} position={p.pos} photo={photoFor(p.name)} size={34} />
+              <span class="font-display flex-none rounded-md px-1.5 py-0.5 text-[10px] font-extrabold text-white" style={`background:${p.pos === 'GK' ? '#e0a200' : p.pos === 'DF' ? '#5b6470' : p.pos === 'MF' ? '#1f7a4d' : '#b23b2e'}`}>{POSNAME[p.pos] ?? p.pos}</span>
+              <span class="min-w-0 flex-1"><b class="block truncate text-[13px]">{p.name}</b><span class="text-[11px]" style="color:var(--color-ink-3)">{p.club}</span></span>
+              <span class="font-display flex-none text-[13px] font-extrabold" style="color:var(--color-royal)">{p.goals}G</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+  </>
+  )}
 </div>
 
 <script is:inline define:vars={{ matchKey, modelPick, homeName: home.name, awayName: away.name }}>

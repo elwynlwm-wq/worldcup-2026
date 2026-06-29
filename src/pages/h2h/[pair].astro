@@ -55,8 +55,8 @@ const hasLineups = !!(luA?.starters?.length || luB?.starters?.length);
   <div class="kb-route">
     <div class="text-[13px] font-semibold" style="color:var(--color-ink-3)">Matchup · Head-to-head</div>
 
-    {/* teams header — compact matchup band */}
-    <MatchupGraphic home={ta} away={tb} vote={{ home: 1, draw: 0, away: 1 }} compact class="mt-1.5" />
+    {/* teams header — compact matchup band (larger 'heroes' art: the band is wide here) */}
+    <MatchupGraphic home={ta} away={tb} vote={{ home: 1, draw: 0, away: 1 }} compact art="heroes" class="mt-1.5" />
     <div class="mt-2 flex gap-4 text-[13px] font-bold">
       <a href={`/teams/${a}/`} style="color:var(--color-royal)">{ta.name} squad</a>
       <a href={`/teams/${b}/`} style="color:var(--color-royal)">{tb.name} squad</a>
@@ -73,24 +73,47 @@ const hasLineups = !!(luA?.starters?.length || luB?.starters?.length);
       </a>
     )}
 
-    {/* tabs */}
+    {/* tabs — Prediction (poll + forecast) · Insights (what's behind it + all-time
+        H2H + star men) · Lineups (predicted XIs). Heavy data is split per tab but
+        all of it ships in the static HTML; we just show/hide client-side. */}
     <div class="mt-3.5 flex w-fit gap-1 rounded-[12px] border p-1" id="match-tabs" style="background:var(--color-surface);border-color:var(--color-line-2)">
       <button data-mtab="prediction" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:#fff;background:var(--color-night)">Prediction</button>
+      <button data-mtab="insights" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:var(--color-ink-2);background:transparent">Insights</button>
       {hasLineups && <button data-mtab="lineups" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:var(--color-ink-2);background:transparent">Lineups</button>}
     </div>
 
-    {/* PREDICTION */}
+    {/* PREDICTION — the interactive poll + forecast */}
     <section data-mpanel="prediction">
-      <ShowdownPanel home={ta} away={tb} fans={fans} />
+      <ShowdownPanel home={ta} away={tb} fans={fans} mode="prediction" />
+    </section>
 
-      {h2h && (
-        <div class="mt-7">
-          <h2 class="font-display mb-2 text-[21px] font-extrabold">Head-to-head (all-time)</h2>
-          <p class="text-[14.5px]" style="color:var(--color-ink-2)">
-            Met <b style="color:var(--color-ink)">{h2h.played}</b> times — {ta.shortCode} {h2h.aWins}W, {h2h.draws}D, {tb.shortCode} {h2h.bWins}W.
-            {h2h.lastMeeting && ` Last: ${ta.shortCode} ${h2h.lastAScore}–${h2h.lastBScore} ${tb.shortCode}, ${fmtDate(h2h.lastMeeting)}.`}
-          </p>
+    {/* INSIGHTS — what's behind the forecast, the all-time record, star men */}
+    <section data-mpanel="insights" style="display:none">
+      <ShowdownPanel home={ta} away={tb} fans={fans} mode="insights" />
+
+      <h2 class="font-display mt-7 mb-3 text-[21px] font-extrabold">Head-to-head record</h2>
+      {h2h ? (
+        <div class="overflow-hidden rounded-[16px] border" style="background:var(--color-night);border-color:var(--color-night)">
+          <div class="grid grid-cols-3 text-center text-white">
+            <div class="p-4">
+              <div class="font-display text-[30px] font-black" style="color:var(--color-gold)">{h2h.aWins}</div>
+              <div class="text-[12px] font-bold" style="color:var(--color-ink-3)">{ta.shortCode} wins</div>
+            </div>
+            <div class="border-x p-4" style="border-color:#2a2d36">
+              <div class="font-display text-[30px] font-black">{h2h.draws}</div>
+              <div class="text-[12px] font-bold" style="color:var(--color-ink-3)">Draws</div>
+            </div>
+            <div class="p-4">
+              <div class="font-display text-[30px] font-black" style="color:var(--color-gold)">{h2h.bWins}</div>
+              <div class="text-[12px] font-bold" style="color:var(--color-ink-3)">{tb.shortCode} wins</div>
+            </div>
+          </div>
+          <div class="border-t px-4 py-3 text-center text-[13px]" style="border-color:#2a2d36;color:var(--color-ink-3)">
+            {h2h.played} all-time meetings{h2h.lastMeeting ? ` · last ${ta.shortCode} ${h2h.lastAScore}–${h2h.lastBScore} ${tb.shortCode}, ${fmtDate(h2h.lastMeeting)}` : ''}
+          </div>
         </div>
+      ) : (
+        <p class="text-[14.5px]" style="color:var(--color-ink-2)">{ta.name} and {tb.name} have no recorded all-time meetings.</p>
       )}
     </section>
 
