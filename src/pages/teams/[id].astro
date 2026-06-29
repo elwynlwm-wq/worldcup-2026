@@ -8,8 +8,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Avatar from '../../components/analysis/Avatar.astro';
 import { provider } from '../../lib/provider';
-import { getPlayerTiers } from '../../lib/warehouse';
-import { teamColors } from '../../data/teamColors';
+import { getPlayerTiers, getAfFixtures } from '../../lib/warehouse';
+import { teamColors, teamGrad } from '../../data/teamColors';
 
 export function getStaticPaths() {
   return provider.getTeams().map((t) => ({ params: { id: t.id }, props: { teamId: t.id } }));
@@ -37,6 +37,15 @@ const kpis = [
 
 const tiersById = new Map(squad.map((p) => [p.id, getPlayerTiers(p.id)]));
 const stars = squad.slice().sort((a, b) => b.goals - a.goals).slice(0, 3);
+
+// All of this team's matches (played + upcoming), chronological. Played → match
+// record page; upcoming → H2H evergreen.
+const matches = getAfFixtures()
+  .filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId)
+  .filter((m) => provider.getTeam(m.homeTeamId) && provider.getTeam(m.awayTeamId))
+  .sort((x, y) => (x.date < y.date ? -1 : 1));
+const matchHref = (m: { homeTeamId: string; awayTeamId: string; stage: string; status: string }) =>
+  m.status === 'FT' ? `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}` : `/h2h/${m.homeTeamId}-vs-${m.awayTeamId}`;
 
 const POS: [string, string][] = [['GK', 'Goalkeepers'], ['DF', 'Defenders'], ['MF', 'Midfielders'], ['FW', 'Forwards']];
 const posName: Record<string, string> = { GK: 'Goalkeeper', DF: 'Defender', MF: 'Midfielder', FW: 'Forward' };
@@ -100,6 +109,26 @@ const jsonLd = {
       class="kb-card-hover mt-4 inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-sm font-bold text-white"
       style="background:var(--color-night)"
     >⚡ Predict a match for {t.name}</a>
+
+    {/* Matches — all of this team's fixtures (played + upcoming) */}
+    {matches.length > 0 && (
+      <>
+        <h2 class="font-display mt-7 mb-3 text-[20px] font-extrabold">Matches</h2>
+        <div class="flex flex-col gap-2.5">
+          {matches.map((m) => {
+            const hh = provider.getTeam(m.homeTeamId)!, aa = provider.getTeam(m.awayTeamId)!;
+            const center = m.status === 'FT' ? `${m.homeScore}–${m.awayScore}` : 'vs';
+            return (
+              <a href={matchHref(m)} class="kb-card-hover flex items-center justify-between rounded-[13px] border px-4 py-3" style="background:var(--color-surface);border-color:var(--color-line-2)">
+                <div class="flex flex-1 items-center gap-2.5"><span class="h-5 w-7 rounded" style={`background:${teamGrad(hh.id)}`}></span><b class="text-[14px]">{hh.name}</b></div>
+                <div class="font-display flex-none px-3 text-[15px] font-black" style={m.status === 'FT' ? '' : 'color:var(--color-ink-3)'}>{center}</div>
+                <div class="flex flex-1 items-center justify-end gap-2.5"><b class="text-[14px]">{aa.name}</b><span class="h-5 w-7 rounded" style={`background:${teamGrad(aa.id)}`}></span></div>
+              </a>
+            );
+          })}
+        </div>
+      </>
+    )}
 
     {/* Star players */}
     <h2 class="font-display mt-7 mb-3 text-[20px] font-extrabold">Star players</h2>
