@@ -56,10 +56,9 @@ const vote = { home: homePct, draw: drawPct, away: awayPct };
     <div class="absolute inset-0" style={`background:linear-gradient(240deg, ${ac.c1}d9 0%, ${ac.c1}59 70%, transparent 100%)`}></div>
   </div>
 
-  {/* glowing energy seam — clipped to the SAME 58%→42% diagonal as the colour
-      split so it always lines up with the banner edge (no fixed skew angle). */}
-  <div class="absolute inset-0" style="clip-path:polygon(55% 0, 61% 0, 45% 100%, 39% 100%);background:linear-gradient(90deg, transparent, var(--color-gold), transparent);filter:blur(5px);mix-blend-mode:screen"></div>
-  <div class="absolute inset-0" style="clip-path:polygon(57.6% 0, 58.4% 0, 42.4% 100%, 41.6% 100%);background:rgba(255,255,255,.95);box-shadow:0 0 14px 2px var(--color-gold)"></div>
+  {/* seam — a crisp white line clipped to the SAME 58%→42% diagonal as the
+      colour split, so it always tracks the banner edge at any width. */}
+  <div class="absolute inset-0" style="clip-path:polygon(57.6% 0, 58.4% 0, 42.4% 100%, 41.6% 100%);background:rgba(255,255,255,.95)"></div>
 
   {/* top: kickoff / stage label */}
   {label && (
