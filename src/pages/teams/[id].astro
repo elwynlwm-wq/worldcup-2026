@@ -19,11 +19,7 @@ export function getStaticPaths() {
 const { teamId } = Astro.props;
 const t = provider.getTeam(teamId)!;
 const squad = provider.getSquad(teamId);
-const { c1 } = teamColors(teamId);
-
-// Our generated banner — full-res WebP (1:1 of the PNG, ~8× lighter). Falls back
-// to the colour panel if missing.
-const bannerSrc = `/banners/heroes/${teamId}.webp`;
+const { c1, c2 } = teamColors(teamId);
 
 const statusLabel: Record<string, string> = {
   winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (best 3rd)',
@@ -71,22 +67,13 @@ const jsonLd = {
   <div class="kb-route">
     <a href="/teams" class="text-[13.5px] font-bold" style="color:var(--color-ink-3)">← All teams</a>
 
-    {/* HERO — banner texture + team-colour gradient + name */}
-    <div
-      class="relative mt-3.5 overflow-hidden rounded-[20px] p-7 text-white"
-      style={`background:${c1};min-height:150px`}
-    >
-      <img
-        src={bannerSrc}
-        alt=""
-        class="absolute inset-0 h-full w-full object-cover"
-        style="opacity:.45"
-        onerror="this.style.display='none'"
-      />
-      <div class="absolute inset-0" style={`background:linear-gradient(90deg, ${c1} 0%, rgba(0,0,0,.12) 100%);mix-blend-mode:multiply`}></div>
-      {/* country flag */}
-      <div class="absolute right-6 top-1/2 hidden -translate-y-1/2 sm:block" style="filter:drop-shadow(0 4px 14px rgba(0,0,0,.35))">
-        <Flag team={teamId} w={92} class="!ring-1 !ring-white/45" />
+    {/* HERO — team-colour panel + pitch motif + 2-tone identity swatches (no banner) */}
+    <div class="relative mt-3.5 overflow-hidden rounded-[20px] p-7 text-white" style={`background:${c1};min-height:150px`}>
+      <div class="pointer-events-none absolute -bottom-[50px] right-[6%] h-[200px] w-[230px] opacity-40" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
+      <div class="absolute inset-0" style="background:linear-gradient(90deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,0) 45%,rgba(0,0,0,.12) 100%)"></div>
+      <div class="absolute right-6 top-1/2 hidden -translate-y-1/2 gap-1.5 sm:flex">
+        <span class="h-[38px] w-[54px] rounded-[6px]" style={`background:${c1};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)`}></span>
+        <span class="h-[38px] w-[54px] rounded-[6px]" style={`background:${c2};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)`}></span>
       </div>
       <div class="relative z-[2]">
         <div class="font-display text-[40px] font-black tracking-tight" style="text-shadow:0 2px 12px rgba(0,0,0,.35)">{t.name}</div>

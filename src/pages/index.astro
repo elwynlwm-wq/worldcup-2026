@@ -1,63 +1,63 @@
 ---
-// Home — ported from the design. Three "how to follow" tabs: Today / Stories /
-// Pulse (toggled client-side; all content is in the HTML for SEO). Wires real
-// warehouse data: next matches + who-will-win votes (Showdown), power ranking,
-// tournament stats, and articles.
+// Home — rebuilt pixel-faithfully from concepts/claude-design Kickabout.dc.html.
+// Stories-first is the default direction (matches the design default); a "Today"
+// toggle switches to the matchday direction. No generated art anywhere: team
+// identity is the 2-tone country swatch (teamGrad) + flags, exactly as the
+// design specifies. All content ships in the HTML for SEO; the toggle is CSS/JS.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
-import { getUpcomingFixtures, getSsPair } from '../lib/warehouse';
-import Flag from '../components/Flag.astro';
-import MatchupGraphic from '../components/MatchupGraphic.astro';
+import { getUpcomingFixtures } from '../lib/warehouse';
+import { teamGrad, teamColors } from '../data/teamColors';
 import { getCollection } from 'astro:content';
 
-const teamName = (id: string) => provider.getTeam(id)?.name ?? id;
-const teamCode = (id: string) => provider.getTeam(id)?.shortCode ?? '';
 const getTeam = (id: string) => provider.getTeam(id)!;
 
-const upcoming = getUpcomingFixtures(6);
+const upcoming = getUpcomingFixtures(6).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
 const top = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
-const powerTop = top.slice(0, 8);
+const contenders = top.slice(0, 6);
+const todayMatch = upcoming[0] ?? null;
 
-// "Today" feature match = first upcoming with both teams known
-const todayMatch = upcoming.find((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId)) ?? null;
-
-// fav line for an upcoming fixture
 const favLine = (homeId: string, awayId: string) => {
   const h = getTeam(homeId), a = getTeam(awayId);
-  if (!h || !a) return '';
   const pr = predict(h, a);
   const fav = pr.win >= pr.lose ? h : a;
   return `${fav.name} favoured · ${Math.round(Math.max(pr.win, pr.lose) * 100)}%`;
 };
-
 const pct = (homeId: string, awayId: string) => {
-  const h = getTeam(homeId), a = getTeam(awayId);
-  if (!h || !a) return { win: 33, draw: 34, lose: 33 };
-  const pr = predict(h, a);
+  const pr = predict(getTeam(homeId), getTeam(awayId));
   return { win: Math.round(pr.win * 100), draw: Math.round(pr.draw * 100), lose: Math.round(pr.lose * 100) };
-};
-
-// who-wins split for the matchup graphic: prefer real fan votes, else the model.
-const voteSplit = (homeId: string, awayId: string) => {
-  const ss = getSsPair(homeId, awayId);
-  if (ss?.votes) {
-    const v = ss.votes;
-    const [home, away] = v.homeId === homeId ? [v.home, v.away] : [v.away, v.home];
-    return { vote: { home, draw: v.draw, away }, source: 'Fan vote' };
-  }
-  const p = pct(homeId, awayId);
-  return { vote: p, source: 'Our forecast' };
 };
 
 const dateLabel = (iso: string) =>
   iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '';
 const stageLabel: Record<string, string> = { group: 'Group', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: '3rd place' };
+const matchHref = (m: { homeTeamId: string; awayTeamId: string; stage: string }) => `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}`;
 
 const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
 const featured = articles[0] ?? null;
+const rest = articles.slice(1, 5);
+
+// A story's two-team matchup swatch pair, derived from its tags that map to teams.
+const storyMatch = (tags: string[] = []) => {
+  const teams = tags.map((t) => provider.getTeam(t.toLowerCase())).filter(Boolean).slice(0, 2);
+  if (teams.length < 2) return null;
+  return { a: teams[0]!, b: teams[1]! };
+};
+const kindOf = (tags: string[] = []) => {
+  const t = tags.map((x) => x.toLowerCase());
+  if (t.includes('preview')) return { label: 'Preview', accent: '#1f3fbf' };
+  if (t.includes('recap') || t.includes('report')) return { label: 'Recap', accent: '#138a5e' };
+  return { label: 'Feature', accent: '#b23b2e' };
+};
+
+// Featured hero base colour — first team in the featured story's tags, else night.
+const featuredHero = (() => {
+  const m = featured ? storyMatch(featured.data.tags) : null;
+  return m ? teamColors(m.a.id).c1 : '#16181d';
+})();
 
 const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kickabout', url: Astro.site?.href };
 ---
@@ -69,42 +69,142 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
   jsonLd={jsonLd}
 >
   <div class="kb-route">
-    {/* header + tabs */}
+    {/* header row + direction toggle */}
     <div class="mb-1.5 flex flex-wrap items-center justify-between gap-3">
       <div>
         <div class="font-display text-[13px] font-extrabold uppercase tracking-[1.5px]" style="color:var(--color-royal)">
           World Cup 2026 · USA · Canada · Mexico
         </div>
-        <div class="mt-0.5 text-sm" style="color:var(--color-ink-2)">Pick how you like to follow along.</div>
+        <div class="mt-[3px] text-[14px]" style="color:var(--color-ink-2)">Pick how you like to follow along.</div>
       </div>
       <div id="home-tabs" class="flex gap-1 rounded-[12px] border p-1" style="background:#fff;border-color:var(--color-line)">
-        {[['today', 'Today'], ['stories', 'Stories']].map(([k, label], i) => (
-          <button data-tab={k} class:list={['kb-tab cursor-pointer rounded-[9px] px-3.5 py-2 text-[13.5px] font-bold']} style={i === 0 ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2);background:transparent'}>{label}</button>
+        {[['stories', 'Stories'], ['today', 'Today']].map(([k, label], i) => (
+          <button data-tab={k} class="kb-tab cursor-pointer rounded-[9px] px-3.5 py-2 text-[13.5px] font-bold" style={i === 0 ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2);background:transparent'}>{label}</button>
         ))}
       </div>
     </div>
 
-    {/* ============ TODAY ============ */}
-    <section data-panel="today">
-      <div class="my-3.5 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+    {/* ============ STORIES-FIRST (default) ============ */}
+    <section data-panel="stories">
+      {featured && (() => {
+        const fm = storyMatch(featured.data.tags);
+        const fk = kindOf(featured.data.tags);
+        return (
+          <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mt-3.5 mb-6 block overflow-hidden rounded-[20px] p-7 text-white sm:p-[34px]" style={`background:${featuredHero};min-height:248px;box-shadow:0 16px 38px -24px rgba(0,0,0,.55)`}>
+            <div class="absolute inset-0" style="background:linear-gradient(90deg,rgba(16,18,24,.78) 0%,rgba(16,18,24,.5) 52%,rgba(16,18,24,.18) 100%)"></div>
+            <div class="pointer-events-none absolute -right-[30px] -top-[30px] h-[280px] w-[280px] opacity-50" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
+            <div class="relative z-[2]">
+              <div class="font-display inline-flex items-center gap-1.5 rounded border-[1.5px] px-[11px] py-[5px] text-[11.5px] font-extrabold uppercase tracking-[1.4px]" style="border-color:rgba(255,255,255,.5)">{fk.label}</div>
+              <div class="font-display mt-4 mb-2.5 max-w-[680px] text-[30px] font-black leading-[1.02] tracking-[-1px] text-balance sm:text-[40px]">{featured.data.title}</div>
+              <div class="max-w-[600px] text-[16px] leading-relaxed sm:text-[18px]" style="font-family:var(--font-serif);opacity:.93">{featured.data.description}</div>
+              <div class="mt-[18px] text-[13px] font-bold tracking-[.3px]" style="color:var(--color-gold)">{fm ? `${fm.a.shortCode} vs ${fm.b.shortCode}` : 'Kickabout'} · READ THE STORY →</div>
+            </div>
+          </a>
+        );
+      })()}
+
+      <div class="mb-3 flex items-baseline justify-between">
+        <h2 class="font-display text-[22px] font-extrabold">Latest stories</h2>
+        <a href="/articles" class="text-[14px] font-bold" style="color:var(--color-royal)">All stories →</a>
+      </div>
+      {rest.length === 0 ? (
+        <p style="color:var(--color-ink-2)">More stories on the way — check back soon.</p>
+      ) : (
+        <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(290px,1fr))">
+          {rest.map((s) => {
+            const sm = storyMatch(s.data.tags);
+            const sk = kindOf(s.data.tags);
+            return (
+              <a href={`/articles/${s.id}/`} class="kb-card-hover flex flex-col overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
+                <div class="flex flex-1 flex-col gap-2 px-[17px] pb-[18px] pt-4">
+                  <div class="flex items-center gap-2">
+                    <span class="font-display inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[.8px]" style={`color:${sk.accent}`}><span class="h-[9px] w-[9px] rounded-[2px]" style={`background:${sk.accent}`}></span>{sk.label}</span>
+                    <span class="text-[12px]" style="color:#b3a890">· {dateLabel(s.data.publishDate.toISOString())}</span>
+                  </div>
+                  <div class="font-display text-[18.5px] font-extrabold leading-[1.12] tracking-[-.4px] text-balance">{s.data.title}</div>
+                  <div class="flex-1 text-[14px] leading-[1.4]" style="color:var(--color-ink-2)">{s.data.description}</div>
+                  {sm && (
+                    <div class="mt-0.5 flex items-center gap-[7px] border-t pt-[11px]" style="border-color:#f1ebdf">
+                      <span class="flex gap-[3px]">
+                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(sm.a.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(sm.b.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+                      </span>
+                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:#8a7f6a">{sm.a.shortCode} vs {sm.b.shortCode}</span>
+                    </div>
+                  )}
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      )}
+
+      {upcoming.length > 0 && (
+        <div class="mt-[26px] rounded-[16px] border px-5 py-[18px]" style="background:#fff;border-color:#e9e1d2">
+          <div class="mb-2.5 flex items-baseline justify-between">
+            <h2 class="font-display text-[18px] font-extrabold">Coming up</h2>
+            <a href="/matches" class="text-[13.5px] font-bold" style="color:var(--color-royal)">All matches →</a>
+          </div>
+          <div class="flex gap-3 overflow-x-auto pb-1">
+            {upcoming.map((m) => {
+              const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
+              return (
+                <a href={matchHref(m)} class="kb-card-hover flex-none rounded-[13px] border p-[13px]" style="width:215px;background:#faf6ee;border-color:#ece4d4">
+                  <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
+                  <div class="mt-[9px] flex items-center gap-[7px]"><span class="h-[17px] w-[24px] rounded-[4px]" style={`background:${teamGrad(h.id)}`}></span><b class="text-[14px]">{h.name}</b></div>
+                  <div class="mt-[6px] flex items-center gap-[7px]"><span class="h-[17px] w-[24px] rounded-[4px]" style={`background:${teamGrad(a.id)}`}></span><b class="text-[14px]">{a.name}</b></div>
+                  <div class="mt-2.5 text-[12px] font-bold" style="color:var(--color-royal)">{favLine(h.id, a.id)}</div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </section>
+
+    {/* ============ TODAY / MATCHDAY ============ */}
+    <section data-panel="today" style="display:none">
+      <div class="my-3.5 grid gap-[18px] lg:grid-cols-[1.4fr_1fr]">
         {todayMatch && (() => {
           const h = getTeam(todayMatch.homeTeamId), a = getTeam(todayMatch.awayTeamId);
-          const { vote, source } = voteSplit(h.id, a.id);
-          const label = [stageLabel[todayMatch.stage], dateLabel(todayMatch.date), todayMatch.venue]
-            .filter(Boolean).join(' · ');
+          const hc = teamColors(h.id), ac = teamColors(a.id);
           return (
-            <MatchupGraphic home={h} away={a} vote={vote} voteSource={source} label={label} href={`/matches/${h.id}-vs-${a.id}-${todayMatch.stage}`} />
+            <div class="relative overflow-hidden rounded-[20px] p-[26px] text-white" style="background:var(--color-night)">
+              <div class="pointer-events-none absolute -bottom-[40px] left-1/2 h-[240px] w-[340px] -translate-x-1/2 opacity-50" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
+              <div class="relative z-[2]">
+                <div class="font-display text-[12px] font-extrabold uppercase tracking-[1.2px]" style="color:var(--color-gold)">Next up · {dateLabel(todayMatch.date)}</div>
+                <div class="mb-1.5 mt-5 flex items-center justify-between gap-3.5">
+                  <div class="flex-1 text-center">
+                    <div class="mx-auto mb-[9px] h-[44px] w-[62px] rounded-[9px]" style={`background:${teamGrad(h.id)}`}></div>
+                    <div class="font-display text-[17px] font-extrabold">{h.name}</div>
+                  </div>
+                  <div class="font-display text-[22px] font-black" style="color:#6f6655">VS</div>
+                  <div class="flex-1 text-center">
+                    <div class="mx-auto mb-[9px] h-[44px] w-[62px] rounded-[9px]" style={`background:${teamGrad(a.id)}`}></div>
+                    <div class="font-display text-[17px] font-extrabold">{a.name}</div>
+                  </div>
+                </div>
+                <div class="mb-[18px] text-center text-[13px]" style="color:#a59a85">{stageLabel[todayMatch.stage]}{todayMatch.venue ? ` · ${todayMatch.venue}` : ''}</div>
+                <div class="font-display mb-2.5 text-center text-[14px] font-extrabold tracking-[.5px]">WHO DO YOU THINK WINS?</div>
+                <div class="flex gap-2.5">
+                  <a href={matchHref(todayMatch)} class="font-display flex-1 rounded-[11px] py-[13px] text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${hc.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{h.shortCode}</a>
+                  <a href={matchHref(todayMatch)} class="flex-none self-center px-1.5 text-[12px] font-bold" style="color:#6f6655">draw</a>
+                  <a href={matchHref(todayMatch)} class="font-display flex-1 rounded-[11px] py-[13px] text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${ac.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{a.shortCode}</a>
+                </div>
+                <div class="mt-3 text-center"><a href={matchHref(todayMatch)} class="text-[13px] font-bold" style="color:var(--color-gold)">Vote & see our prediction →</a></div>
+              </div>
+            </div>
           );
         })()}
         {featured && (
-          <a href={`/articles/${featured.id}/`} class="kb-card-hover relative flex min-h-[230px] flex-col justify-end overflow-hidden rounded-[20px] p-6 text-white" style="background:var(--color-night)">
-            <img src={`/banners/blog/${featured.id}.jpg`} alt="" aria-hidden="true" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()" />
-            <div class="absolute inset-0" style="background:linear-gradient(105deg,rgba(8,9,12,.92) 0%,rgba(8,9,12,.72) 38%,rgba(8,9,12,.18) 72%,rgba(8,9,12,0) 100%)"></div>
-            <div class="relative">
-              <div class="font-display inline-block self-start rounded border-[1.5px] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[1.2px]" style="border-color:rgba(255,255,255,.5)">Story</div>
-              <div class="font-display mt-2.5 text-[25px] font-black leading-tight tracking-tight text-balance">{featured.data.title}</div>
-              <div class="mt-2 text-[14.5px] leading-snug" style="font-family:var(--font-serif);opacity:.92">{featured.data.description}</div>
-              <div class="mt-3 text-xs font-bold" style="color:var(--color-gold)">READ THE STORY →</div>
+          <a href={`/articles/${featured.id}/`} class="kb-card-hover relative flex min-h-[230px] flex-col justify-end overflow-hidden rounded-[20px] p-[22px] text-white" style={`background:${featuredHero}`}>
+            <div class="pointer-events-none absolute -bottom-[44px] -right-[30px] h-[200px] w-[240px] opacity-[.45]" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
+            <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(16,18,24,.55) 0%,rgba(16,18,24,.12) 70%,transparent 100%)"></div>
+            <div class="relative z-[2]">
+              <div class="font-display inline-flex rounded border-[1.5px] px-[9px] py-1 text-[11px] font-extrabold uppercase tracking-[1.2px]" style="border-color:rgba(255,255,255,.5)">{kindOf(featured.data.tags).label}</div>
+              <div class="font-display mt-2.5 mb-2 text-[25px] font-black leading-[1.05] tracking-[-.6px] text-balance">{featured.data.title}</div>
+              <div class="text-[14.5px] leading-[1.4]" style="font-family:var(--font-serif);opacity:.92">{featured.data.description}</div>
+              <div class="mt-3 text-[12px] font-bold tracking-[.3px]" style="color:var(--color-gold)">READ THE STORY →</div>
             </div>
           </a>
         )}
@@ -114,83 +214,46 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
       <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
         {upcoming.map((m) => {
           const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
-          if (!h || !a) return null;
           const p = pct(h.id, a.id);
           return (
-            <a href={`/matches/${h.id}-vs-${a.id}-${m.stage}`} class="kb-card-hover block rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-              <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:var(--color-ink-3)">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
-              <div class="mt-2.5 flex items-center justify-between">
-                <div class="flex items-center gap-1.5"><Flag team={h.id} w={26} /><b>{h.shortCode}</b></div>
-                <span class="text-xs font-bold" style="color:var(--color-ink-4)">vs</span>
-                <div class="flex items-center gap-1.5"><b>{a.shortCode}</b><Flag team={a.id} w={26} /></div>
+            <a href={matchHref(m)} class="kb-card-hover block rounded-[14px] border p-[15px]" style="background:#fff;border-color:#e9e1d2">
+              <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
+              <div class="mt-[11px] flex items-center justify-between">
+                <div class="flex items-center gap-[7px]"><span class="h-[19px] w-[26px] rounded-[4px]" style={`background:${teamGrad(h.id)}`}></span><b>{h.shortCode}</b></div>
+                <span class="text-[12px] font-bold" style="color:#b3a890">vs</span>
+                <div class="flex items-center gap-[7px]"><b>{a.shortCode}</b><span class="h-[19px] w-[26px] rounded-[4px]" style={`background:${teamGrad(a.id)}`}></span></div>
               </div>
-              <div class="mt-2.5 flex h-[9px] overflow-hidden rounded-md">
+              <div class="mt-[11px] flex h-[9px] overflow-hidden rounded-[6px]">
                 <span style={`width:${p.win}%;background:var(--color-royal)`}></span><span style={`width:${p.draw}%;background:#d8cfbf`}></span><span style={`width:${p.lose}%;background:#2b2e36`}></span>
               </div>
-              <div class="mt-2 text-xs font-bold" style="color:var(--color-ink-2)">{favLine(h.id, a.id)}</div>
+              <div class="mt-2 text-[12px] font-bold" style="color:var(--color-ink-2)">{favLine(h.id, a.id)}</div>
             </a>
           );
         })}
       </div>
 
-      <div class="mt-7 mb-3 flex items-baseline justify-between">
-        <h2 class="font-display text-[20px] font-extrabold">Power top 8</h2>
-        <a href="/power" class="text-[13.5px] font-bold" style="color:var(--color-royal)">Full ranking →</a>
-      </div>
-      <div class="overflow-hidden rounded-[14px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
-        {powerTop.map((t, i) => (
-          <a href={`/teams/${t.id}/`} class="flex items-center gap-3 border-b px-4 py-2.5" style="border-color:var(--color-surface-3)">
-            <span class="font-display w-5 text-[15px] font-black" style="color:var(--color-ink-4)">{i + 1}</span>
-            <Flag team={t.id} w={28} />
-            <b class="flex-1 text-[14.5px]">{t.name}</b>
-            <span class="font-display text-[16px] font-black" style="color:var(--color-royal)">{t.strength}</span>
+      <h2 class="font-display mb-3 mt-[26px] text-[20px] font-extrabold">Title contenders</h2>
+      <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+        {contenders.map((t) => (
+          <a href={`/teams/${t.id}/`} class="kb-card-hover block rounded-[13px] border p-3.5" style="background:#fff;border-color:#e9e1d2">
+            <div class="flex items-center gap-[9px]"><span class="h-[21px] w-[30px] rounded-[5px]" style={`background:${teamGrad(t.id)}`}></span><b class="text-[15px]">{t.name}</b></div>
+            <div class="mt-[9px] flex items-center gap-[7px]"><span class="font-display text-[18px] font-black" style="color:var(--color-royal)">{t.strength}</span><span class="text-[12px]" style="color:#a59a85">power · #{t.fifaRank} world</span></div>
           </a>
         ))}
       </div>
     </section>
-
-    {/* ============ STORIES ============ */}
-    <section data-panel="stories" style="display:none">
-      {featured && (
-        <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mb-6 flex min-h-[260px] flex-col justify-end overflow-hidden rounded-[20px] p-8 text-white" style="background:var(--color-night)">
-          <img src={`/banners/blog/${featured.id}.jpg`} alt="" aria-hidden="true" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()" />
-          <div class="absolute inset-0" style="background:linear-gradient(105deg,rgba(8,9,12,.92) 0%,rgba(8,9,12,.7) 42%,rgba(8,9,12,.12) 78%,rgba(8,9,12,0) 100%)"></div>
-          <div class="relative">
-            <div class="font-display inline-block rounded border-[1.5px] px-2.5 py-1 text-[11.5px] font-extrabold uppercase tracking-[1.4px]" style="border-color:rgba(255,255,255,.5)">Featured</div>
-            <div class="font-display mt-4 max-w-[680px] text-[40px] font-black leading-[1.02] tracking-tight text-balance">{featured.data.title}</div>
-            <div class="mt-2.5 max-w-[600px] text-[18px] leading-relaxed" style="font-family:var(--font-serif);opacity:.93">{featured.data.description}</div>
-            <div class="mt-4 text-[13px] font-bold" style="color:var(--color-gold)">READ THE STORY →</div>
-          </div>
-        </a>
-      )}
-      <h2 class="font-display mb-3 text-[22px] font-extrabold">Latest stories</h2>
-      {articles.length <= 1 ? (
-        <p style="color:var(--color-ink-2)">More stories on the way — check back soon.</p>
-      ) : (
-        <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(290px,1fr))">
-          {articles.map((s) => (
-            <a href={`/articles/${s.id}/`} class="kb-card-hover flex flex-col rounded-[16px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-              <div class="font-display text-[18.5px] font-extrabold leading-tight tracking-tight text-balance">{s.data.title}</div>
-              <div class="mt-2 flex-1 text-sm leading-snug" style="color:var(--color-ink-2)">{s.data.description}</div>
-            </a>
-          ))}
-        </div>
-      )}
-    </section>
-
   </div>
 
   <script is:inline>
     (() => {
       const tabs = document.querySelectorAll('#home-tabs .kb-tab');
       const panels = document.querySelectorAll('[data-panel]');
-      const night = 'var(--color-night)';
       function show(name) {
         panels.forEach((p) => (p.style.display = p.getAttribute('data-panel') === name ? '' : 'none'));
         tabs.forEach((t) => {
           const on = t.getAttribute('data-tab') === name;
           t.style.color = on ? '#fff' : 'var(--color-ink-2)';
-          t.style.background = on ? night : 'transparent';
+          t.style.background = on ? 'var(--color-night)' : 'transparent';
         });
       }
       tabs.forEach((t) => t.addEventListener('click', () => show(t.getAttribute('data-tab'))));

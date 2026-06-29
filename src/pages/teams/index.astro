@@ -1,14 +1,11 @@
 ---
-// Teams index — ported from the design (teams section). 48 cards, each with a
-// two-tone colour band header. Grouped by group letter for a tidy overview.
+// Teams index — rebuilt pixel-faithfully from claude-design Kickabout.dc.html.
+// Each card is a 2-tone country swatch strip + name + group + status pill. No
+// generated banner art — the swatch IS the team identity (teamGrad).
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
-import { teamColors } from '../../data/teamColors';
+import { teamGrad } from '../../data/teamColors';
 
-// Card header = generated banner tinted with the team's primary colour via the
-// same multiply colour-fade the team hero uses, so each card reads as its nation
-// (and the solid colour is the fallback when a banner fails to load). Banners
-// lazy-load (offscreen cards don't fetch) to protect the listing's load.
 const groups = provider.getGroups();
 const getTeam = (id: string) => provider.getTeam(id)!;
 
@@ -40,27 +37,13 @@ const statusStyle: Record<string, { color: string; bg: string; label: string }> 
           {g.standings.map((s) => {
             const t = getTeam(s.teamId);
             const st = statusStyle[t.status] ?? statusStyle.contention;
-            const { c1 } = teamColors(t.id);
             return (
-              <a href={`/teams/${t.id}/`} class="kb-card-hover block overflow-hidden rounded-[15px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
-                {/* Light team-colour tint on the left so each card reads as its nation. */}
-                <div class="relative" style={`height:74px;background:${c1}`}>
-                  <img
-                    src={`/banners/thumbs/${t.id}.webp`}
-                    alt=""
-                    loading="lazy"
-                    width="480"
-                    height="200"
-                    class="absolute inset-0 h-full w-full object-cover"
-                    style="opacity:.88;-webkit-mask-image:linear-gradient(180deg,#000 60%,transparent);mask-image:linear-gradient(180deg,#000 60%,transparent)"
-                    onerror="this.remove()"
-                  />
-                  <div class="absolute inset-0" style={`background:radial-gradient(120% 150% at 0% 100%, ${c1} 0%, rgba(0,0,0,0) 70%);opacity:.7`}></div>
-                </div>
-                <div class="px-4 pt-2 pb-4">
-                  <b class="block text-[15.5px] tracking-tight">{t.name}</b>
-                  <div class="mt-0.5 text-xs" style="color:var(--color-ink-3)">Group {t.groupLetter} · {t.confederation}</div>
-                  <div class="mt-2.5 inline-block rounded-full px-2.5 py-[3px] text-[11px] font-extrabold" style={`color:${st.color};background:${st.bg}`}>{st.label}</div>
+              <a href={`/teams/${t.id}/`} class="kb-card-hover block overflow-hidden rounded-[15px] border" style="background:#fff;border-color:#e9e1d2">
+                <div style={`height:46px;background:${teamGrad(t.id)}`}></div>
+                <div class="px-[15px] pb-[15px] pt-[13px]">
+                  <b class="block text-[15.5px] tracking-[-.2px]">{t.name}</b>
+                  <div class="mt-0.5 text-[12px]" style="color:#a59a85">Group {t.groupLetter} · {t.confederation}</div>
+                  <div class="mt-[9px] inline-block rounded-full px-[9px] py-[3px] text-[11px] font-extrabold" style={`color:${st.color};background:${st.bg}`}>{st.label}</div>
                 </div>
               </a>
             );

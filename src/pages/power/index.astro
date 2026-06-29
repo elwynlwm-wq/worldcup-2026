@@ -1,10 +1,16 @@
 ---
-// Power ranking — all 48 teams by adjusted rating. Light Kickabout style.
+// Power ranking — rebuilt pixel-faithfully from claude-design Kickabout.dc.html.
+// All 48 teams strongest first: rank, 2-tone swatch, name + status, a royal→gold
+// strength bar, and the score. No generated art.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
-import Flag from '../../components/Flag.astro';
+import { teamGrad } from '../../data/teamColors';
 
 const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
+const statusLabel: Record<string, string> = {
+  winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (3rd)',
+  contention: 'Still alive', eliminated: 'Eliminated',
+};
 ---
 
 <BaseLayout
@@ -14,20 +20,23 @@ const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRati
   canonical="/power/"
 >
   <div class="kb-route">
-    <h1 class="font-display text-[34px] font-black tracking-tight">Power ranking</h1>
-    <p class="mt-0.5 mb-5 text-[15px]" style="color:var(--color-ink-2)">
+    <h1 class="font-display text-[34px] font-black tracking-[-1px]">Power ranking</h1>
+    <p class="mt-0.5 mb-1.5 max-w-[620px] text-[15px]" style="color:#6f6655">
       All 48 teams, strongest first. Our <b style="color:var(--color-ink)">power score</b> blends each team's
-      rating, world ranking, how they've played here and squad firepower.
+      rating, world ranking, how they've played here and squad firepower — higher is stronger.
     </p>
+    <a href="/teams" class="text-[13.5px] font-bold" style="color:var(--color-royal)">Browse teams →</a>
 
-    <div class="overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
+    <div class="mt-4 overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
       {teams.map((t, i) => (
-        <a href={`/teams/${t.id}/`} class="flex items-center gap-3 border-b px-4 py-3 transition hover:bg-[var(--color-surface-2)]" style="border-color:var(--color-surface-3)">
-          <span class="font-display w-7 text-right text-[15px] font-black" style="color:var(--color-ink-4)">{i + 1}</span>
-          <Flag team={t.id} w={28} />
-          <b class="flex-1 text-[14.5px]">{t.name}</b>
-          <span class="hidden text-[12px] sm:inline" style="color:var(--color-ink-3)">Elo {t.elo} · #{t.fifaRank} · Grp {t.groupLetter}</span>
-          <span class="font-display ml-3 text-[18px] font-black" style="color:var(--color-royal)">{t.strength}</span>
+        <a href={`/teams/${t.id}/`} class="flex items-center gap-[13px] border-b px-4 py-[11px]" style="border-color:#f1ebdf">
+          <span class="font-display w-[26px] text-center text-[16px] font-black" style="color:#b3a890">{i + 1}</span>
+          <span class="h-[24px] w-[34px] flex-none rounded-[5px]" style={`background:${teamGrad(t.id)}`}></span>
+          <span class="min-w-0 flex-1"><b class="text-[15px]">{t.name}</b><span class="ml-2 text-[12px]" style="color:#a59a85">{statusLabel[t.status] ?? ''}</span></span>
+          <span class="hidden flex-none sm:block" style="width:120px">
+            <span class="block h-[8px] overflow-hidden rounded-[5px]" style="background:#f0e9db"><span class="block h-full rounded-[5px]" style={`width:${t.strength}%;background:linear-gradient(90deg,#1f3fbf,#f3b50a)`}></span></span>
+          </span>
+          <span class="font-display w-[38px] flex-none text-right text-[18px] font-black" style="color:var(--color-ink)">{t.strength}</span>
         </a>
       ))}
     </div>
