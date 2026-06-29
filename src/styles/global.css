@@ -62,8 +62,11 @@ h1, h2, h3, h4, .font-display {
 /* Bracket — a real knockout TREE. Every round renders its full slot count
    (16 → 8 → 4 → 2 → 1); rounds share one height so flex `space-around` centres
    each tie between its two feeders. Elbow connectors are drawn with borders. */
-/* Connector logic ported verbatim from claude-design Kickabout.dc.html. */
-.kb-bracket { display: flex; align-items: stretch; overflow-x: auto; padding-bottom: 12px; height: 1240px; }
+/* Connector logic ported verbatim from claude-design Kickabout.dc.html.
+   No fixed height — the column grows to fit all ties (page scrolls, not the
+   component). overflow-x:auto only kicks in below the content's natural width
+   (~1040px), so wide windows show no horizontal scrollbar. */
+.kb-bracket { display: flex; align-items: stretch; overflow-x: auto; padding-bottom: 12px; }
 .kb-round { display: flex; flex-direction: column; width: 176px; flex: none; margin-right: 40px; }
 .kb-round:last-child { margin-right: 0; }
 .kb-round-head { margin-bottom: 12px; }
