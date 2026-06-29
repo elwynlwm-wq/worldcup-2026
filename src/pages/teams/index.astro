@@ -1,13 +1,17 @@
 ---
-// Teams index — rebuilt pixel-faithfully from claude-design Kickabout.dc.html.
-// Each card is a 2-tone country swatch strip + name + group + status pill. No
-// generated banner art — the swatch IS the team identity (teamGrad).
+// Teams index — rebuilt to match claude-design Kickabout.dc.html: a flat,
+// alphabetical grid with Confederation + Group filters, a live team count, and
+// a Power-ranking link. Filtering is client-side via data- attributes (all 48
+// cards ship for SEO). Card = 2-tone swatch strip + name + group + status pill
+// (swatch kept pending a decision on the teams listing).
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
 import { teamGrad } from '../../data/teamColors';
 
-const groups = provider.getGroups();
-const getTeam = (id: string) => provider.getTeam(id)!;
+// All teams, alphabetical by name (the design's default order).
+const teams = provider.getTeams().slice().sort((a, b) => a.name.localeCompare(b.name));
+const confs = [...new Set(teams.map((t) => t.confederation))].sort();
+const groupLetters = [...new Set(teams.map((t) => t.groupLetter))].sort();
 
 const statusStyle: Record<string, { color: string; bg: string; label: string }> = {
   winner: { color: '#0b6b3a', bg: 'rgba(19,138,94,.14)', label: 'Group winners' },
@@ -16,40 +20,69 @@ const statusStyle: Record<string, { color: string; bg: string; label: string }> 
   contention: { color: '#8a6d10', bg: 'rgba(243,181,10,.18)', label: 'Still alive' },
   eliminated: { color: '#9d2730', bg: 'rgba(157,39,48,.12)', label: 'Eliminated' },
 };
+const selStyle = 'font-family:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:11px;border:1px solid #e4dccd;background:#fff';
 ---
 
 <BaseLayout
   title="Teams — World Cup 2026 | Kickabout"
-  description="All 48 nations at the 2026 World Cup, by group. Tap a team for squad, stats, power ranking and the players to watch."
+  description="All 48 nations at the 2026 World Cup. Filter by confederation or group, then tap a team for squad, stats and the players to watch."
   active="teams"
   canonical="/teams/"
 >
   <div class="kb-route">
-    <h1 class="font-display text-[34px] font-black tracking-tight">Teams</h1>
-    <p class="mt-0.5 mb-4 text-[15px]" style="color:var(--color-ink-2)">
-      All 48 nations, by group. Tap a team to dive into the squad.
-    </p>
+    <h1 class="font-display text-[34px] font-black tracking-[-1px]">Teams</h1>
+    <p class="mt-0.5 mb-4 text-[15px]" style="color:#6f6655">All 48 nations. Tap a flag to dive into the squad.</p>
 
-    {groups.map((g) => (
-      <div class="mb-6">
-        <h2 class="font-display mb-2.5 text-[15px] font-extrabold" style="color:var(--color-ink-2)">{g.name}</h2>
-        <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(215px,1fr))">
-          {g.standings.map((s) => {
-            const t = getTeam(s.teamId);
-            const st = statusStyle[t.status] ?? statusStyle.contention;
-            return (
-              <a href={`/teams/${t.id}/`} class="kb-card-hover block overflow-hidden rounded-[15px] border" style="background:#fff;border-color:#e9e1d2">
-                <div style={`height:46px;background:${teamGrad(t.id)}`}></div>
-                <div class="px-[15px] pb-[15px] pt-[13px]">
-                  <b class="block text-[15.5px] tracking-[-.2px]">{t.name}</b>
-                  <div class="mt-0.5 text-[12px]" style="color:#a59a85">Group {t.groupLetter} · {t.confederation}</div>
-                  <div class="mt-[9px] inline-block rounded-full px-[9px] py-[3px] text-[11px] font-extrabold" style={`color:${st.color};background:${st.bg}`}>{st.label}</div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    ))}
+    <div class="mb-[18px] flex flex-wrap items-center gap-2.5">
+      <select id="conf-filter" style={selStyle}>
+        <option value="all">All confederations</option>
+        {confs.map((c) => <option value={c}>{c}</option>)}
+      </select>
+      <select id="group-filter" style={selStyle}>
+        <option value="all">All groups</option>
+        {groupLetters.map((g) => <option value={g}>Group {g}</option>)}
+      </select>
+      <span id="team-count" class="text-[13px] font-semibold" style="color:#a59a85">{teams.length} teams</span>
+      <a href="/power" class="ml-auto text-[13.5px] font-bold" style="color:var(--color-royal)">Power ranking →</a>
+    </div>
+
+    <div id="teams-grid" class="grid gap-[13px]" style="grid-template-columns:repeat(auto-fill,minmax(215px,1fr))">
+      {teams.map((t) => {
+        const st = statusStyle[t.status] ?? statusStyle.contention;
+        return (
+          <a href={`/teams/${t.id}/`} data-conf={t.confederation} data-group={t.groupLetter}
+            class="kb-team kb-card-hover block overflow-hidden rounded-[15px] border" style="background:#fff;border-color:#e9e1d2">
+            <div style={`height:46px;background:${teamGrad(t.id)}`}></div>
+            <div class="px-[15px] pb-[15px] pt-[13px]">
+              <b class="block text-[15.5px] tracking-[-.2px]">{t.name}</b>
+              <div class="mt-0.5 text-[12px]" style="color:#a59a85">Group {t.groupLetter} · {t.confederation}</div>
+              <div class="mt-[9px] inline-block rounded-full px-[9px] py-[3px] text-[11px] font-extrabold" style={`color:${st.color};background:${st.bg}`}>{st.label}</div>
+            </div>
+          </a>
+        );
+      })}
+    </div>
   </div>
+
+  <script is:inline>
+    (() => {
+      const conf = document.getElementById('conf-filter');
+      const group = document.getElementById('group-filter');
+      const count = document.getElementById('team-count');
+      const cards = Array.from(document.querySelectorAll('.kb-team'));
+      function apply() {
+        const c = conf.value, g = group.value;
+        let n = 0;
+        cards.forEach((card) => {
+          const ok = (c === 'all' || card.getAttribute('data-conf') === c) &&
+                     (g === 'all' || card.getAttribute('data-group') === g);
+          card.style.display = ok ? '' : 'none';
+          if (ok) n++;
+        });
+        count.textContent = `${n} team${n === 1 ? '' : 's'}`;
+      }
+      conf.addEventListener('change', apply);
+      group.addEventListener('change', apply);
+    })();
+  </script>
 </BaseLayout>
