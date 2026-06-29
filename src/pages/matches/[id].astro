@@ -95,6 +95,57 @@ function lastFive(teamId: string): ('W' | 'D' | 'L')[] {
 const formHome = lastFive(h.id);
 const formAway = lastFive(a.id);
 
+// Season aggregates per team from ALL finished AF fixtures (real data only).
+function seasonAgg(teamId: string) {
+  const games = getAfFixtures()
+    .filter((f) => FINISHED.has(f.status) && (f.homeTeamId === teamId || f.awayTeamId === teamId))
+    .filter((f) => f.homeScore != null && f.awayScore != null);
+  const n = games.length;
+  if (!n) return null;
+  let gf = 0, ga = 0, wins = 0, cleanSheets = 0;
+  for (const f of games) {
+    const isHome = f.homeTeamId === teamId;
+    const for_ = isHome ? f.homeScore! : f.awayScore!;
+    const ag = isHome ? f.awayScore! : f.homeScore!;
+    gf += for_; ga += ag;
+    if (for_ > ag) wins++;
+    if (ag === 0) cleanSheets++;
+  }
+  return {
+    played: n,
+    goalsFor: gf / n,
+    goalsAgainst: ga / n,
+    cleanPct: Math.round((cleanSheets / n) * 100),
+    winPct: Math.round((wins / n) * 100),
+  };
+}
+const aggHome = seasonAgg(h.id);
+const aggAway = seasonAgg(a.id);
+// "Season form compared" rows — only when BOTH teams have finished games. Each
+// row has both values + percentage widths for the mirrored bars. `homeBetter`
+// drives which side is highlighted (royal = the better team for that metric;
+// for "conceded" lower is better).
+type CmpRow = { label: string; hv: string; av: string; hPct: number; aPct: number; homeBetter: boolean };
+const compareRows: CmpRow[] = (() => {
+  if (!aggHome || !aggAway) return [];
+  const fmt1 = (x: number) => x.toFixed(1);
+  const bar = (hv: number, av: number) => {
+    const tot = hv + av || 1;
+    return { hPct: Math.round((hv / tot) * 100), aPct: Math.round((av / tot) * 100) };
+  };
+  const gpg = bar(aggHome.goalsFor, aggAway.goalsFor);
+  const gcg = bar(aggHome.goalsAgainst, aggAway.goalsAgainst);
+  const cs = bar(aggHome.cleanPct, aggAway.cleanPct);
+  const wr = bar(aggHome.winPct, aggAway.winPct);
+  return [
+    { label: 'Goals per game', hv: fmt1(aggHome.goalsFor), av: fmt1(aggAway.goalsFor), ...gpg, homeBetter: aggHome.goalsFor >= aggAway.goalsFor },
+    { label: 'Goals conceded / game', hv: fmt1(aggHome.goalsAgainst), av: fmt1(aggAway.goalsAgainst), ...gcg, homeBetter: aggHome.goalsAgainst <= aggAway.goalsAgainst },
+    { label: 'Clean sheets', hv: `${aggHome.cleanPct}%`, av: `${aggAway.cleanPct}%`, ...cs, homeBetter: aggHome.cleanPct >= aggAway.cleanPct },
+    { label: 'Win rate', hv: `${aggHome.winPct}%`, av: `${aggAway.winPct}%`, ...wr, homeBetter: aggHome.winPct >= aggAway.winPct },
+  ];
+})();
+const compareGames = aggHome && aggAway ? Math.min(aggHome.played, aggAway.played) : 0;
+
 const stageLabel: Record<string, string> = { group: 'Group stage', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: 'Third place' };
 const fmtDate = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(iso)) : '');
 const fmtShort = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(iso)) : '');
@@ -255,7 +306,28 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
         <p class="mt-4 text-[14.5px]" style="color:var(--color-ink-2)">{h.name} and {a.name} have no recorded all-time meetings.</p>
       )}
 
-      {!ended && statRows.length === 0 && formHome.length === 0 && formAway.length === 0 && !h2h && (
+      {/* season form compared — mirrored bars, derived from finished fixtures */}
+      {compareRows.length > 0 && (
+        <div class="mt-4 rounded-[16px] border p-5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <div class="font-display mb-4 text-center text-[11px] font-extrabold uppercase tracking-[1.5px]" style="color:var(--color-ink-3)">Season form compared</div>
+          {compareRows.map((r) => (
+            <div class="border-t py-3 first:border-t-0" style="border-color:var(--color-surface-3)">
+              <div class="mb-1.5 flex items-center justify-between">
+                <b class="font-display text-[15px]">{r.hv}</b>
+                <span class="text-[12.5px] font-semibold" style="color:var(--color-ink-2)">{r.label}</span>
+                <b class="font-display text-[15px]">{r.av}</b>
+              </div>
+              <div class="flex h-[5px] gap-[5px]">
+                <span class="flex flex-1 justify-end overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="rounded-[3px]" style={`width:${r.hPct}%;background:${r.homeBetter ? 'var(--color-royal)' : '#c7bfae'}`}></span></span>
+                <span class="flex-1 overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="block h-full rounded-[3px]" style={`width:${r.aPct}%;background:${!r.homeBetter ? '#2b2e36' : '#c7bfae'}`}></span></span>
+              </div>
+            </div>
+          ))}
+          <p class="mt-3 text-[12px]" style="color:var(--color-ink-4)">Averages over each team’s last {compareGames} completed match{compareGames === 1 ? '' : 'es'}.</p>
+        </div>
+      )}
+
+      {!ended && statRows.length === 0 && formHome.length === 0 && formAway.length === 0 && !h2h && compareRows.length === 0 && (
         <p class="mt-4 text-[14px]" style="color:var(--color-ink-3)">Match stats will appear here once the game is under way.</p>
       )}
     </section>
