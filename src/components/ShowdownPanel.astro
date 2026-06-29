@@ -50,6 +50,8 @@ const photoFor = (() => {
 const hc = teamColors(home.id), ac = teamColors(away.id);
 const fanTotal = fans ? fans.home + fans.away : 0;
 const fanHomePct = fanTotal ? Math.round((fans!.home / fanTotal) * 100) : null;
+// Read-only fans view: which side the crowd backs (no voting). 'home'|'away'|null.
+const fansPick = fanHomePct == null ? null : fanHomePct >= 50 ? 'home' : 'away';
 
 // factor table — the model breakdown, row by row. Green = the better value.
 // The last row ("Our rating") is the adjusted rating the forecast runs on:
@@ -68,26 +70,31 @@ const matchKey = [home.id, away.id].sort().join('|');
 <div class="mt-5" data-showdown data-home={home.id} data-away={away.id} data-key={matchKey}>
   {showPoll && (
   <>
-  {/* WHO DO YOU THINK WINS */}
+  {/* WHO FANS ARE BACKING — read-only: real SofaScore split + our model pick. */}
   <div class="rounded-[18px] p-5 text-white" style="background:var(--color-night)">
-    <div class="font-display text-center text-[15px] font-black tracking-wide">{frozen ? 'WHO FANS BACKED' : 'WHO DO YOU THINK WINS?'}</div>
-    <div class="mb-3.5 text-center text-[13px]" style="color:var(--color-ink-3)">{frozen ? 'Poll frozen at kick-off — here’s how it stood.' : 'Tap your pick — see how you compare.'}</div>
+    <div class="font-display text-center text-[15px] font-black tracking-wide">WHO FANS ARE BACKING</div>
+    <div class="mb-3.5 text-center text-[13px]" style="color:var(--color-ink-3)">
+      {frozen ? 'How the crowd called it, frozen at kick-off.' : 'The crowd’s call — and how our model compares.'}
+    </div>
     <div class="flex items-stretch gap-3">
       {(['home', 'away'] as const).map((side) => {
         const t = side === 'home' ? home : away;
         const c = side === 'home' ? hc : ac;
+        const pctSide = fanHomePct == null ? null : side === 'home' ? fanHomePct : 100 - fanHomePct;
+        const isPick = fansPick === side;
         return (
-          <button
-            data-pick={side}
-            class="kb-pick flex flex-1 cursor-pointer items-center justify-center gap-2.5 rounded-[12px] px-4 py-3 text-center text-white"
-            style={`border:2.5px solid rgba(255,255,255,.15);background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), ${c.c1}`}
+          <div
+            class="flex flex-1 items-center justify-center gap-2.5 rounded-[12px] px-4 py-3 text-center text-white"
+            style={`border:2.5px solid ${isPick ? 'var(--color-gold)' : 'rgba(255,255,255,.15)'};background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), ${c.c1}`}
           >
             <Flag team={t.id} w={30} class="flex-none shadow-[0_3px_8px_-2px_rgba(0,0,0,.5)]" />
             <span class="min-w-0">
               <span class="font-display block text-[15px] font-extrabold leading-tight" style="text-shadow:0 1px 4px rgba(0,0,0,.55)">{t.name}</span>
-              <span class="kb-pick-label block text-[11.5px] font-bold" style="opacity:.85;text-shadow:0 1px 3px rgba(0,0,0,.5)">tap to pick</span>
+              <span class="block text-[11.5px] font-bold" style="opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,.5)">
+                {pctSide == null ? '—' : isPick ? `Fans’ pick · ${pctSide}%` : `${pctSide}%`}
+              </span>
             </span>
-          </button>
+          </div>
         );
       })}
     </div>
@@ -103,14 +110,18 @@ const matchKey = [home.id, away.id].sort().join('|');
       </div>
     )}
 
-    {/* model reveal (always shown — not gated) */}
+    {/* our model pick — always shown, no gating */}
     <div class="mt-4 flex items-center gap-3 rounded-[12px] p-3.5" style="background:#22252e">
       <div class="flex h-10 w-10 flex-none items-center justify-center rounded-[10px]" style="background:var(--color-royal)">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/><circle cx="12" cy="12" r="3.2"/><path d="M6 8.5l3 3.5-3 3.5" stroke="#f3b50a"/></svg>
       </div>
       <div class="flex-1">
         <div class="font-display text-[14px] font-extrabold">Our model backs <span style="color:var(--color-gold)">{(modelPick === 'home' ? home : away).name}</span></div>
-        <div class="kb-agree mt-0.5 text-[12.5px]" style="color:var(--color-ink-3)">Tap a side to see if you agree.</div>
+        {fansPick != null && (
+          <div class="mt-0.5 text-[12.5px]" style="color:var(--color-ink-3)">
+            {fansPick === modelPick ? 'The crowd agrees with the model.' : 'The crowd is leaning the other way.'}
+          </div>
+        )}
       </div>
     </div>
   </div>
@@ -177,30 +188,3 @@ const matchKey = [home.id, away.id].sort().join('|');
   </>
   )}
 </div>
-
-<script is:inline define:vars={{ matchKey, modelPick, homeName: home.name, awayName: away.name }}>
-  (() => {
-    const root = document.querySelector(`[data-showdown][data-key="${matchKey}"]`);
-    if (!root) return;
-    const labels = { home: root.querySelector('[data-pick=home] .kb-pick-label'), away: root.querySelector('[data-pick=away] .kb-pick-label') };
-    const agree = root.querySelector('.kb-agree');
-    let vote = null;
-    try { vote = (JSON.parse(localStorage.getItem('kb_votes') || '{}'))[matchKey] || null; } catch {}
-    function render() {
-      ['home', 'away'].forEach((s) => {
-        const btn = root.querySelector(`[data-pick=${s}]`);
-        btn.style.borderColor = vote === s ? 'var(--color-gold)' : 'rgba(255,255,255,.15)';
-        labels[s].textContent = vote === s ? '✓ your pick' : 'tap to pick';
-      });
-      if (vote) agree.textContent = vote === modelPick ? 'Nice — you and the model agree.' : 'You went the other way. Bold!';
-    }
-    root.querySelectorAll('[data-pick]').forEach((btn) =>
-      btn.addEventListener('click', () => {
-        vote = btn.getAttribute('data-pick');
-        try { const v = JSON.parse(localStorage.getItem('kb_votes') || '{}'); v[matchKey] = vote; localStorage.setItem('kb_votes', JSON.stringify(v)); } catch {}
-        render();
-      }),
-    );
-    render();
-  })();
-</script>
