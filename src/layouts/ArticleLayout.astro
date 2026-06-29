@@ -37,12 +37,12 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
   author={author}
   jsonLd={jsonLd}
 >
-  <article class="kb-article mx-auto max-w-3xl px-4 py-10">
+  <article class="kb-article mx-auto max-w-3xl py-10">
     <header class="mb-8">
-      <h1 class="font-display text-4xl font-black tracking-tight text-balance">{title}</h1>
-      <p class="mt-4 text-lg" style="color:var(--color-ink-dim)">{description}</p>
-      <div class="mt-4 flex items-center gap-2 text-sm" style="color:var(--color-ink-muted)">
-        <span>{author}</span>
+      <h1 class="font-display text-[44px] font-black leading-[1.04] tracking-tight text-balance">{title}</h1>
+      <p class="mt-4 text-[20px] leading-relaxed" style="font-family:var(--font-serif);color:var(--color-ink-2)">{description}</p>
+      <div class="mt-4 flex items-center gap-2 text-sm" style="color:var(--color-ink-3)">
+        <span class="font-semibold">{author}</span>
         <span aria-hidden="true">·</span>
         <time datetime={publishDate.toISOString()}>{dateFmt.format(publishDate)}</time>
         {updatedDate && (
@@ -54,26 +54,27 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
       </div>
     </header>
 
-    <div class="prose prose-lg prose-invert max-w-none prose-headings:font-display prose-headings:tracking-tight">
+    <div class="prose prose-lg max-w-none prose-headings:font-display prose-headings:tracking-tight">
       <slot />
     </div>
   </article>
 
   <style>
-    /* Dark long-form reading, tuned to the warm Kickabout palette — not a raw
-       invert. Body sits at parchment (not pure white); links use the flame accent. */
-    .kb-article {
-      --tw-prose-invert-body: var(--color-ink);
-      --tw-prose-invert-headings: #f3ecdd;
-      --tw-prose-invert-links: var(--color-flame);
-      --tw-prose-invert-bold: #f3ecdd;
-      --tw-prose-invert-quotes: var(--color-ink-dim);
-      --tw-prose-invert-quote-borders: var(--color-line);
-      --tw-prose-invert-hr: var(--color-line);
-      --tw-prose-invert-captions: var(--color-ink-muted);
-      --tw-prose-invert-code: var(--color-ball);
-      --tw-prose-invert-pre-bg: var(--color-panel);
-      --tw-prose-invert-bullets: var(--color-ink-muted);
+    /* Light editorial reading tuned to the Kickabout palette. Body in Newsreader
+       serif for an editorial feel; links/headings in the brand. */
+    .kb-article .prose {
+      --tw-prose-body: var(--color-ink);
+      --tw-prose-headings: var(--color-ink);
+      --tw-prose-links: var(--color-royal);
+      --tw-prose-bold: var(--color-ink);
+      --tw-prose-quotes: var(--color-ink-2);
+      --tw-prose-quote-borders: var(--color-gold);
+      --tw-prose-bullets: var(--color-ink-3);
+      --tw-prose-hr: var(--color-line);
+      font-family: var(--font-serif);
+      font-size: 19px;
+      line-height: 1.7;
     }
+    .kb-article .prose :is(h1, h2, h3, h4) { font-family: var(--font-display); }
   </style>
 </BaseLayout>

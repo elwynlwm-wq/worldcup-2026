@@ -1,0 +1,87 @@
+---
+// Bracket & groups — knockout columns (from AF fixtures) + real group tables.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { provider } from '../../lib/provider';
+import { getAfFixtures } from '../../lib/warehouse';
+import standingsData from '../../../data-pipeline/warehouse/export/standings.json';
+import { teamGrad } from '../../data/teamColors';
+
+const getTeam = (id: string) => provider.getTeam(id);
+const fixtures = getAfFixtures();
+
+const ROUNDS: [string, string][] = [['r32', 'Round of 32'], ['r16', 'Round of 16'], ['qf', 'Quarter-finals'], ['sf', 'Semi-finals'], ['final', 'Final']];
+const byStage = (s: string) => fixtures.filter((m) => m.stage === s && getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
+const dateLabel = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '');
+const matchHref = (m: any) => (m.status === 'FT' ? `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}` : `/h2h/${m.homeTeamId}-vs-${m.awayTeamId}`);
+
+const standings = standingsData as Record<string, Array<{ rank: number; teamId: string; played: number; points: number; goalsFor: number; goalsAgainst: number; form: string }>>;
+const groupNames = Object.keys(standings).sort();
+---
+
+<BaseLayout
+  title="Bracket & Groups — World Cup 2026 | Kickabout"
+  description="The 2026 World Cup knockout bracket and all 12 group tables — the road to the final on 19 July."
+  active="bracket"
+  canonical="/bracket/"
+>
+  <div class="kb-route">
+    <h1 class="font-display text-[34px] font-black tracking-tight">Bracket &amp; groups</h1>
+    <p class="mt-0.5 mb-4 max-w-[620px] text-[15px]" style="color:var(--color-ink-2)">
+      The knockout path and the group tables. Confirmed ties fill in as rounds resolve.
+    </p>
+
+    <h2 class="font-display mb-1 text-[20px] font-extrabold">The road to the final</h2>
+    <p class="mb-2 text-[13px]" style="color:var(--color-ink-3)">Scroll right to follow the path to the final on 19 July.</p>
+    <div class="kb-bracket">
+      {ROUNDS.map(([stage, title]) => {
+        const ties = byStage(stage);
+        return (
+          <div class="kb-round">
+            <div class="mb-3 flex items-baseline gap-2">
+              <span class="font-display text-[11.5px] font-extrabold uppercase tracking-wide">{title}</span>
+              <span class="text-[10.5px] font-semibold" style="color:var(--color-ink-3)">{ties.length || ''}</span>
+            </div>
+            <div class="kb-ties">
+              {ties.length === 0 ? (
+                <div class="rounded-[11px] border border-dashed px-3 py-2 text-[12px]" style="border-color:var(--color-line);color:var(--color-ink-3)">To be decided</div>
+              ) : ties.map((m) => {
+                const h = getTeam(m.homeTeamId)!, a = getTeam(m.awayTeamId)!;
+                return (
+                  <div class="kb-tie">
+                    <a href={matchHref(m)} class="kb-card-hover block rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+                      <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-ink-4)">{dateLabel(m.date)}</div>
+                      <div class="flex items-center gap-2"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style={`background:${teamGrad(h.id)}`}></span><b class="flex-1 text-[13px]">{h.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.homeScore ?? ''}</span></div>
+                      <div class="my-1.5 h-px" style="background:var(--color-surface-3)"></div>
+                      <div class="flex items-center gap-2"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style={`background:${teamGrad(a.id)}`}></span><b class="flex-1 text-[13px]">{a.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.awayScore ?? ''}</span></div>
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <h2 class="font-display mt-7 mb-3 text-[20px] font-extrabold">Groups</h2>
+    <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+      {groupNames.map((gname) => (
+        <div class="overflow-hidden rounded-[14px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <div class="font-display border-b px-4 py-2.5 text-[14px] font-extrabold" style="border-color:var(--color-surface-3)">{gname}</div>
+          {standings[gname].map((row, i) => {
+            const t = getTeam(row.teamId);
+            return (
+              <a href={t ? `/teams/${t.id}/` : '#'} class="flex items-center gap-2 border-b px-4 py-2 text-[13px]" style="border-color:var(--color-surface-3)">
+                <span class="w-4 text-center text-[11px] font-bold" style={`color:${i < 2 ? 'var(--color-pitch)' : 'var(--color-ink-4)'}`}>{row.rank}</span>
+                <span class="h-[14px] w-5 flex-none rounded-[3px]" style={`background:${teamGrad(row.teamId)}`}></span>
+                <b class="flex-1 truncate">{t?.name ?? row.teamId}</b>
+                <span style="color:var(--color-ink-3)">{row.played}</span>
+                <b class="w-6 text-right" style="color:var(--color-royal)">{row.points}</b>
+              </a>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

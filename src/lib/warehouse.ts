@@ -15,6 +15,7 @@ import matchGoalsData from '../../data-pipeline/warehouse/export/match-goals.jso
 import wcMatchesData from '../../data-pipeline/warehouse/export/wc-matches.json';
 import h2hByTeamData from '../../data-pipeline/warehouse/export/h2h-by-team.json';
 import afFixturesData from '../../data-pipeline/warehouse/export/af-fixtures.json';
+import ssByPairData from '../../data-pipeline/warehouse/export/ss-by-pair.json';
 
 export interface H2HRecord {
   played: number;
@@ -153,4 +154,28 @@ export function getUpcomingFixtures(limit = 8): AfFixture[] {
     .filter((m) => m.status === 'NS')
     .sort((a, b) => (a.date < b.date ? -1 : 1))
     .slice(0, limit);
+}
+
+// --- SofaScore predicted signals (dev source), by unordered team pair --------
+export interface SsLineup {
+  formation: string | null;
+  starters: { name: string; pos: string | null; jersey: string | null }[];
+  subs: { name: string; pos: string | null; jersey: string | null }[];
+}
+export interface SsPair {
+  homeId: string;
+  awayId: string;
+  votes: { homeId: string; awayId: string; home: number; draw: number; away: number } | null;
+  lineups: Record<string, SsLineup>;
+}
+const ssByPair = ssByPairData as Record<string, SsPair>;
+
+/** Predicted lineups + who-will-win votes for a pairing (order-independent). */
+export function getSsPair(a: string, b: string): SsPair | null {
+  return ssByPair[[a, b].sort().join('__')] ?? null;
+}
+
+/** All pairs that have SofaScore data — for generating H2H static paths. */
+export function getSsPairKeys(): string[] {
+  return Object.keys(ssByPair);
 }

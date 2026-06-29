@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+);
+
+const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
+---
+
+<BaseLayout
+  title="Stories — World Cup 2026 | Kickabout"
+  description="World Cup 2026 stories: previews, recaps and analysis, written for every kind of fan."
+  active="stories"
+  canonical="/articles/"
+>
+  <div class="kb-route mx-auto max-w-3xl">
+    <h1 class="font-display text-[34px] font-black tracking-tight">Stories</h1>
+    <p class="mt-0.5 mb-2 text-[15px]" style="color:var(--color-ink-2)">
+      Previews of what's coming and verdicts on what just happened — the data, in plain English.
+    </p>
+    <ul class="mt-6 divide-y" style="border-color:var(--color-line)">
+      {articles.map((a) => (
+        <li class="py-6">
+          <a href={`/articles/${a.id}/`} class="group block">
+            <h2 class="font-display text-2xl font-extrabold tracking-tight group-hover:text-[var(--color-royal)]">
+              {a.data.title}
+            </h2>
+            <p class="mt-2 text-[16px] leading-snug" style="font-family:var(--font-serif);color:var(--color-ink-2)">{a.data.description}</p>
+            <time datetime={a.data.publishDate.toISOString()} class="mt-2 block text-sm" style="color:var(--color-ink-3)">
+              {dateFmt.format(a.data.publishDate)}
+            </time>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>

@@ -107,6 +107,48 @@ function main() {
   }
   write('standings.json', standings);
 
+  // ---- SofaScore predicted signals (dev source), keyed by unordered team pair
+  // "<a>__<b>" sorted, so the H2H page can look up regardless of home/away.
+  const ssMatches = db
+    .prepare(
+      `SELECT id, home_team_id AS h, away_team_id AS a FROM ss_match
+       WHERE home_team_id IS NOT NULL AND away_team_id IS NOT NULL`,
+    )
+    .all() as { id: number; h: string; a: string }[];
+  const pairKey = (x: string, y: string) => [x, y].sort().join('__');
+
+  // votes keyed by pair (oriented to the stored home/away)
+  const voteRows = db
+    .prepare(`SELECT match_id AS id, vote_home AS vh, vote_draw AS vd, vote_away AS va FROM ss_vote`)
+    .all() as { id: number; vh: number; vd: number; va: number }[];
+  const voteByMatch = new Map(voteRows.map((v) => [v.id, v]));
+
+  const predRows = db
+    .prepare(
+      `SELECT match_id AS id, team_id AS teamId, side, formation, player_name AS name,
+              position AS pos, jersey, substitute
+       FROM ss_predicted_lineup_player WHERE confirmed=0 ORDER BY match_id, side, substitute`,
+    )
+    .all() as Array<{ id: number; teamId: string; side: string; formation: string; name: string; pos: string; jersey: string; substitute: number }>;
+
+  // Assemble per-pair: { votes:{home,draw,away,homeId,awayId}, lineups:{teamId:{formation,starters[],subs[]}} }
+  const ssByPair: Record<string, any> = {};
+  for (const m of ssMatches) {
+    const key = pairKey(m.h, m.a);
+    const entry = (ssByPair[key] ??= { homeId: m.h, awayId: m.a, votes: null, lineups: {} });
+    const v = voteByMatch.get(m.id);
+    if (v) entry.votes = { homeId: m.h, awayId: m.a, home: v.vh, draw: v.vd, away: v.va };
+  }
+  for (const p of predRows) {
+    const m = ssMatches.find((x) => x.id === p.id);
+    if (!m || !p.teamId) continue;
+    const entry = ssByPair[pairKey(m.h, m.a)];
+    if (!entry) continue;
+    const lu = (entry.lineups[p.teamId] ??= { formation: p.formation, starters: [], subs: [] });
+    (p.substitute ? lu.subs : lu.starters).push({ name: p.name, pos: p.pos, jersey: p.jersey });
+  }
+  write('ss-by-pair.json', ssByPair);
+
   // match-goals.json — goalscorers keyed by match id
   const goalRows = db
     .prepare(
