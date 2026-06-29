@@ -1,0 +1,55 @@
+---
+import AnalysisLayout from '../../../layouts/AnalysisLayout.astro';
+import { provider } from '../../../lib/provider';
+
+const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
+---
+
+<AnalysisLayout
+  title="Power Ranking — World Cup 2026 Analysis"
+  description="All 48 World Cup 2026 teams ranked by our adjusted rating (Elo + tournament form + squad attack + host advantage). The model's view of who's strongest."
+  active="power"
+>
+  <h1 class="mb-1 text-2xl font-bold">Power ranking</h1>
+  <p class="mb-4 text-[13.5px] text-[var(--muted)]">
+    All 48 teams by adjusted rating: Elo plus tournament form, squad attack and host advantage.
+  </p>
+
+  <table class="w-full border-collapse text-[13.5px]">
+    <thead>
+      <tr class="text-[12px] uppercase tracking-wide text-[var(--muted)]">
+        <th class="border-b border-[var(--line)] px-2.5 py-2 text-right">#</th>
+        <th class="border-b border-[var(--line)] px-2.5 py-2">Team</th>
+        <th class="border-b border-[var(--line)] px-2.5 py-2 text-right">Strength</th>
+        <th class="border-b border-[var(--line)] px-2.5 py-2 text-right">Elo</th>
+        <th class="border-b border-[var(--line)] px-2.5 py-2 text-right">FIFA</th>
+        <th class="border-b border-[var(--line)] px-2.5 py-2 text-right">Adj</th>
+      </tr>
+    </thead>
+    <tbody>
+      {teams.map((t, i) => (
+        <tr>
+          <td class="border-b border-[var(--line)] px-2.5 py-2 text-right tabular-nums text-[var(--muted)]">
+            {i + 1}
+          </td>
+          <td class="border-b border-[var(--line)] px-2.5 py-2">
+            <a href={`/analysis/teams/${t.id}/`} class="font-semibold hover:text-[var(--accent)]">
+              {t.name}
+            </a>
+            <span class="ml-2 text-[11px] text-[var(--muted)]">{t.shortCode}</span>
+          </td>
+          <td class="border-b border-[var(--line)] px-2.5 py-2 text-right font-bold tabular-nums text-[var(--accent)]">
+            {t.strength}
+          </td>
+          <td class="border-b border-[var(--line)] px-2.5 py-2 text-right tabular-nums">{t.elo}</td>
+          <td class="border-b border-[var(--line)] px-2.5 py-2 text-right tabular-nums text-[var(--muted)]">
+            #{t.fifaRank}
+          </td>
+          <td class="border-b border-[var(--line)] px-2.5 py-2 text-right tabular-nums">
+            {t.adjRating}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</AnalysisLayout>

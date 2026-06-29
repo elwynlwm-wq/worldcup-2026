@@ -1,0 +1,94 @@
+---
+// The analysis zone's shell — a dark analytics dashboard look, distinct from the
+// light blog. Theme is scoped to this layout via CSS variables on .analysis so it
+// never leaks into the rest of the site. Ported from the original prototype theme.
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** active nav key */
+  active?: string;
+  canonical?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { title, description, active = '', canonical, jsonLd } = Astro.props;
+
+const NAV: [string, string][] = [
+  ['', 'Overview'],
+  ['predict', 'Predict'],
+  ['power', 'Power ranking'],
+  ['teams', 'Teams'],
+  ['bracket', 'Bracket'],
+];
+const href = (key: string) => (key ? `/analysis/${key}/` : '/analysis/');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
+  </head>
+  <body class="analysis min-h-screen">
+    <header
+      class="sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur"
+    >
+      <div class="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
+        <a href="/" class="text-[15px] font-extrabold tracking-tight whitespace-nowrap">
+          WC<span class="text-[var(--accent)]">26</span>
+          <span class="text-[var(--muted)]">· Analysis</span>
+        </a>
+        <nav class="flex flex-1 flex-wrap gap-1">
+          {NAV.map(([key, label]) => (
+            <a
+              href={href(key)}
+              class:list={[
+                'rounded-lg px-3 py-1.5 text-[13.5px] font-semibold',
+                active === key
+                  ? 'bg-[var(--accent)] text-[#04130b]'
+                  : 'text-[var(--muted)] hover:bg-[var(--panel2)] hover:text-[var(--text)]',
+              ]}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <a href="/articles" class="text-[13px] text-[var(--muted)] hover:text-[var(--text)]"
+          >← Blog</a
+        >
+      </div>
+    </header>
+
+    <div class="mx-auto max-w-5xl px-4 pb-20">
+      <slot />
+      <footer class="pt-10 pb-3 text-center text-xs text-[var(--muted)]">
+        Real data to late June 2026 (Wikipedia, NBC Sports, SI, eloratings.net, FIFA ranking).<br />
+        Forecasts are a transparent model (Elo + tournament form + squad + host advantage), not
+        betting advice.
+      </footer>
+    </div>
+
+    <style>
+      .analysis {
+        --bg: #0c1118;
+        --panel: #141b26;
+        --panel2: #1b2533;
+        --line: #26324a;
+        --text: #e8eef7;
+        --muted: #93a2bd;
+        --accent: #28d17c;
+        --accent2: #3da5ff;
+        --warn: #ffb020;
+        --danger: #ff5d5d;
+        background: var(--bg);
+        color: var(--text);
+      }
+    </style>
+  </body>
+</html>

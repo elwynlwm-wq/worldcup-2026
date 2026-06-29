@@ -1,0 +1,55 @@
+---
+import AnalysisLayout from '../../../layouts/AnalysisLayout.astro';
+import { provider } from '../../../lib/provider';
+
+// Group teams by their group letter for a tidy 12-group overview.
+const groups = provider.getGroups();
+const getTeam = (id: string) => provider.getTeam(id)!;
+
+const qualLabel: Record<string, string> = {
+  winner: '1st ✓',
+  runner_up: '2nd ✓',
+  best_third: '3rd ✓',
+  eliminated: 'out',
+};
+---
+
+<AnalysisLayout
+  title="Teams — World Cup 2026 Analysis"
+  description="All 48 World Cup 2026 teams by group: final standings, qualification status, and a link through to each team's squad, coach and forecast factors."
+  active="teams"
+>
+  <h1 class="mb-1 text-2xl font-bold">Teams</h1>
+  <p class="mb-4 text-[13.5px] text-[var(--muted)]">All 48 teams, by group.</p>
+
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {groups.map((g) => (
+      <div class="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5">
+        <h2 class="mb-2 text-sm font-bold">{g.name}</h2>
+        <ul class="grid gap-1">
+          {g.standings.map((s) => {
+            const t = getTeam(s.teamId);
+            return (
+              <li>
+                <a
+                  href={`/analysis/teams/${t.id}/`}
+                  class="flex items-center justify-between rounded-lg px-2 py-1 hover:bg-[var(--panel2)]"
+                >
+                  <span class="font-medium">{t.name}</span>
+                  <span
+                    class:list={[
+                      'text-[11px]',
+                      s.status === 'eliminated' ? 'text-[var(--danger)]' : 'text-[var(--accent)]',
+                    ]}
+                  >
+                    {qualLabel[s.status] ?? 'live'}
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    ))}
+  </div>
+</AnalysisLayout>

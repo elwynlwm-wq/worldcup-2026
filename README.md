@@ -2,8 +2,6 @@
 
 A free, content-driven site for the 2026 World Cup: analysis, match previews and reviews, and predictions, plus a transparent forecast model. Aimed at casual-to-seasonal fans, not hardcore analysts — the goal is to be the most useful and entertaining free read on the tournament. **SEO is the top priority.**
 
-**Live (prototype):** https://worldcup-site-ten.vercel.app *(the current single-file prototype; being migrated — see below)*
-
 ## Where we're headed
 
 The site is being built as **two planes** (see [docs/architecture.md](./docs/architecture.md)):
@@ -25,29 +23,31 @@ Astro · Preact (islands) · MDX (Content Collections) · Tailwind + Typography 
 - [docs/product-spec.md](./docs/product-spec.md) — the **data plane** spec (entities, freshness, provider). Scope-noted.
 - [docs/data-model.md](./docs/data-model.md) — the **data plane** SSOT schema. Scope-noted.
 
-## Current state of the repo
+## Run it locally
 
-- `index.html` — the original self-contained prototype (data + Elo prediction model + UI in one file). This is the **legacy prototype**, kept until its analysis is ported into the Astro site. It is no longer the source of truth.
-- `vercel.json` — leftover from the prototype's Vercel hosting. **Superseded by Cloudflare** ([docs/stack.md](./docs/stack.md)); will be removed at scaffold.
+```
+npm install
+npm run dev      # local dev server
+npm run build    # production build to dist/
+npm run preview  # serve the production build
+```
+
+## Repo layout
+
+- `src/pages/` — routes (home, `/articles`, `/analysis`).
+- `src/content/articles/` — the articles, as MDX. This is the content plane.
+- `src/layouts/` — page templates. `src/components/` — the reusable component library.
+- `src/content.config.ts` — the article schema (enforces SEO frontmatter at build time).
 - `docs/` — the documentation above.
 
-The Astro project has not been scaffolded yet — these docs come first, by design (our team works through AI tooling, so the docs are the shared interface).
-
-## How the prediction model works (prototype)
-
-In `index.html`, all data is real but **baked in** (a snapshot, not a live feed):
-
-- `GROUPS` — 48 teams, group standings.
-- `SQUADS_RAW` — every squad: position, name, age, club, caps, goals.
-- `RATINGS` — Elo + FIFA ranking per team (drives forecasts).
-- `REAL_R32` / `REAL_RESULTS` — confirmed knockout ties and group scorelines.
-- `predict()` — Elo expected score on an adjusted rating (Elo + tournament form + squad attack + host advantage) plus a draw term.
-
-When ported, the live/derived parts of this become the data plane; the explanatory writing becomes content-plane articles.
+> The original single-file prototype (`index.html`, with the Elo model and baked-in
+> tournament data) was removed when we migrated to Astro. It remains in git history at
+> commit `5c2d34b` — that's where to look to **port the forecast model** (`GROUPS`,
+> `RATINGS`, `predict()`, etc.) into the analysis section / data plane.
 
 ## Deploy
 
-Target is **Cloudflare Pages**: push to the repo → Cloudflare builds and deploys (branch/preview conventions set at scaffold). The current prototype still auto-deploys via Vercel until migration; don't add new work to the Vercel path.
+Target is **Cloudflare Pages**: push to the repo → Cloudflare builds and deploys (branch/preview conventions set when we connect the project).
 
 ## Working together
 

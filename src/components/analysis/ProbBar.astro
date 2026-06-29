@@ -1,0 +1,35 @@
+---
+// Win/draw/lose probability bar. Used by predictor + match views.
+import type { Team, Prediction } from '../../lib/model';
+interface Props {
+  home: Team;
+  away: Team;
+  pr: Prediction;
+}
+const { home, away, pr } = Astro.props;
+const pct = (x: number) => Math.round(x * 100);
+---
+
+<div class="my-3 flex h-[30px] overflow-hidden rounded-lg text-xs font-extrabold">
+  <div
+    class="flex min-w-[22px] items-center justify-center bg-[var(--accent)] text-[#04130b]"
+    style={`width:${pct(pr.win)}%`}
+  >
+    {pct(pr.win)}
+  </div>
+  <div
+    class="flex min-w-[22px] items-center justify-center bg-[var(--panel2)] text-[var(--muted)]"
+    style={`width:${pct(pr.draw)}%`}
+  >
+    {pct(pr.draw)}
+  </div>
+  <div
+    class="flex min-w-[22px] items-center justify-center bg-[var(--accent2)] text-[#04130b]"
+    style={`width:${pct(pr.lose)}%`}
+  >
+    {pct(pr.lose)}
+  </div>
+</div>
+<div class="flex justify-between text-[11px] text-[var(--muted)]">
+  <span>{home.shortCode} win</span><span>draw</span><span>{away.shortCode} win</span>
+</div>

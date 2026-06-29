@@ -29,19 +29,14 @@ When something is ambiguous, ask: *does this change because a person wrote it, o
 
 ## Current state
 
-- The Astro site is **not yet scaffolded** — docs come first by design.
-- `index.html` is the **legacy prototype** (single-file data + Elo model + UI), kept until its analysis is ported into Astro. Not the source of truth anymore. Don't add new features to it.
-- `vercel.json` is leftover and superseded by Cloudflare; it will be removed at scaffold.
+- The Astro site is scaffolded: `src/pages/` routes, `src/content/articles/` MDX, `src/layouts/`, `src/components/`, schema in `src/content.config.ts`. Run with `npm run dev`.
+- The original single-file prototype (`index.html`, Elo model + baked-in data) was removed at migration. It lives in git history at commit `5c2d34b` — that's the source for **porting the forecast model** into the analysis section / data plane.
 - `docs/product-spec.md` and `docs/data-model.md` are the **data plane's** spec/schema (scope-noted at the top), not the whole site.
 
 ## Deploy
 
-Target is **Cloudflare Pages** (push to deploy; conventions set at scaffold). The prototype still auto-deploys via Vercel until migration — don't add new work to the Vercel path, and don't deploy with a personal token.
+Target is **Cloudflare Pages** (push to deploy; conventions set when we connect the project). Don't deploy with a personal token; let the Git integration handle it.
 
 ## Common task: write an article
 
-Add an MDX file under the content directory with valid frontmatter (title, description, slug, date, etc.), following `docs/content-authoring.md` and `docs/seo.md`. Use components for anything beyond prose; pull live data from the data plane, never hand-copied. Verify it builds, commit with a clear message, push.
-
-## Common task: refresh prototype data (until migration)
-
-In `index.html`, update `GROUPS`, `RATINGS`, `REAL_R32`, `REAL_RESULTS` from the sources in `README.md`, verify the page renders, commit, push.
+Add an MDX file under `src/content/articles/` with valid frontmatter (title, description, publishDate, etc.), following `docs/content-authoring.md` and `docs/seo.md`. Use components for anything beyond prose; pull live data from the data plane, never hand-copied. Run `npm run build` to verify it builds (the schema fails the build on missing SEO fields), commit with a clear message, push.

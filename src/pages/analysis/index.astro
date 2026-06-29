@@ -1,21 +1,72 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnalysisLayout from '../../layouts/AnalysisLayout.astro';
+import ForecastBlock from '../../components/analysis/ForecastBlock.astro';
+import { provider } from '../../lib/provider';
 
-// Placeholder for the analysis section. This is where the ported Elo model
-// (from the legacy index.html prototype) and data-plane-driven analytics pages
-// will live. See docs/architecture.md — these pages use static or scheduled-rebuild
-// rendering, with live islands only for genuinely in-the-moment data.
+const fixtures = provider.getFixtures();
+const upcoming = fixtures.filter((m) => m.stage === 'r32');
+const top = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating).slice(0, 6);
+const getTeam = (id: string) => provider.getTeam(id)!;
 ---
 
-<BaseLayout
-  title="Analysis — World Cup 2026"
-  description="Predictions and data-driven analysis for the 2026 World Cup: forecasts, standings and the numbers behind who wins."
+<AnalysisLayout
+  title="World Cup 2026 Analysis — Forecasts, Power Ranking & Bracket"
+  description="Data-driven 2026 World Cup analysis: match forecasts from a transparent Elo model, a full power ranking of all 48 teams, and the knockout bracket."
+  active=""
 >
-  <section class="mx-auto max-w-3xl px-4 py-12">
-    <h1 class="text-4xl font-extrabold tracking-tight">Analysis</h1>
-    <p class="mt-4 text-lg text-gray-600">
-      Our predictions and data-driven analysis will live here. The forecast model from the
-      prototype is being ported into the site — see <code>docs/architecture.md</code>.
-    </p>
-  </section>
-</BaseLayout>
+  <div
+    class="my-4 rounded-xl border border-[var(--line)] bg-gradient-to-r from-[#16314a] to-[#15233a] px-4 py-2.5 text-[13px] text-[var(--muted)]"
+  >
+    <b class="text-[var(--accent2)]">Round of 32 · from 28 June.</b> Forecasts use real Elo ratings,
+    tournament form and squad strength. Final 19 July, MetLife Stadium.
+  </div>
+
+  <h1 class="mb-1 text-2xl font-bold">Analysis</h1>
+  <p class="text-[13.5px] text-[var(--muted)]">What's coming up, and who the model favours.</p>
+
+  <h2 class="mt-6 mb-2 text-lg font-bold">Upcoming ties</h2>
+  <div class="grid gap-3 sm:grid-cols-2">
+    {upcoming.map((m) => {
+      const h = getTeam(m.homeTeamId);
+      const a = getTeam(m.awayTeamId);
+      return (
+        <a
+          href={`/analysis/predict/?a=${h.id}&b=${a.id}`}
+          class="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5 transition hover:-translate-y-0.5 hover:border-[var(--accent)]"
+        >
+          <div class="flex items-center justify-between font-semibold">
+            <span>{h.name}</span>
+            <span class="text-[var(--muted)]">vs</span>
+            <span>{a.name}</span>
+          </div>
+          <div class="mt-1 text-[11px] text-[var(--muted)]">
+            {m.city} · {m.venue}
+          </div>
+        </a>
+      );
+    })}
+  </div>
+
+  <h2 class="mt-8 mb-2 text-lg font-bold">Title contenders</h2>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    {top.map((t) => (
+      <a
+        href={`/analysis/teams/${t.id}/`}
+        class="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5 transition hover:-translate-y-0.5 hover:border-[var(--accent)]"
+      >
+        <div class="flex items-center justify-between">
+          <b>{t.name}</b>
+          <span class="text-[var(--accent)]">{t.strength}</span>
+        </div>
+        <div class="mt-1 text-[11px] text-[var(--muted)]">
+          Elo {t.elo} · FIFA #{t.fifaRank} · Group {t.groupLetter}
+        </div>
+      </a>
+    ))}
+  </div>
+
+  <h2 class="mt-8 mb-2 text-lg font-bold">Featured forecast</h2>
+  {upcoming[0] && (
+    <ForecastBlock home={getTeam(upcoming[0].homeTeamId)} away={getTeam(upcoming[0].awayTeamId)} />
+  )}
+</AnalysisLayout>

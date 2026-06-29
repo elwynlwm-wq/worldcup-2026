@@ -1,0 +1,23 @@
+---
+import AnalysisLayout from '../../../layouts/AnalysisLayout.astro';
+import Predictor from '../../../components/analysis/Predictor.tsx';
+import { getPredictorTeams } from '../../../lib/predictorData';
+
+// This page is pre-rendered static. The optional ?a=&b= matchup in deep links
+// is read client-side by the island (query params aren't known at build time).
+const teams = getPredictorTeams();
+---
+
+<AnalysisLayout
+  title="Match Predictor — World Cup 2026 Analysis"
+  description="Pick any two of the 48 World Cup 2026 teams and see a live forecast: win/draw/lose probability and the rating factors behind it, from a transparent Elo model."
+  active="predict"
+>
+  <h1 class="mb-1 text-2xl font-bold">Match predictor</h1>
+  <p class="mb-4 text-[13.5px] text-[var(--muted)]">
+    Pick any two teams. The forecast updates live, computed from the same model the rest of the
+    site uses.
+  </p>
+
+  <Predictor client:load teams={teams} />
+</AnalysisLayout>

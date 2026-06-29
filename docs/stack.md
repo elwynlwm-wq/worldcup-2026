@@ -59,8 +59,6 @@ Layout and design freedom live in **layouts + a component library**, not in the 
 
 Deploy model: push to the repo → Cloudflare builds and deploys. (Exact branch/preview conventions documented when we wire up the project.)
 
-> Note: the repo currently contains `vercel.json` from the prototype phase. That is superseded by this Cloudflare decision and will be removed when we scaffold.
-
 ## Things we've deliberately not decided yet
 
 - The football data provider for the data plane (the prior spec proposes API-Football; that still stands as the leading candidate — see [product-spec.md](./product-spec.md)).
