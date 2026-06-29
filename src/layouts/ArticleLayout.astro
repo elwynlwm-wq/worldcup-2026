@@ -6,6 +6,7 @@ import type { CollectionEntry } from 'astro:content';
 import { provider } from '../lib/provider';
 import { teamGrad } from '../data/teamColors';
 import Flag from '../components/Flag.astro';
+import { fixtureForStory, matchHref } from '../lib/stories';
 
 interface Props {
   entry: CollectionEntry<'articles'>;
@@ -31,6 +32,10 @@ const [ta, tb] = matchTeams;
 const heroColor = ta ? teamGrad(ta.id) : 'var(--color-night)';
 const readMins = Math.max(1, Math.round((entry.body?.split(/\s+/).length ?? 200) / 200));
 const dateMed = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
+
+// Link back to the match this story is about (evergreen — no open/closed wording).
+const fixture = fixtureForStory(entry);
+const matchUrl = fixture ? matchHref(fixture) : null;
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -73,6 +78,10 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
         <div class="relative text-center"><div class="font-display text-[24px] font-black tracking-[.5px]" style="color:var(--color-gold)">VS</div></div>
         <div class="relative text-center"><div class="mx-auto mb-[9px] w-fit"><Flag team={tb.id} w={74} class="shadow-[0_6px_16px_-6px_rgba(0,0,0,.6)] !ring-1 !ring-white/25" /></div><b class="font-display text-[15px]">{tb.name}</b></div>
       </div>
+    )}
+
+    {matchUrl && (
+      <a href={matchUrl} class="mt-[6px] mb-[4px] inline-block text-[14px] font-bold" style="color:var(--color-royal)">Get match analytics! →</a>
     )}
 
     <div class="prose prose-lg mt-3.5 max-w-none prose-headings:font-display prose-headings:tracking-tight">
