@@ -5,6 +5,7 @@ import { provider } from '../../lib/provider';
 import { getAfFixtures } from '../../lib/warehouse';
 import standingsData from '../../../data-pipeline/warehouse/export/standings.json';
 import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 
 const getTeam = (id: string) => provider.getTeam(id);
 const fixtures = getAfFixtures();
@@ -75,9 +76,9 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
                   <div class="kb-tie">
                     <a href={matchHref(m)} class="kb-tie-card kb-card-hover rounded-[11px] border px-[11px] py-[9px]" style="background:#fff;border-color:#e9e1d2">
                       <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:#b3a890">{dateLabel(m.date)}</div>
-                      <div class="flex items-center gap-[7px]"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style={`background:${teamGrad(h.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)`}></span><b class="flex-1 text-[13px]">{h.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.homeScore ?? ''}</span></div>
+                      <div class="flex items-center gap-[7px]"><Flag team={h.id} w={22} /><b class="flex-1 text-[13px]">{h.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.homeScore ?? ''}</span></div>
                       <div class="my-1.5 h-px" style="background:#f1ebdf"></div>
-                      <div class="flex items-center gap-[7px]"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style={`background:${teamGrad(a.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)`}></span><b class="flex-1 text-[13px]">{a.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.awayScore ?? ''}</span></div>
+                      <div class="flex items-center gap-[7px]"><Flag team={a.id} w={22} /><b class="flex-1 text-[13px]">{a.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.awayScore ?? ''}</span></div>
                     </a>
                   </div>
                 );
