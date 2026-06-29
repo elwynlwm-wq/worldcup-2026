@@ -127,3 +127,18 @@ Decision notes:
 6. derive H2H records
 7. derive club + player tiers (our formula)
 8. export JSON slices + wire to provider seam
+
+## Deferred to v2 / data plane (Cloudflare Worker backend)
+
+When we stand up the CF Worker backend (for genuinely dynamic data — live scores, odds), fold in:
+
+- **H2H via backend, by SEO need (decided 29 Jun).** H2H has two consumers:
+  - *Overview featured forecast* (one fixed matchup): **stays static / pre-rendered** — it's
+    SEO-valuable copy that must be in the crawlable HTML.
+  - *Predict island* (any of 1,706 pairs, user-driven, not indexed anyway): **switch to backend
+    fetch** — drops the ~25KB inlined `h2h-by-team.json` from the page for zero SEO cost. The
+    provider seam makes this a one-line swap (island calls `getH2H(a,b)` → Worker instead of inlined).
+  - Rule: static pre-render where indexed; backend fetch where interactive. Don't move static,
+    indexed data to backend (adds a round-trip + failure mode + SEO risk for no gain).
+- **Live tiers (paid sources):** Sportmonks/Odds API during the tournament window.
+- **Wikidata enrichment:** explicit player→league names (deferred from v1).
