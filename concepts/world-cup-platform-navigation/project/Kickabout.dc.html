@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:#e7e2d4;color:#16181d;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  ::selection{background:#f3b50a}
+  @keyframes kb-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes kb-pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes kb-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .kb-route{animation:kb-rise .28s ease both}
+  .kb-card-hover{transition:transform .12s ease, box-shadow .12s ease}
+  .kb-card-hover:hover{transform:translateY(-3px)}
+  ::-webkit-scrollbar{height:10px;width:10px}
+  ::-webkit-scrollbar-thumb{background:#d8cfbf;border-radius:10px}
+  .kb-bracket{display:flex;overflow-x:auto;min-height:400px;padding-bottom:12px}
+  .kb-round{display:flex;flex-direction:column;min-width:172px;flex:none}
+  .kb-ties{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+  .kb-tie{position:relative;margin-right:30px}
+  .kb-round:not(:last-child) .kb-tie::after{content:"";position:absolute;right:-30px;top:50%;width:30px;height:2px;background:#ddd4c2}
+  .kb-round:not(:last-child) .kb-tie::before{content:"";position:absolute;right:-16px;top:50%;width:14px;height:2px;background:transparent}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+  <sc-if value="{{ appReady }}" hint-placeholder-val="{{ false }}">
+  <header style="position:sticky;top:0;z-index:40;background:rgba(231,226,212,.86);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid #e4dccd">
+    <div style="max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:13px 20px;flex-wrap:wrap">
+      <a href="#/" style="display:flex;align-items:center;gap:9px;font-family:'Archivo';font-weight:900;font-size:20px;letter-spacing:-.5px;flex:none">
+        <span style="width:30px;height:30px;border-radius:9px;background:#16181d;color:#f3b50a;display:flex;align-items:center;justify-content:center;font-size:16px;transform:rotate(-6deg)">⚽</span>
+        Kick<span style="color:#1f3fbf">about</span>
+      </a>
+      <nav style="display:flex;gap:3px;flex:1;flex-wrap:wrap">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+          <a href="{{ n.href }}" class="kb-nav" style="padding:8px 13px;border-radius:10px;font-weight:700;font-size:14px;color:{{ n.color }};background:{{ n.bg }}">{{ n.label }}</a>
+        </sc-for>
+      </nav>
+      <form onSubmit="{{ onSearchSubmit }}" style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #e4dccd;border-radius:11px;padding:8px 12px">
+        <span style="color:#a59a85;font-size:14px">⌕</span>
+        <input ref="{{ searchRef }}" placeholder="Search teams, players…" style="background:none;border:none;outline:none;color:#16181d;width:150px;font-size:14px;font-family:inherit" />
+      </form>
+    </div>
+  </header>
+
+  <main style="max-width:1080px;width:100%;margin:0 auto;padding:24px 20px 70px;flex:1">
+
+    <!-- ======================= HOME ======================= -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px">
+        <div>
+          <div style="font-family:'Archivo';font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#1f3fbf">World Cup 2026 · USA · Canada · Mexico</div>
+          <div style="color:#6f6655;font-size:14px;margin-top:3px">Pick how you like to follow along.</div>
+        </div>
+        <div style="display:flex;gap:4px;background:#fff;border:1px solid #e4dccd;border-radius:12px;padding:4px">
+          <sc-for list="{{ homeTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.onClick }}" style="border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;padding:8px 14px;border-radius:9px;color:{{ t.color }};background:{{ t.bg }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- DIRECTION A: Stories-first -->
+      <sc-if value="{{ isHomeStories }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <a href="{{ featured.href }}" class="kb-card-hover" style="display:block;background:{{ featured.heroColor }};border-radius:20px;padding:34px;color:#fff;margin:14px 0 24px;box-shadow:0 16px 38px -24px rgba(0,0,0,.55);position:relative;overflow:hidden;min-height:248px">
+          <img src="assets/hero.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5" />
+          <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(16,18,24,.9) 0%,rgba(16,18,24,.66) 52%,rgba(16,18,24,.25) 100%)"></div>
+          <div style="position:absolute;top:-30px;right:-30px;width:280px;height:280px;background:url('assets/pitch.svg') no-repeat center/contain;opacity:.5"></div>
+          <div style="position:relative;z-index:2">
+            <div style="display:inline-flex;align-items:center;gap:7px;font-family:'Archivo';font-weight:800;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;border:1.5px solid rgba(255,255,255,.5);padding:5px 11px;border-radius:4px">{{ featured.tag }}</div>
+            <div style="font-family:'Archivo';font-weight:900;font-size:40px;line-height:1.02;letter-spacing:-1px;margin:16px 0 10px;max-width:680px;text-wrap:balance">{{ featured.title }}</div>
+            <div style="font-family:'Newsreader',Georgia,serif;font-size:18px;opacity:.93;max-width:600px;line-height:1.45">{{ featured.dek }}</div>
+            <div style="margin-top:18px;font-size:13px;font-weight:700;letter-spacing:.3px;color:#f3b50a">{{ featured.byline }} · READ THE STORY →</div>
+          </div>
+        </a>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+          <h2 style="font-family:'Archivo';font-weight:800;font-size:22px;margin:0">Latest stories</h2>
+          <a href="#/stories" style="color:#1f3fbf;font-weight:700;font-size:14px">All stories →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px">
+          <sc-for list="{{ storyCards }}" as="s" hint-placeholder-count="4">
+            <a href="{{ s.href }}" class="kb-card-hover" style="display:flex;flex-direction:column;background:#fff;border:1px solid #e9e1d2;border-radius:16px;overflow:hidden">
+              <div style="padding:16px 17px 18px;display:flex;flex-direction:column;gap:8px;flex:1">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-family:'Archivo';font-weight:800;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:{{ s.accent }}"><span style="width:9px;height:9px;border-radius:2px;background:{{ s.accent }}"></span>{{ s.kindLabel }}</span>
+                  <span style="color:#b3a890;font-size:12px">· {{ s.dateLabel }}</span>
+                </div>
+                <div style="font-family:'Archivo';font-weight:800;font-size:18.5px;line-height:1.12;letter-spacing:-.4px;text-wrap:balance">{{ s.title }}</div>
+                <div style="color:#6f6655;font-size:14px;line-height:1.4;flex:1">{{ s.dek }}</div>
+                <div style="display:flex;align-items:center;gap:7px;margin-top:2px;padding-top:11px;border-top:1px solid #f1ebdf">
+                  <span style="display:flex;gap:3px">
+                    <span style="width:22px;height:15px;border-radius:3px;background:{{ s.aGrad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+                    <span style="width:22px;height:15px;border-radius:3px;background:{{ s.bGrad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+                  </span>
+                  <span style="color:#8a7f6a;font-size:12px;font-weight:700;letter-spacing:.3px">{{ s.matchup }}</span>
+                </div>
+              </div>
+            </a>
+          </sc-for>
+        </div>
+        <div style="margin-top:26px;background:#fff;border:1px solid #e9e1d2;border-radius:16px;padding:18px 20px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+            <h2 style="font-family:'Archivo';font-weight:800;font-size:18px;margin:0">Coming up</h2>
+            <a href="#/matches" style="color:#1f3fbf;font-weight:700;font-size:13.5px">All matches →</a>
+          </div>
+          <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px">
+            <sc-for list="{{ nextMatches }}" as="m" hint-placeholder-count="4">
+              <a href="{{ m.href }}" class="kb-card-hover" style="flex:none;width:215px;background:#faf6ee;border:1px solid #ece4d4;border-radius:13px;padding:13px">
+                <div style="font-size:11px;font-weight:700;color:#a59a85;text-transform:uppercase;letter-spacing:.6px">{{ m.dateLabel }} · {{ m.stageLabel }}</div>
+                <div style="display:flex;align-items:center;gap:7px;margin-top:9px"><span style="width:24px;height:17px;border-radius:4px;background:{{ m.home.grad }}"></span><b style="font-size:14px">{{ m.home.name }}</b></div>
+                <div style="display:flex;align-items:center;gap:7px;margin-top:6px"><span style="width:24px;height:17px;border-radius:4px;background:{{ m.away.grad }}"></span><b style="font-size:14px">{{ m.away.name }}</b></div>
+                <div style="margin-top:10px;font-size:12px;font-weight:700;color:#1f3fbf">{{ m.favLine }}</div>
+              </a>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- DIRECTION B: Today / matchday -->
+      <sc-if value="{{ isHomeToday }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin:14px 0 24px" class="kb-home-grid">
+          <div style="position:relative;overflow:hidden;background:#16181d;border-radius:20px;padding:26px;color:#fff">
+            <div style="position:absolute;bottom:-40px;left:50%;transform:translateX(-50%);width:340px;height:240px;background:url('assets/pitch.svg') no-repeat center/contain;opacity:.5;pointer-events:none"></div>
+            <div style="position:relative;z-index:2">
+            <div style="font-family:'Archivo';font-weight:800;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#f3b50a">Next up · {{ todayMatch.dateLabel }}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin:20px 0 6px">
+              <div style="flex:1;text-align:center">
+                <div style="width:62px;height:44px;border-radius:9px;background:{{ todayMatch.home.grad }};margin:0 auto 9px"></div>
+                <div style="font-family:'Archivo';font-weight:800;font-size:17px">{{ todayMatch.home.name }}</div>
+              </div>
+              <div style="font-family:'Archivo';font-weight:900;font-size:22px;color:#6f6655">VS</div>
+              <div style="flex:1;text-align:center">
+                <div style="width:62px;height:44px;border-radius:9px;background:{{ todayMatch.away.grad }};margin:0 auto 9px"></div>
+                <div style="font-family:'Archivo';font-weight:800;font-size:17px">{{ todayMatch.away.name }}</div>
+              </div>
+            </div>
+            <div style="text-align:center;color:#a59a85;font-size:13px;margin-bottom:18px">{{ todayMatch.stageLabel }} · {{ todayMatch.where }}</div>
+            <div style="text-align:center;font-family:'Archivo';font-weight:800;font-size:14px;letter-spacing:.5px;margin-bottom:10px">WHO DO YOU THINK WINS?</div>
+            <div style="display:flex;gap:10px">
+              <a href="{{ todayMatch.href }}" style="flex:1;text-align:center;padding:13px;border-radius:11px;background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), {{ todayMatch.home.c1 }};font-weight:800;font-family:'Archivo';color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)">{{ todayMatch.home.code }}</a>
+              <a href="{{ todayMatch.href }}" style="flex:none;align-self:center;padding:0 6px;color:#6f6655;font-size:12px;font-weight:700">draw</a>
+              <a href="{{ todayMatch.href }}" style="flex:1;text-align:center;padding:13px;border-radius:11px;background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), {{ todayMatch.away.c1 }};font-weight:800;font-family:'Archivo';color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)">{{ todayMatch.away.code }}</a>
+            </div>
+            <div style="text-align:center;margin-top:12px"><a href="{{ todayMatch.href }}" style="color:#f3b50a;font-weight:700;font-size:13px">Vote &amp; see our prediction →</a></div>
+            </div>
+          </div>
+          <a href="{{ featured.href }}" class="kb-card-hover" style="position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;background:{{ featured.heroColor }};border-radius:20px;padding:22px;color:#fff;min-height:230px">
+            <img src="assets/hero.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5" />
+            <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(16,18,24,.92) 0%,rgba(16,18,24,.5) 60%,rgba(16,18,24,.2) 100%)"></div>
+            <div style="position:relative;z-index:2">
+            <div style="display:inline-flex;font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;border:1.5px solid rgba(255,255,255,.5);padding:4px 9px;border-radius:4px">{{ featured.tag }}</div>
+            <div style="font-family:'Archivo';font-weight:900;font-size:25px;line-height:1.05;letter-spacing:-.6px;margin:10px 0 8px;text-wrap:balance">{{ featured.title }}</div>
+            <div style="font-family:'Newsreader',Georgia,serif;font-size:14.5px;opacity:.92;line-height:1.4">{{ featured.dek }}</div>
+            <div style="margin-top:12px;font-size:12px;font-weight:700;letter-spacing:.3px;color:#f3b50a">READ THE STORY →</div>
+            </div>
+          </a>
+        </div>
+        <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:0 0 12px">More ties this weekend</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
+          <sc-for list="{{ nextMatches }}" as="m" hint-placeholder-count="4">
+            <a href="{{ m.href }}" class="kb-card-hover" style="display:block;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px">
+              <div style="font-size:11px;font-weight:700;color:#a59a85;text-transform:uppercase;letter-spacing:.6px">{{ m.dateLabel }} · {{ m.stageLabel }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px">
+                <div style="display:flex;align-items:center;gap:7px"><span style="width:26px;height:19px;border-radius:4px;background:{{ m.home.grad }}"></span><b>{{ m.home.code }}</b></div>
+                <span style="color:#cabf a9;font-size:12px;font-weight:700;color:#b3a890">vs</span>
+                <div style="display:flex;align-items:center;gap:7px"><b>{{ m.away.code }}</b><span style="width:26px;height:19px;border-radius:4px;background:{{ m.away.grad }}"></span></div>
+              </div>
+              <div style="margin-top:11px;height:9px;border-radius:6px;overflow:hidden;display:flex">
+                <span style="width:{{ m.homePct }}%;background:#1f3fbf"></span><span style="width:{{ m.drawPct }}%;background:#d8cfbf"></span><span style="width:{{ m.awayPct }}%;background:#2b2e36"></span>
+              </div>
+              <div style="margin-top:8px;font-size:12px;font-weight:700;color:#6f6655">{{ m.favLine }}</div>
+            </a>
+          </sc-for>
+        </div>
+        <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:26px 0 12px">Title contenders</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+          <sc-for list="{{ contenders }}" as="t" hint-placeholder-count="6">
+            <a href="{{ t.href }}" class="kb-card-hover" style="display:block;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:14px">
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:30px;height:21px;border-radius:5px;background:{{ t.grad }}"></span><b style="font-size:15px">{{ t.name }}</b></div>
+              <div style="margin-top:9px;display:flex;align-items:center;gap:7px"><span style="font-family:'Archivo';font-weight:900;font-size:18px;color:#1f3fbf">{{ t.strength }}</span><span style="font-size:12px;color:#a59a85">power · #{{ t.fifaRank }} world</span></div>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- DIRECTION C: Tournament pulse -->
+      <sc-if value="{{ isHomePulse }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:13px;margin:14px 0 24px">
+          <sc-for list="{{ pulseStats }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:15px;padding:18px">
+              <div style="font-family:'Archivo';font-weight:900;font-size:32px;letter-spacing:-1px;color:{{ k.color }}">{{ k.value }}</div>
+              <div style="color:#6f6655;font-size:13px;font-weight:600;margin-top:2px">{{ k.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" class="kb-home-grid">
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px">
+              <h2 style="font-family:'Archivo';font-weight:800;font-size:19px;margin:0">First knockout ties</h2>
+              <a href="#/bracket" style="color:#1f3fbf;font-weight:700;font-size:13.5px">Bracket →</a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ nextMatches }}" as="m" hint-placeholder-count="4">
+                <a href="{{ m.href }}" class="kb-card-hover" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:13px 15px">
+                  <div style="display:flex;align-items:center;gap:8px;flex:1"><span style="width:28px;height:20px;border-radius:4px;background:{{ m.home.grad }}"></span><b style="font-size:14px">{{ m.home.name }}</b></div>
+                  <div style="font-size:11px;color:#a59a85;font-weight:700;text-align:center;flex:none;padding:0 8px">{{ m.dateLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end"><b style="font-size:14px">{{ m.away.name }}</b><span style="width:28px;height:20px;border-radius:4px;background:{{ m.away.grad }}"></span></div>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px">
+              <h2 style="font-family:'Archivo';font-weight:800;font-size:19px;margin:0">Power top 8</h2>
+              <a href="#/power" style="color:#1f3fbf;font-weight:700;font-size:13.5px">Full ranking →</a>
+            </div>
+            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;overflow:hidden">
+              <sc-for list="{{ powerTop }}" as="t" hint-placeholder-count="8">
+                <a href="{{ t.href }}" style="display:flex;align-items:center;gap:11px;padding:10px 15px;border-bottom:1px solid #f1ebdf">
+                  <span style="font-family:'Archivo';font-weight:900;font-size:15px;color:#b3a890;width:20px">{{ t.rankLabel }}</span>
+                  <span style="width:28px;height:20px;border-radius:4px;background:{{ t.grad }}"></span>
+                  <b style="flex:1;font-size:14.5px">{{ t.name }}</b>
+                  <span style="font-family:'Archivo';font-weight:900;font-size:16px;color:#1f3fbf">{{ t.strength }}</span>
+                </a>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px">
+          <h2 style="font-family:'Archivo';font-weight:800;font-size:19px;margin:0">Read up before the weekend</h2>
+          <a href="#/stories" style="color:#1f3fbf;font-weight:700;font-size:13.5px">All stories →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+          <sc-for list="{{ storyCardsShort }}" as="s" hint-placeholder-count="3">
+            <a href="{{ s.href }}" class="kb-card-hover" style="display:block;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px">
+              <span style="display:inline-flex;align-items:center;gap:6px;font-family:'Archivo';font-weight:800;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:{{ s.accent }}"><span style="width:9px;height:9px;border-radius:2px;background:{{ s.accent }}"></span>{{ s.kindLabel }}</span>
+              <div style="font-family:'Archivo';font-weight:800;font-size:16.5px;line-height:1.15;margin:7px 0 6px;text-wrap:balance">{{ s.title }}</div>
+              <div style="color:#6f6655;font-size:13.5px;line-height:1.4">{{ s.dek }}</div>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ======================= STORIES HUB ======================= -->
+    <sc-if value="{{ isStories }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Stories</h1>
+      <p style="color:#6f6655;font-size:15px;margin:0 0 18px;max-width:560px">Previews of what's coming and verdicts on what just happened — the data, in plain English.</p>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <sc-for list="{{ storyFilters }}" as="f" hint-placeholder-count="3">
+          <button onClick="{{ f.onClick }}" style="border:1px solid {{ f.border }};cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;padding:7px 15px;border-radius:999px;color:{{ f.color }};background:{{ f.bg }}">{{ f.label }}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ isTeamFiltered }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:13px 16px;margin-bottom:18px">
+          <span style="width:34px;height:24px;border-radius:5px;background:{{ teamFilterFlag }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+          <b style="font-family:'Archivo';font-size:17px;flex:1">{{ teamFilterName }} · stories</b>
+          <a href="#/stories" style="color:#1f3fbf;font-weight:700;font-size:13.5px">Clear ✕</a>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showFeatured }}" hint-placeholder-val="{{ true }}">
+      <a href="{{ featured.href }}" class="kb-card-hover" style="position:relative;display:grid;grid-template-columns:1.2fr 1fr;background:{{ featured.heroColor }};border-radius:20px;overflow:hidden;color:#fff;margin-bottom:22px;min-height:230px" class="kb-feature-wide">
+        <div style="position:relative;z-index:2;padding:30px;display:flex;flex-direction:column;justify-content:center">
+          <div style="display:inline-flex;align-self:flex-start;font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;border:1.5px solid rgba(255,255,255,.5);padding:5px 10px;border-radius:4px">{{ featured.tag }}</div>
+          <div style="font-family:'Archivo';font-weight:900;font-size:32px;line-height:1.04;letter-spacing:-.8px;margin:14px 0 9px;text-wrap:balance">{{ featured.title }}</div>
+          <div style="font-family:'Newsreader',Georgia,serif;font-size:16px;opacity:.93;line-height:1.45;max-width:460px">{{ featured.dek }}</div>
+          <div style="margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.3px;color:#f3b50a">{{ featured.byline }} · {{ featured.read }} MIN READ</div>
+        </div>
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:16px;padding:20px;overflow:hidden">
+          <img src="assets/hero.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42" />
+          <div style="position:absolute;inset:0;background:url('assets/pitch.svg') no-repeat center/contain;opacity:.5"></div>
+          <span style="position:relative;width:78px;height:56px;border-radius:7px;background:{{ featured.aGrad }};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)"></span>
+          <span style="position:relative;font-family:'Archivo';font-weight:900;font-size:18px;opacity:.85">vs</span>
+          <span style="position:relative;width:78px;height:56px;border-radius:7px;background:{{ featured.bGrad }};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)"></span>
+        </div>
+      </a>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px">
+        <sc-for list="{{ storyList }}" as="s" hint-placeholder-count="6">
+          <a href="{{ s.href }}" class="kb-card-hover" style="display:flex;flex-direction:column;background:#fff;border:1px solid #e9e1d2;border-radius:16px;overflow:hidden">
+            <div style="padding:16px 17px 18px;display:flex;flex-direction:column;gap:8px;flex:1">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="display:inline-flex;align-items:center;gap:6px;font-family:'Archivo';font-weight:800;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:{{ s.accent }}"><span style="width:9px;height:9px;border-radius:2px;background:{{ s.accent }}"></span>{{ s.kindLabel }}</span>
+                <span style="color:#b3a890;font-size:12px">· {{ s.dateLabel }} · {{ s.read }} min</span>
+              </div>
+              <div style="font-family:'Archivo';font-weight:800;font-size:18.5px;line-height:1.12;letter-spacing:-.4px;text-wrap:balance">{{ s.title }}</div>
+              <div style="color:#6f6655;font-size:14px;line-height:1.4;flex:1">{{ s.dek }}</div>
+              <div style="display:flex;align-items:center;gap:7px;margin-top:2px;padding-top:11px;border-top:1px solid #f1ebdf">
+                <span style="display:flex;gap:3px">
+                  <span style="width:22px;height:15px;border-radius:3px;background:{{ s.aGrad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+                  <span style="width:22px;height:15px;border-radius:3px;background:{{ s.bGrad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+                </span>
+                <span style="color:#8a7f6a;font-size:12px;font-weight:700;letter-spacing:.3px">{{ s.matchup }}</span>
+              </div>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ======================= STORY DETAIL ======================= -->
+    <sc-if value="{{ isStory }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <sc-if value="{{ story.ok }}" hint-placeholder-val="{{ true }}">
+      <article style="max-width:680px;margin:0 auto">
+        <a href="#/stories" style="color:#a59a85;font-weight:700;font-size:13.5px">← All stories</a>
+        <div style="margin:18px 0 0;display:flex;align-items:center;gap:9px">
+          <span style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:{{ story.accent }}">{{ story.kindLabel }}</span>
+          <span style="color:#b3a890;font-size:13px">· {{ story.dateLabel }} · {{ story.read }} min read</span>
+        </div>
+        <h1 style="font-family:'Archivo';font-weight:900;font-size:38px;line-height:1.03;letter-spacing:-1px;margin:12px 0 12px;text-wrap:balance">{{ story.title }}</h1>
+        <p style="font-family:'Newsreader',Georgia,serif;font-size:20px;color:#3f3a30;line-height:1.45;margin:0 0 22px;font-weight:500">{{ story.dek }}</p>
+        <div style="position:relative;overflow:hidden;background:{{ story.heroColor }};border-radius:16px;padding:26px 22px;display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;margin-bottom:8px;min-height:150px">
+          <img src="assets/story.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4" />
+          <div style="position:absolute;inset:0;background:url('assets/pitch.svg') no-repeat center/cover;opacity:.45"></div>
+          <div style="position:relative;text-align:center"><div style="width:74px;height:52px;border-radius:8px;background:{{ story.aGrad }};margin:0 auto 9px;box-shadow:0 6px 16px -6px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)"></div><b style="font-family:'Archivo';font-size:15px">{{ story.aName }}</b></div>
+          <div style="position:relative;text-align:center"><div style="font-family:'Archivo';font-weight:900;font-size:24px;letter-spacing:.5px;color:#f3b50a">{{ story.midLabel }}</div></div>
+          <div style="position:relative;text-align:center"><div style="width:74px;height:52px;border-radius:8px;background:{{ story.bGrad }};margin:0 auto 9px;box-shadow:0 6px 16px -6px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)"></div><b style="font-family:'Archivo';font-size:15px">{{ story.bName }}</b></div>
+        </div>
+        <sc-if value="{{ story.hasMatch }}" hint-placeholder-val="{{ false }}">
+          <a href="{{ story.matchHref }}" style="display:inline-block;margin:6px 0 4px;color:#1f3fbf;font-weight:700;font-size:14px">{{ story.matchCta }} →</a>
+        </sc-if>
+        <div style="font-family:'Newsreader',Georgia,serif;font-size:18.5px;line-height:1.6;color:#23252b;margin-top:14px">
+          <sc-for list="{{ story.body }}" as="para" hint-placeholder-count="3">
+            <p style="margin:0 0 18px">{{ para.t }}</p>
+          </sc-for>
+        </div>
+        <div style="border-top:1px solid #e4dccd;margin-top:14px;padding-top:16px;color:#a59a85;font-size:13px">{{ story.byline }}. Built on real squads, standings and our prediction model — not betting advice.</div>
+      </article>
+      </sc-if>
+      <sc-if value="{{ story.missing }}" hint-placeholder-val="{{ false }}">
+        <h1 style="font-family:'Archivo';font-weight:900;font-size:30px">Story not found</h1>
+        <a href="#/stories" style="color:#1f3fbf;font-weight:700">← Back to stories</a>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ======================= MATCHES ======================= -->
+    <sc-if value="{{ isMatches }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Matches</h1>
+          <p style="color:#6f6655;font-size:15px;margin:0">What's next, what just happened, and who we think wins.</p>
+        </div>
+        <a href="#/predict" class="kb-card-hover" style="display:inline-flex;align-items:center;gap:8px;background:#16181d;color:#fff;font-weight:700;font-size:14px;padding:11px 16px;border-radius:12px">⚡ Predict any matchup</a>
+      </div>
+      <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:26px 0 12px">Round of 32 · this weekend</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:15px">
+        <sc-for list="{{ nextMatches }}" as="m" hint-placeholder-count="4">
+          <a href="{{ m.href }}" class="kb-card-hover" style="display:block;background:#fff;border:1px solid #e9e1d2;border-radius:16px;padding:17px">
+            <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;font-weight:700;color:#a59a85;text-transform:uppercase;letter-spacing:.6px">{{ m.dateLabel }} · {{ m.stageLabel }}</span><span style="font-size:11px;color:#b3a890">{{ m.where }}</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:13px 0 4px">
+              <div style="display:flex;align-items:center;gap:9px;flex:1"><span style="width:34px;height:24px;border-radius:5px;background:{{ m.home.grad }}"></span><b style="font-size:16px">{{ m.home.name }}</b></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px"><span style="width:34px;height:24px;border-radius:5px;background:{{ m.away.grad }}"></span><b style="font-size:16px">{{ m.away.name }}</b></div>
+            <div style="margin-top:13px;height:10px;border-radius:6px;overflow:hidden;display:flex">
+              <span style="width:{{ m.homePct }}%;background:#1f3fbf"></span><span style="width:{{ m.drawPct }}%;background:#d8cfbf"></span><span style="width:{{ m.awayPct }}%;background:#2b2e36"></span>
+            </div>
+            <div style="margin-top:8px;font-size:13px;font-weight:700;color:#6f6655">{{ m.favLine }} · tap to vote</div>
+          </a>
+        </sc-for>
+      </div>
+      <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:28px 0 12px">Recent results</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ recentResults }}" as="m" hint-placeholder-count="5">
+          <a href="{{ m.href }}" class="kb-card-hover" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:13px 16px">
+            <div style="display:flex;align-items:center;gap:9px;flex:1"><span style="width:30px;height:21px;border-radius:4px;background:{{ m.home.grad }}"></span><b style="font-size:15px">{{ m.home.name }}</b></div>
+            <div style="font-family:'Archivo';font-weight:900;font-size:18px;flex:none;padding:0 14px">{{ m.scoreLabel }}</div>
+            <div style="display:flex;align-items:center;gap:9px;flex:1;justify-content:flex-end"><b style="font-size:15px">{{ m.away.name }}</b><span style="width:30px;height:21px;border-radius:4px;background:{{ m.away.grad }}"></span></div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ======================= PREDICTOR ======================= -->
+    <sc-if value="{{ isPredict }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Predict a match</h1>
+      <p style="color:#6f6655;font-size:15px;margin:0 0 18px">Pick any two of the 48 teams. We'll tell you who's favoured — and why, in plain English.</p>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+        <select onChange="{{ onPredA }}" style="font-family:inherit;font-size:15px;font-weight:600;padding:11px 14px;border-radius:12px;border:1px solid #e4dccd;background:#fff;color:#16181d">
+          <sc-for list="{{ teamOptionsA }}" as="o" hint-placeholder-count="8"><option value="{{ o.id }}" selected="{{ o.selected }}">{{ o.name }}</option></sc-for>
+        </select>
+        <span style="font-family:'Archivo';font-weight:900;color:#b3a890">VS</span>
+        <select onChange="{{ onPredB }}" style="font-family:inherit;font-size:15px;font-weight:600;padding:11px 14px;border-radius:12px;border:1px solid #e4dccd;background:#fff;color:#16181d">
+          <sc-for list="{{ teamOptionsB }}" as="o" hint-placeholder-count="8"><option value="{{ o.id }}" selected="{{ o.selected }}">{{ o.name }}</option></sc-for>
+        </select>
+      </div>
+      <sc-if value="{{ showdown.ok }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="ShowdownPanel" sd="{{ showdown }}" hint-size="100%,560px"></dc-import>
+      </sc-if>
+      <sc-if value="{{ showdown.same }}" hint-placeholder-val="{{ false }}">
+        <p style="color:#a59a85;font-weight:600;margin-top:20px">Pick two different teams to see a forecast.</p>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ======================= MATCH DETAIL ======================= -->
+    <sc-if value="{{ isMatch }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <sc-if value="{{ matchVM.ok }}" hint-placeholder-val="{{ true }}">
+      <a onClick="{{ goBack }}" style="cursor:pointer;color:#a59a85;font-weight:700;font-size:13.5px">← Back</a>
+      <div style="font-size:13px;color:#a59a85;font-weight:600;margin:14px 0 6px">{{ matchVM.metaLine }}</div>
+      <div style="display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:14px 18px">
+        <div style="display:flex;align-items:center;gap:11px;flex:1;min-width:0">
+          <span style="width:40px;height:28px;border-radius:5px;background:{{ matchVM.home.grad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+          <b style="font-family:'Archivo';font-size:18px;letter-spacing:-.3px">{{ matchVM.home.name }}</b>
+        </div>
+        <div style="font-family:'Archivo';font-weight:900;font-size:22px;color:#16181d;flex:none;padding:0 6px">{{ matchVM.centerLabel }}</div>
+        <div style="display:flex;align-items:center;gap:11px;flex:1;justify-content:flex-end;min-width:0">
+          <b style="font-family:'Archivo';font-size:18px;letter-spacing:-.3px;text-align:right">{{ matchVM.away.name }}</b>
+          <span style="width:40px;height:28px;border-radius:5px;background:{{ matchVM.away.grad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+        </div>
+      </div>
+      <sc-if value="{{ matchVM.hasStory }}" hint-placeholder-val="{{ false }}">
+        <a href="{{ matchVM.storyHref }}" class="kb-card-hover" style="display:flex;align-items:center;gap:14px;margin-top:12px;background:{{ matchVM.storyGrad }};border-radius:14px;padding:15px 18px;color:#fff">
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-family:'Archivo';font-weight:800;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;opacity:.85">{{ matchVM.storyKind }}</span>
+            <span style="display:block;font-family:'Archivo';font-weight:800;font-size:17.5px;line-height:1.15;margin-top:3px;text-wrap:balance">{{ matchVM.storyTitle }}</span>
+          </span>
+          <span style="flex:none;font-size:13px;font-weight:700;color:#f3b50a">{{ matchVM.storyCta }}</span>
+        </a>
+      </sc-if>
+      <div style="display:flex;gap:4px;background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:4px;margin-top:14px;width:fit-content">
+        <sc-for list="{{ matchVM.tabs }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.onClick }}" style="border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;padding:8px 17px;border-radius:9px;color:{{ t.color }};background:{{ t.bg }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ matchVM.showPrediction }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="ShowdownPanel" sd="{{ showdown }}" hint-size="100%,560px"></dc-import>
+      </sc-if>
+
+      <sc-if value="{{ matchVM.showStats }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:600px;margin:18px auto 0">
+          <sc-if value="{{ matchVM.hasGoals }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px 18px;margin-bottom:14px">
+              <div style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#a59a85;text-align:center;margin-bottom:11px">⚽ Goals</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ matchVM.scorers.home }}" as="g" hint-placeholder-count="2">
+                    <div style="font-size:14px"><b>{{ g.name }}</b> <span style="color:#a59a85;font-weight:700">{{ g.minute }}'</span></div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;text-align:right">
+                  <sc-for list="{{ matchVM.scorers.away }}" as="g" hint-placeholder-count="1">
+                    <div style="font-size:14px"><span style="color:#a59a85;font-weight:700">{{ g.minute }}'</span> <b>{{ g.name }}</b></div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+          <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:6px 18px 14px">
+            <div style="display:flex;align-items:center;justify-content:center;gap:11px;padding:13px 0 9px;border-bottom:1px solid #f1ebdf;margin-bottom:6px">
+              <span style="width:26px;height:18px;border-radius:3px;background:{{ matchVM.home.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+              <b style="font-family:'Archivo';font-size:14px">{{ matchVM.home.code }}</b>
+              <span style="font-family:'Archivo';font-weight:900;font-size:16px;padding:0 4px">{{ matchVM.centerLabel }}</span>
+              <b style="font-family:'Archivo';font-size:14px">{{ matchVM.away.code }}</b>
+              <span style="width:26px;height:18px;border-radius:3px;background:{{ matchVM.away.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+            </div>
+            <sc-for list="{{ matchVM.stats }}" as="s" hint-placeholder-count="10">
+              <div style="padding:8px 0;border-bottom:1px solid #f4eee1">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                  <b style="font-family:'Archivo';font-size:14px;width:52px">{{ s.home }}</b>
+                  <span style="color:#6f6655;font-weight:600;font-size:12.5px">{{ s.label }}</span>
+                  <b style="font-family:'Archivo';font-size:14px;width:52px;text-align:right">{{ s.away }}</b>
+                </div>
+                <div style="display:flex;gap:5px;height:5px">
+                  <span style="flex:1;display:flex;justify-content:flex-end;background:#f0e9db;border-radius:3px;overflow:hidden"><span style="width:{{ s.homePct }}%;background:#1f3fbf;border-radius:3px"></span></span>
+                  <span style="flex:1;background:#f0e9db;border-radius:3px;overflow:hidden"><span style="display:block;width:{{ s.awayPct }}%;height:100%;background:#2b2e36;border-radius:3px"></span></span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">
+            <sc-for list="{{ matchVM.facts }}" as="f" hint-placeholder-count="3">
+              <div style="background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:11px 13px">
+                <div style="font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#a59a85">{{ f.label }}</div>
+                <div style="font-size:13.5px;font-weight:700;margin-top:3px;line-height:1.25">{{ f.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:12px;color:#a59a85;font-size:12px;text-align:center">Sample data for layout — live stats, goals and match facts arrive from the data feed.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ matchVM.showLineups }}" hint-placeholder-val="{{ false }}">
+        <p style="color:#6f6655;font-size:13.5px;margin:16px 0 12px">{{ matchVM.lineupNote }}</p>
+        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:14px">
+          <sc-for list="{{ matchVM.lineupTeams }}" as="t" hint-placeholder-count="2">
+            <button onClick="{{ t.onClick }}" style="border:1.5px solid {{ t.border }};cursor:pointer;font-family:inherit;font-weight:800;font-size:13.5px;padding:8px 18px;border-radius:999px;color:{{ t.color }};background:{{ t.bg }}">{{ t.name }}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ matchVM.lineupPager }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:12px">
+            <button onClick="{{ matchVM.onPrevLineup }}" style="border:1px solid #e4dccd;background:#fff;cursor:pointer;width:34px;height:34px;border-radius:9px;font-family:'Archivo';font-size:17px;color:#16181d">‹</button>
+            <b style="font-family:'Archivo';font-size:14px;min-width:140px;text-align:center">{{ matchVM.lineupLabel }}</b>
+            <button onClick="{{ matchVM.onNextLineup }}" style="border:1px solid #e4dccd;background:#fff;cursor:pointer;width:34px;height:34px;border-radius:9px;font-family:'Archivo';font-size:17px;color:#16181d">›</button>
+          </div>
+        </sc-if>
+        <div style="perspective:1150px;max-width:440px;margin:6px auto 0;padding-top:42px">
+          <div style="position:relative;width:100%;aspect-ratio:3/4;transform:rotateX(40deg);transform-style:preserve-3d;transform-origin:center 56%">
+            <div style="position:absolute;inset:0;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#1d212b 0%,#14171e 100%);border:1px solid #2a2e38;box-shadow:0 22px 40px -18px rgba(0,0,0,.7)">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.022) 0 9%,transparent 9% 18%)"></div>
+              <div style="position:absolute;left:10px;right:10px;top:10px;bottom:10px;border:1.5px solid rgba(255,255,255,.18);border-radius:8px"></div>
+              <div style="position:absolute;left:10px;right:10px;top:50%;height:1.5px;background:rgba(255,255,255,.18)"></div>
+              <div style="position:absolute;left:50%;top:50%;width:84px;height:84px;border:1.5px solid rgba(255,255,255,.18);border-radius:50%;transform:translate(-50%,-50%)"></div>
+              <div style="position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.32);transform:translate(-50%,-50%)"></div>
+              <div style="position:absolute;left:50%;top:10px;transform:translateX(-50%);width:50%;height:12%;border:1.5px solid rgba(255,255,255,.16);border-top:none;border-radius:0 0 6px 6px"></div>
+              <div style="position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:50%;height:12%;border:1.5px solid rgba(255,255,255,.16);border-bottom:none;border-radius:6px 6px 0 0"></div>
+            </div>
+            <sc-for list="{{ matchVM.lineups }}" as="p" hint-placeholder-count="11">
+              <a href="{{ p.href }}" style="position:absolute;left:{{ p.x }}%;top:{{ p.y }}%;transform:translate(-50%,-100%) rotateX(-40deg);transform-origin:bottom center;transform-style:preserve-3d;width:80px;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center">
+                <span style="position:relative;width:42px;height:38px;filter:drop-shadow(0 4px 5px rgba(0,0,0,.6))">
+                  <svg viewBox="0 0 64 56" style="width:100%;height:100%;display:block"><path d="M20 6 L6 13 L11 25 L19 22 L19 50 L45 50 L45 22 L53 25 L58 13 L44 6 C44 12 38 15 32 15 C26 15 20 12 20 6 Z" fill="{{ p.fill }}" stroke="rgba(255,255,255,.92)" stroke-width="2.5" stroke-linejoin="round"></path></svg>
+                  <span style="position:absolute;left:0;right:0;top:48%;transform:translateY(-50%);font-family:'Archivo';font-weight:900;font-size:14px;color:{{ p.numColor }};text-shadow:0 1px 2px rgba(0,0,0,.45)">{{ p.number }}</span>
+                </span>
+                <span style="font-size:10px;font-weight:800;font-family:'Archivo';color:#fff;background:rgba(0,0,0,.62);padding:2px 6px;border-radius:4px;line-height:1.1;white-space:nowrap">{{ p.name }}</span>
+              </a>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ matchVM.lineupPager }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:center;gap:8px;margin-top:13px">
+            <sc-for list="{{ matchVM.lineupDots }}" as="d" hint-placeholder-count="3">
+              <button onClick="{{ d.onClick }}" style="border:none;cursor:pointer;width:9px;height:9px;border-radius:50%;padding:0;background:{{ d.color }}"></button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="text-align:center;margin-top:12px"><a href="{{ matchVM.selTeamHref }}" style="color:#1f3fbf;font-weight:700;font-size:13.5px">Full {{ matchVM.selTeamName }} squad →</a></div>
+      </sc-if>
+
+      <div style="margin-top:18px;display:flex;gap:18px">
+        <a href="{{ matchVM.home.href }}" style="color:#1f3fbf;font-weight:700;font-size:14px">{{ matchVM.home.name }} squad →</a>
+        <a href="{{ matchVM.away.href }}" style="color:#1f3fbf;font-weight:700;font-size:14px">{{ matchVM.away.name }} squad →</a>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ======================= TEAMS ======================= -->
+    <sc-if value="{{ isTeams }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Teams</h1>
+      <p style="color:#6f6655;font-size:15px;margin:0 0 16px">All 48 nations. Tap a flag to dive into the squad.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px">
+        <select onChange="{{ onConfChange }}" style="font-family:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:11px;border:1px solid #e4dccd;background:#fff">
+          <sc-for list="{{ confOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o.id }}" selected="{{ o.selected }}">{{ o.label }}</option></sc-for>
+        </select>
+        <select onChange="{{ onGroupChange }}" style="font-family:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:11px;border:1px solid #e4dccd;background:#fff">
+          <sc-for list="{{ groupOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o.id }}" selected="{{ o.selected }}">{{ o.label }}</option></sc-for>
+        </select>
+        <span style="color:#a59a85;font-size:13px;font-weight:600">{{ teamCount }} teams</span>
+        <a href="#/power" style="margin-left:auto;color:#1f3fbf;font-weight:700;font-size:13.5px">Power ranking →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:13px">
+        <sc-for list="{{ teamsList }}" as="t" hint-placeholder-count="12">
+          <a href="{{ t.href }}" class="kb-card-hover" style="display:block;background:#fff;border:1px solid #e9e1d2;border-radius:15px;overflow:hidden">
+            <div style="height:46px;background:{{ t.grad }}"></div>
+            <div style="padding:13px 15px 15px">
+              <b style="font-size:15.5px;display:block;letter-spacing:-.2px">{{ t.name }}</b>
+              <div style="color:#a59a85;font-size:12px;margin-top:2px">Group {{ t.groupLetter }} · {{ t.confederation }}</div>
+              <div style="margin-top:9px;display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;color:{{ t.statusColor }};background:{{ t.statusBg }}">{{ t.statusLabel }}</div>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ======================= TEAM DETAIL ======================= -->
+    <sc-if value="{{ isTeam }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <sc-if value="{{ teamVM.ok }}" hint-placeholder-val="{{ true }}">
+      <a onClick="{{ goBack }}" style="cursor:pointer;color:#a59a85;font-weight:700;font-size:13.5px">← Back</a>
+      <div style="background:{{ teamVM.c1 }};border-radius:20px;padding:28px;color:#fff;margin-top:14px;position:relative;overflow:hidden;min-height:150px">
+        <img src="assets/team.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4" />
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,{{ teamVM.c1 }} 0%,rgba(0,0,0,.15) 100%);mix-blend-mode:multiply"></div>
+        <div style="position:absolute;top:50%;right:24px;transform:translateY(-50%);display:flex;gap:6px">
+          <span style="width:54px;height:38px;border-radius:6px;background:{{ teamVM.c1 }};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)"></span>
+          <span style="width:54px;height:38px;border-radius:6px;background:{{ teamVM.c2 }};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)"></span>
+        </div>
+        <div style="position:relative;z-index:2">
+          <div style="font-family:'Archivo';font-weight:900;font-size:40px;letter-spacing:-1px;text-shadow:0 2px 12px rgba(0,0,0,.35)">{{ teamVM.name }}</div>
+          <div style="font-weight:700;font-size:14px;opacity:.95;margin-top:4px;text-shadow:0 1px 6px rgba(0,0,0,.4)">Group {{ teamVM.groupLetter }} · {{ teamVM.confederation }} · {{ teamVM.statusLabel }}</div>
+          <div style="font-size:14px;opacity:.9;margin-top:6px;text-shadow:0 1px 6px rgba(0,0,0,.4)">Coach: {{ teamVM.coach }}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:16px">
+        <sc-for list="{{ teamVM.kpis }}" as="k" hint-placeholder-count="4">
+          <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px"><div style="font-family:'Archivo';font-weight:900;font-size:26px;letter-spacing:-.5px;color:#16181d">{{ k.value }}</div><div style="color:#6f6655;font-size:12.5px;font-weight:600;margin-top:1px">{{ k.label }}</div></div>
+        </sc-for>
+      </div>
+      <a href="{{ teamVM.predictHref }}" class="kb-card-hover" style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:#16181d;color:#fff;font-weight:700;font-size:14px;padding:11px 16px;border-radius:12px">⚡ Predict a match for {{ teamVM.name }}</a>
+      <sc-if value="{{ teamVM.hasMatches }}" hint-placeholder-val="{{ false }}">
+        <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:26px 0 12px">Matches</h2>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ teamVM.matches }}" as="m" hint-placeholder-count="2">
+            <a href="{{ m.href }}" class="kb-card-hover" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:12px 15px">
+              <div style="display:flex;align-items:center;gap:8px;flex:1"><span style="width:28px;height:20px;border-radius:4px;background:{{ m.home.grad }}"></span><b style="font-size:14px">{{ m.home.name }}</b></div>
+              <div style="font-family:'Archivo';font-weight:900;font-size:15px;flex:none;padding:0 12px">{{ m.centerLabel }}</div>
+              <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end"><b style="font-size:14px">{{ m.away.name }}</b><span style="width:28px;height:20px;border-radius:4px;background:{{ m.away.grad }}"></span></div>
+            </a>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ teamVM.hasStories }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px">
+          <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:0">Stories</h2>
+          <a href="{{ teamVM.storiesHref }}" style="color:#1f3fbf;font-weight:700;font-size:13.5px">All {{ teamVM.name }} stories →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+          <sc-for list="{{ teamVM.stories }}" as="s" hint-placeholder-count="2">
+            <a href="{{ s.href }}" class="kb-card-hover" style="display:flex;flex-direction:column;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px">
+              <span style="display:inline-flex;align-items:center;gap:6px;font-family:'Archivo';font-weight:800;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:{{ s.accent }}"><span style="width:9px;height:9px;border-radius:2px;background:{{ s.accent }}"></span>{{ s.kindLabel }}</span>
+              <div style="font-family:'Archivo';font-weight:800;font-size:17px;line-height:1.15;margin:8px 0 6px;text-wrap:balance">{{ s.title }}</div>
+              <div style="color:#6f6655;font-size:13.5px;line-height:1.4;flex:1">{{ s.dek }}</div>
+              <div style="display:flex;align-items:center;gap:7px;margin-top:11px;padding-top:11px;border-top:1px solid #f1ebdf">
+                <span style="display:flex;gap:3px"><span style="width:22px;height:15px;border-radius:3px;background:{{ s.aGrad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span><span style="width:22px;height:15px;border-radius:3px;background:{{ s.bGrad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span></span>
+                <span style="color:#8a7f6a;font-size:12px;font-weight:700">{{ s.matchup }}</span>
+              </div>
+            </a>
+          </sc-for>
+        </div>
+      </sc-if>
+      <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:26px 0 6px">Star players</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:18px">
+        <sc-for list="{{ teamVM.stars }}" as="p" hint-placeholder-count="3">
+          <a href="{{ p.href }}" class="kb-card-hover" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:13px 15px">
+            <img src="assets/avatar.png" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
+            <div style="flex:1;min-width:0"><b style="font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><div style="color:#a59a85;font-size:12px">{{ p.posName }} · {{ p.club }}</div></div>
+            <div style="text-align:right;flex:none"><div style="font-family:'Archivo';font-weight:900;font-size:16px;color:#1f3fbf">{{ p.goals }}</div><div style="color:#a59a85;font-size:11px">goals</div></div>
+          </a>
+        </sc-for>
+      </div>
+      <sc-for list="{{ teamVM.posGroups }}" as="g" hint-placeholder-count="4">
+        <h3 style="font-family:'Archivo';font-weight:800;font-size:15px;margin:18px 0 9px;color:#6f6655">{{ g.label }}</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:9px">
+          <sc-for list="{{ g.players }}" as="p" hint-placeholder-count="4">
+            <a href="{{ p.href }}" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
+              <img src="assets/avatar.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:1.5px solid {{ p.posColor }};background:#e7e2d4" />
+              <span style="font-family:'Archivo';font-weight:800;font-size:10.5px;color:#fff;background:{{ p.posColor }};padding:3px 7px;border-radius:6px;flex:none">{{ p.pos }}</span>
+              <span style="flex:1;min-width:0"><b style="font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><span style="color:#a59a85;font-size:11.5px">{{ p.metaLine }}</span></span>
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ======================= POWER RANKING ======================= -->
+    <sc-if value="{{ isPower }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Power ranking</h1>
+      <p style="color:#6f6655;font-size:15px;margin:0 0 6px;max-width:620px">All 48 teams, strongest first. Our <b>power score</b> blends each team's rating, world ranking, how they've played here and squad firepower — higher is stronger.</p>
+      <a href="#/teams" style="color:#1f3fbf;font-weight:700;font-size:13.5px">Browse teams →</a>
+      <div style="background:#fff;border:1px solid #e9e1d2;border-radius:16px;overflow:hidden;margin-top:16px">
+        <sc-for list="{{ powerList }}" as="t" hint-placeholder-count="12">
+          <a href="{{ t.href }}" style="display:flex;align-items:center;gap:13px;padding:11px 16px;border-bottom:1px solid #f1ebdf">
+            <span style="font-family:'Archivo';font-weight:900;font-size:16px;color:#b3a890;width:26px;text-align:center">{{ t.rankLabel }}</span>
+            <span style="width:34px;height:24px;border-radius:5px;background:{{ t.grad }};flex:none"></span>
+            <span style="flex:1;min-width:0"><b style="font-size:15px">{{ t.name }}</b><span style="color:#a59a85;font-size:12px;margin-left:8px">{{ t.statusLabel }}</span></span>
+            <span style="flex:none;width:120px"><span style="display:block;height:8px;border-radius:5px;background:#f0e9db;overflow:hidden"><span style="display:block;height:100%;width:{{ t.strength }}%;background:linear-gradient(90deg,#1f3fbf,#f3b50a)"></span></span></span>
+            <span style="font-family:'Archivo';font-weight:900;font-size:18px;color:#16181d;width:38px;text-align:right">{{ t.strength }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ======================= BRACKET / GROUPS ======================= -->
+    <sc-if value="{{ isBracket }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Bracket &amp; groups</h1>
+      <p style="color:#6f6655;font-size:15px;margin:0 0 18px;max-width:620px">{{ bracketNote }}</p>
+      <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:0 0 4px">The road to the final</h2>
+      <p style="color:#a59a85;font-size:13px;margin:0 0 8px">Scroll right to follow the path to the final on 19 July.</p>
+      <div class="kb-bracket">
+        <sc-for list="{{ bracketCols }}" as="c" hint-placeholder-count="5">
+          <div class="kb-round">
+            <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:12px"><span style="font-family:'Archivo';font-weight:800;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#16181d">{{ c.title }}</span><span style="font-size:10.5px;color:#a59a85;font-weight:600">{{ c.count }}</span></div>
+            <div class="kb-ties">
+              <sc-for list="{{ c.ties }}" as="t" hint-placeholder-count="2">
+                <div class="kb-tie">
+                  <a href="{{ t.href }}" class="kb-card-hover" style="display:block;background:{{ t.bg }};border:1px solid #e9e1d2;border-radius:11px;padding:9px 11px;cursor:{{ t.cursor }}">
+                    <div style="font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#b3a890;margin-bottom:6px;height:11px">{{ t.dateLabel }}</div>
+                    <div style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:15px;border-radius:3px;background:{{ t.home.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);flex:none"></span><b style="flex:1;font-size:13px;color:{{ t.textColor }}">{{ t.home.code }}</b><span style="font-family:'Archivo';font-weight:800;font-size:12px;color:#16181d">{{ t.homeScore }}</span></div>
+                    <div style="height:1px;background:#f1ebdf;margin:6px 0"></div>
+                    <div style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:15px;border-radius:3px;background:{{ t.away.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);flex:none"></span><b style="flex:1;font-size:13px;color:{{ t.textColor }}">{{ t.away.code }}</b><span style="font-family:'Archivo';font-weight:800;font-size:12px;color:#16181d">{{ t.awayScore }}</span></div>
+                  </a>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px;flex-wrap:wrap;gap:8px">
+        <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:0">Groups</h2>
+        <div style="display:flex;gap:14px;font-size:12px;font-weight:700;color:#6f6655">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#138a5e"></span>Through</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#f3b50a"></span>In contention</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#d8cfbf"></span>Out</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px">
+        <sc-for list="{{ groupsVM }}" as="g" hint-placeholder-count="12">
+          <div style="background:#fff;border:1px solid #e9e1d2;border-radius:15px;overflow:hidden">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px 9px">
+              <span style="font-family:'Archivo';font-weight:800;font-size:15px">{{ g.name }}</span>
+              <span style="font-size:10px;font-weight:700;color:#b3a890;letter-spacing:.5px">P GD PTS</span>
+            </div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+              <a href="{{ r.href }}" style="display:flex;align-items:center;gap:9px;padding:9px 15px;border-top:1px solid #f4eee1;background:{{ r.rowBg }}">
+                <span style="width:6px;height:6px;border-radius:50%;background:{{ r.accent }};flex:none"></span>
+                <span style="font-family:'Archivo';font-weight:800;font-size:12px;color:#a59a85;width:10px">{{ r.rank }}</span>
+                <span style="width:26px;height:18px;border-radius:4px;background:{{ r.grad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+                <b style="flex:1;font-size:13.5px;color:{{ r.nameColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</b>
+                <span style="font-size:12.5px;color:#b3a890;font-variant-numeric:tabular-nums;width:16px;text-align:center">{{ r.played }}</span>
+                <span style="font-size:12.5px;color:#6f6655;font-variant-numeric:tabular-nums;width:30px;text-align:center">{{ r.gd }}</span>
+                <b style="font-family:'Archivo';font-size:14px;font-variant-numeric:tabular-nums;width:20px;text-align:right">{{ r.pts }}</b>
+              </a>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ======================= PLAYERS ======================= -->
+    <sc-if value="{{ isPlayers }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Players</h1>
+      <p style="color:#6f6655;font-size:15px;margin:0 0 16px">{{ playerTotal }} players across every squad. The biggest names, by international goals.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+        <select onChange="{{ onPosChange }}" style="font-family:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:11px;border:1px solid #e4dccd;background:#fff">
+          <sc-for list="{{ posOptions }}" as="o" hint-placeholder-count="5"><option value="{{ o.id }}" selected="{{ o.selected }}">{{ o.label }}</option></sc-for>
+        </select>
+        <select onChange="{{ onSortChange }}" style="font-family:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:11px;border:1px solid #e4dccd;background:#fff">
+          <sc-for list="{{ sortOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.id }}" selected="{{ o.selected }}">{{ o.label }}</option></sc-for>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+        <sc-for list="{{ playerList }}" as="p" hint-placeholder-count="12">
+          <a href="{{ p.href }}" class="kb-card-hover" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">
+            <img src="assets/avatar.png" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
+            <span style="width:26px;height:18px;border-radius:3px;background:{{ p.teamGrad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+            <div style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><div style="color:#a59a85;font-size:12px">{{ p.metaLine }}</div></div>
+            <div style="text-align:right;flex:none"><div style="font-family:'Archivo';font-weight:900;font-size:15px;color:#1f3fbf">{{ p.statValue }}</div><div style="color:#a59a85;font-size:10.5px">{{ p.statLabel }}</div></div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ======================= PLAYER DETAIL ======================= -->
+    <sc-if value="{{ isPlayer }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <sc-if value="{{ playerVM.ok }}" hint-placeholder-val="{{ true }}">
+      <a onClick="{{ goBack }}" style="cursor:pointer;color:#a59a85;font-weight:700;font-size:13.5px">← Back</a>
+      <div style="display:flex;align-items:center;gap:18px;margin-top:16px">
+        <img src="assets/avatar.png" alt="" style="width:84px;height:84px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:3px solid {{ playerVM.posColor }};background:#e7e2d4" />
+        <div>
+          <h1 style="font-family:'Archivo';font-weight:900;font-size:32px;letter-spacing:-.8px;margin:0">{{ playerVM.name }}</h1>
+          <div style="color:#6f6655;font-size:14.5px;margin-top:3px">{{ playerVM.posName }} · <a href="{{ playerVM.teamHref }}" style="color:#1f3fbf;font-weight:700">{{ playerVM.teamName }}</a> · {{ playerVM.club }}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:20px">
+        <sc-for list="{{ playerVM.kpis }}" as="k" hint-placeholder-count="4">
+          <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:16px"><div style="font-family:'Archivo';font-weight:900;font-size:28px;letter-spacing:-.5px">{{ k.value }}</div><div style="color:#6f6655;font-size:12.5px;font-weight:600;margin-top:1px">{{ k.label }}</div></div>
+        </sc-for>
+      </div>
+      <div style="margin-top:18px;background:#fff;border:1px solid #e9e1d2;border-left:4px solid #f3b50a;border-radius:12px;padding:15px 18px;color:#6f6655;font-size:14px">Live tournament stats — minutes, goals this World Cup, match ratings — would stream in from a live data feed. These figures are career international totals.</div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ======================= SEARCH ======================= -->
+    <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+    <div class="kb-route">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:30px;letter-spacing:-.8px;margin:4px 0 16px">{{ searchHeading }}</h1>
+      <sc-if value="{{ search.hasTeams }}" hint-placeholder-val="{{ false }}">
+        <h2 style="font-family:'Archivo';font-weight:800;font-size:18px;margin:0 0 11px">Teams</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:11px;margin-bottom:22px">
+          <sc-for list="{{ search.teams }}" as="t" hint-placeholder-count="3">
+            <a href="{{ t.href }}" class="kb-card-hover" style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:12px 14px"><span style="width:30px;height:21px;border-radius:4px;background:{{ t.grad }}"></span><b>{{ t.name }}</b></a>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ search.hasPlayers }}" hint-placeholder-val="{{ false }}">
+        <h2 style="font-family:'Archivo';font-weight:800;font-size:18px;margin:0 0 11px">Players</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+          <sc-for list="{{ search.players }}" as="p" hint-placeholder-count="6">
+            <a href="{{ p.href }}" class="kb-card-hover" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">
+              <img src="assets/avatar.png" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
+              <span style="width:26px;height:18px;border-radius:3px;background:{{ p.teamGrad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+              <div style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><div style="color:#a59a85;font-size:12px">{{ p.metaLine }}</div></div>
+            </a>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ search.empty }}" hint-placeholder-val="{{ false }}">
+        <p style="color:#a59a85;font-weight:600">No matches. Try a team or player name.</p>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isNotFound }}" hint-placeholder-val="{{ false }}">
+      <h1 style="font-family:'Archivo';font-weight:900;font-size:30px">Page not found</h1>
+      <a href="#/" style="color:#1f3fbf;font-weight:700">← Home</a>
+    </sc-if>
+
+  </main>
+
+  <footer style="border-top:1px solid #e4dccd;padding:24px 20px;text-align:center;color:#a59a85;font-size:12.5px;line-height:1.6">
+    <b style="color:#6f6655">Kickabout</b> · Squads, standings, fixtures and ratings are real, current to late June 2026.<br/>
+    Our forecast is a transparent model (team rating + form + squad + home advantage), not betting advice. Stories are editorial.
+  </footer>
+  </sc-if>
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:14px;color:#a59a85">
+      <div style="width:46px;height:46px;border-radius:13px;background:#16181d;color:#f3b50a;display:flex;align-items:center;justify-content:center;font-size:24px;animation:kb-pop .5s ease both">⚽</div>
+      <div style="font-family:'Archivo';font-weight:800;font-size:15px;letter-spacing:.5px">Warming up the pitch…</div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { ready:false, seg:'', id:null, params:{}, homeView:'stories', votes:{}, sf:'all', tick:0, matchTab:'', lineupIdx:0, lineupTeam:'' };
+
+  componentDidMount(){
+    try{ this.setState({ homeView: localStorage.getItem('kb_home') || 'stories', votes: JSON.parse(localStorage.getItem('kb_votes')||'{}') }); }catch(e){}
+    this._onHash = ()=> this.parseHash();
+    window.addEventListener('hashchange', this._onHash);
+    this.parseHash();
+    import('./data.js').then(d=>{ this.DB = this.build(d); this.setState({ready:true}); })
+      .catch(err=>{ console.error('data load failed', err); });
+  }
+  componentWillUnmount(){ window.removeEventListener('hashchange', this._onHash); }
+
+  // ---------- routing ----------
+  parseHash(){
+    const raw = (location.hash||'').replace(/^#\/?/, '');
+    const [path, qs] = raw.split('?');
+    const parts = path.split('/');
+    const params = {};
+    if(qs) qs.split('&').forEach(kv=>{ const [k,v]=kv.split('='); params[k]=decodeURIComponent(v||''); });
+    this.setState({ seg: parts[0]||'', id: parts[1]||null, params, matchTab:'', lineupIdx:0, lineupTeam:'' });
+    if(typeof window!=='undefined') window.scrollTo(0,0);
+  }
+  goBack = ()=>{ if(history.length>1) history.back(); else location.hash='#/'; };
+
+  // ---------- helpers ----------
+  slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+  expScore(d){ return 1/(1+Math.pow(10,-d/400)); }
+  predict(a,b){
+    const d=a.adjRating-b.adjRating, E=this.expScore(d);
+    let draw=0.28*Math.exp(-Math.abs(d)/220);
+    let win=E-draw/2, lose=1-win-draw;
+    if(win<0.01)win=0.01; if(lose<0.01)lose=0.01;
+    const s=win+draw+lose;
+    return { win:win/s, draw:draw/s, lose:lose/s, d };
+  }
+  pct(x){ return Math.round(x*100); }
+  initials(n){ return (n||'').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+  dateLabel(iso){ if(!iso) return ''; const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const d=iso.slice(0,10).split('-'); if(d.length<3) return iso; return (+d[2])+' '+M[(+d[1])-1]; }
+
+  // ---------- build the database ----------
+  build(D){
+    const COACHES={}, SQUADS={};
+    D.SQUADS_RAW.forEach(([team,coach,players])=>{
+      const id=this.slug(team); COACHES[id]=coach;
+      SQUADS[id]=players.map((p,i)=>({ id:id+'-'+i, teamId:id, pos:p[0], name:p[1], age:p[2], caps:p[3], goals:p[4], club:p[5] }));
+    });
+    const HOSTS=['united-states','canada','mexico'];
+    const aggMap={}, _gl=[];
+    Object.keys(SQUADS).forEach(id=>{ const sq=SQUADS[id]; const caps=sq.reduce((s,p)=>s+p.caps,0), goals=sq.reduce((s,p)=>s+p.goals,0); aggMap[id]={caps,goals}; _gl.push(goals); });
+    const avg=_gl.reduce((s,x)=>s+x,0)/_gl.length;
+    const sd=Math.sqrt(_gl.reduce((s,x)=>s+(x-avg)**2,0)/_gl.length)||1;
+
+    const teams=[], byId={}, byName={};
+    const POSCOLOR={GK:'#e0a200',DF:'#5b6470',MF:'#1f7a4d',FW:'#b23b2e'};
+    const groups=Object.keys(D.GROUPS).map(letter=>{
+      const standings=D.GROUPS[letter].map((row,i)=>{
+        const [name,code,conf,pts,gd,status]=row, id=this.slug(name);
+        const [elo,fifaRank]=D.RATINGS[id]||[1600,99];
+        const agg=aggMap[id]||{caps:0,goals:0};
+        const formAdj=Math.round(Math.max(-35,Math.min(35,(pts-4.5)*5+gd*2)));
+        const squadAdj=Math.round(Math.max(-20,Math.min(20,((agg.goals-avg)/sd)*10)));
+        const hostAdj=HOSTS.includes(id)?40:0;
+        const adjRating=elo+formAdj+squadAdj+hostAdj;
+        const cols=D.TEAM_COLORS[id]||['#555','#999'];
+        const through=['winner','runner_up','best_third'].includes(status);
+        const statusLabel = status==='winner'?'Through · 1st': status==='runner_up'?'Through · 2nd': status==='best_third'?'Through · 3rd': status==='eliminated'?'Eliminated':'Still alive';
+        const statusKind = through?'in': status==='eliminated'?'out':'live';
+        const t={ id,name,shortCode:code,confederation:conf,groupLetter:letter,
+          points:pts,goalDifference:gd,status, elo,fifaRank, formAdj,squadAdj,hostAdj,adjRating,
+          c1:cols[0],c2:cols[1],
+          gradColors:`linear-gradient(135deg,${cols[0]} 0%,${cols[0]} 48%,${cols[1]} 52%,${cols[1]} 100%)`,
+          grad:`url('assets/flags/${id}.svg') center/cover no-repeat, linear-gradient(135deg,${cols[0]} 0%,${cols[0]} 48%,${cols[1]} 52%,${cols[1]} 100%)`,
+          statusLabel, statusKind, qualified:through, coach:COACHES[id]||'—' };
+        teams.push(t); byId[id]=t; byName[name]=t;
+        return { teamId:id, rank:i+1, points:pts, goalDifference:gd, status };
+      });
+      return { id:'group-'+letter.toLowerCase(), name:'Group '+letter, letter, standings };
+    });
+    const ar=teams.map(t=>t.adjRating), mn=Math.min(...ar), mx=Math.max(...ar);
+    teams.forEach(t=>t.strength=Math.round(((t.adjRating-mn)/(mx-mn))*100));
+
+    const matches=[]; const groupMatches=[];
+    D.REAL_RESULTS.forEach((row,i)=>{
+      const [g,hn,an,hs,as]=row, h=byName[hn], a=byName[an]; if(!h||!a) return;
+      const m={ id:'gm-'+i, stage:'group', kickoff:'2026-06', status:'finished', homeTeamId:h.id, awayTeamId:a.id, homeScore:hs, awayScore:as, where:'Group stage' };
+      matches.push(m); groupMatches.push(m);
+    });
+    const r32=D.REAL_R32.map((row,i)=>{
+      const [hn,an,date,venue,city]=row, h=byName[hn], a=byName[an];
+      return { id:'r32-'+i, stage:'r32', kickoff:date+'T15:00', status:'scheduled', homeTeamId:h.id, awayTeamId:a.id, homeScore:null, awayScore:null, venue, city, where:[city,venue].filter(Boolean).join(' · ') };
+    });
+    matches.push(...r32);
+    const matchById={}; matches.forEach(m=>matchById[m.id]=m);
+
+    // resolve story matchKeys -> match ids
+    const storyByMatch={};
+    const stories=D.STORIES.map(s=>{
+      let matchId=null;
+      if(s.matchKey){
+        const [type, sl]=s.matchKey.split('|');
+        if(type==='r32') { const m=r32.find(x=>x.homeTeamId===sl); matchId=m&&m.id; }
+        else if(type==='group'){ const m=groupMatches.filter(x=>x.homeTeamId===sl)[0]; matchId=m&&m.id; }
+        else if(type==='group2'){ const m=groupMatches.filter(x=>x.homeTeamId===sl)[1]; matchId=m&&m.id; }
+      }
+      if(matchId) storyByMatch[matchId]=s.id;
+      return { ...s, matchId };
+    });
+    const storyById={}; stories.forEach(s=>storyById[s.id]=s);
+
+    return { teams, byId, byName, groups, matches, matchById, r32, groupMatches, SQUADS, COACHES,
+      allPlayers:Object.values(SQUADS).flat(), stories, storyById, storyByMatch, POSCOLOR,
+      ACCENT:{preview:'#11643f', recap:'#9d2730', feature:'#1f3fbf'},
+      HEROGRAD:{preview:'#11643f', recap:'#9d2730', feature:'#1f3fbf'},
+      KICKER:{preview:'Round of 32 · Preview', recap:'Match report', feature:'The big picture'} };
+  }
+
+  // ---------- view-model helpers ----------
+  chip(t){ return t ? { id:t.id, name:t.name, code:t.shortCode, grad:t.grad, c1:t.c1, c2:t.c2, href:'#/team/'+t.id } : { name:'TBD', code:'TBD', grad:'#d8cfbf', c1:'#5b6470', c2:'#8a8170', href:'#' }; }
+  POSNAME={GK:'Goalkeeper',DF:'Defender',MF:'Midfielder',FW:'Forward'};
+
+  storyCardVM(s){
+    const DB=this.DB; const a=DB.byId[s.teamA], b=DB.byId[s.teamB];
+    return { id:s.id, href:'#/story/'+s.id, title:s.title, dek:s.dek, dateLabel:this.dateLabel(s.date), read:s.read,
+      kindLabel: s.kind==='preview'?'Preview':s.kind==='recap'?'Match report':'The big picture',
+      accent:DB.ACCENT[s.kind], heroGrad:DB.HEROGRAD[s.kind],
+      aGrad:a?a.grad:'#d8cfbf', bGrad:b?b.grad:'#d8cfbf',
+      matchup:(a?a.shortCode:'')+(b?(' vs '+b.shortCode):'') };
+  }
+
+  // Build a likely 4-3-3 for ONE team across the full pitch (GK bottom). seed>0 rotates picks for alt/previous XIs.
+  buildXI(teamId, seed){
+    seed=seed||0;
+    const team=this.DB.byId[teamId]||{c1:'#5b6470'};
+    const sq=this.DB.SQUADS[teamId]||[];
+    const sorted=(pos,key)=>sq.filter(p=>p.pos===pos).slice().sort((a,b)=>(b[key]||0)-(a[key]||0));
+    const rot=(arr,n)=>{ if(!arr.length) return []; const s=seed%Math.max(1,arr.length); return arr.slice(s).concat(arr.slice(0,s)).slice(0,n); };
+    const gk=sorted('GK','caps').slice(0,1), df=rot(sorted('DF','caps'),4), mf=rot(sorted('MF','caps'),3), fw=rot(sorted('FW','goals'),3);
+    const rows=[ {p:gk,y:88,xs:[50]}, {p:df,y:70,xs:[15,38,62,85]}, {p:mf,y:49,xs:[26,50,74]}, {p:fw,y:28,xs:[21,50,79]} ];
+    const tokens=[]; let num=1;
+    rows.forEach(r=>{ r.p.forEach((pl,i)=>{
+      tokens.push({ x:r.xs[i], y:r.y, name:pl.name.split(' ').slice(-1)[0], number:String(num),
+        href:'#/player/'+pl.id, fill:(num===1?'#16181d':team.c1), numColor:'#fff' }); num++; }); });
+    return tokens;
+  }
+
+  setMatchTab=(t)=>this.setState({matchTab:t});
+  setLineup=(i)=>this.setState({lineupIdx:i});
+  setLineupTeam=(s)=>this.setState({lineupTeam:s, lineupIdx:0});
+
+  // seeded placeholder match statistics (deterministic per match; shaped by the scoreline)
+  matchStats(m, h, a){
+    let s=0; const id=m.id+'|'+m.homeScore+'|'+m.awayScore; for(let i=0;i<id.length;i++) s=(s*31+id.charCodeAt(i))>>>0;
+    const rnd=()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; };
+    const hs=m.homeScore||0, as=m.awayScore||0, edge=(hs-as);
+    const around=(base,spread,bias)=>Math.max(0,Math.round(base+(rnd()-0.5)*spread+bias));
+    const poss=Math.min(72,Math.max(28,Math.round(50+edge*4+(rnd()-0.5)*10)));
+    const xgH=(Math.max(0.2,hs*0.8+rnd()*0.9)).toFixed(1), xgA=(Math.max(0.2,as*0.8+rnd()*0.9)).toFixed(1);
+    return [
+      { label:'Possession %', home:poss+'%', away:(100-poss)+'%', hv:poss, av:100-poss },
+      (()=>{ const hv=around(13,6,edge*2), av=around(11,6,-edge*2); return { label:'Shots', home:hv, away:av, hv, av }; })(),
+      (()=>{ const hv=Math.max(hs,around(5,3,edge)), av=Math.max(as,around(4,3,-edge)); return { label:'Shots on target', home:hv, away:av, hv, av }; })(),
+      { label:'Expected goals (xG)', home:xgH, away:xgA, hv:parseFloat(xgH), av:parseFloat(xgA) },
+      (()=>{ const hv=around(6,5,edge), av=around(5,5,-edge); return { label:'Corners', home:hv, away:av, hv, av }; })(),
+      (()=>{ const hv=around(11,6,0), av=around(12,6,0); return { label:'Fouls', home:hv, away:av, hv, av }; })(),
+      (()=>{ const hv=around(2,3,0), av=around(2,3,0); return { label:'Yellow cards', home:hv, away:av, hv, av }; })(),
+      (()=>{ const hv=around(3,3,0), av=around(3,3,0); return { label:'Offsides', home:hv, away:av, hv, av }; })(),
+      (()=>{ const hv=around(86,12,edge), av=around(84,12,-edge); return { label:'Pass accuracy %', home:hv+'%', away:av+'%', hv, av }; })(),
+      (()=>{ const hv=Math.max(1,around(3,3,-edge)), av=Math.max(1,around(4,3,edge)); return { label:'Saves', home:hv, away:av, hv, av }; })()
+    ].map(r=>{ const tot=(r.hv+r.av)||1; return { ...r, homePct:Math.round(r.hv/tot*100), awayPct:Math.round(r.av/tot*100) }; });
+  }
+
+  // seeded placeholder scorers + match facts
+  matchScorers(m, h, a){
+    let s=0; const id=m.id+'|g'; for(let i=0;i<id.length;i++) s=(s*31+id.charCodeAt(i))>>>0;
+    const rnd=()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; };
+    const list=(team,n)=>{ if(n<=0) return [];
+      const pool=(this.DB.SQUADS[team.id]||[]).filter(p=>p.pos==='FW'||p.pos==='MF').slice().sort((x,y)=>y.goals-x.goals).slice(0,6);
+      const set=new Set(); while(set.size<n){ set.add(2+Math.floor(rnd()*88)); }
+      return [...set].sort((x,y)=>x-y).map((mn,i)=>({ name:((pool[i%Math.max(1,pool.length)]||{name:'—'}).name.split(' ').slice(-1)[0]), minute:mn })); };
+    return { home:list(h,m.homeScore||0), away:list(a,m.awayScore||0) };
+  }
+  matchFacts(m){
+    let s=0; const id=m.id+'|f'; for(let i=0;i<id.length;i++) s=(s*31+id.charCodeAt(i))>>>0;
+    const att=Math.round((42000+(s%30000))/100)*100;
+    const venue = m.venue ? (m.venue+(m.city?', '+m.city:'')) : ((m.where && m.where!=='Group stage') ? m.where : 'To be confirmed');
+    return [ {label:'Venue', value:venue}, {label:'Attendance', value:att.toLocaleString()}, {label:'Competition', value:(m.stage==='group'?'Group stage':'Round of 32')} ];
+  }
+
+  matchCard(m){
+    const h=this.DB.byId[m.homeTeamId], a=this.DB.byId[m.awayTeamId];
+    const pr=this.predict(h,a);
+    const fav = pr.win>=pr.lose ? h : a, favp=Math.max(pr.win,pr.lose);
+    return { id:m.id, href:'#/match/'+m.id, home:this.chip(h), away:this.chip(a),
+      dateLabel:m.stage==='group'?'Group stage':this.dateLabel(m.kickoff), stageLabel:m.stage==='group'?'Group':'Round of 32',
+      where:m.where||'', finished:m.status==='finished', scoreLabel:m.status==='finished'?(m.homeScore+' – '+m.awayScore):'vs',
+      centerLabel:m.status==='finished'?(m.homeScore+' – '+m.awayScore):'vs',
+      homePct:this.pct(pr.win), drawPct:this.pct(pr.draw), awayPct:this.pct(pr.lose),
+      favLine: fav.name+' favoured · '+this.pct(favp)+'%' };
+  }
+
+  // the rich showdown object consumed by ShowdownPanel child DC
+  showdownVM(m){
+    if(!m) return { ok:false, same:false };
+    const h=this.DB.byId[m.homeTeamId], a=this.DB.byId[m.awayTeamId];
+    if(!h||!a||h.id===a.id) return { ok:false, same:true };
+    const pr=this.predict(h,a);
+    const mh = pr.win/(pr.win+pr.lose);
+    let fanHome = Math.round(50 + (mh*100-50)*0.72);
+    const vote = this.state.votes[m.id]||null;
+    if(vote==='home') fanHome=Math.min(94,fanHome+3); else if(vote==='away') fanHome=Math.max(6,fanHome-3);
+    fanHome=Math.max(6,Math.min(94,fanHome));
+    const modelPick = pr.win>=pr.lose ? 'home':'away';
+    const sign=v=>(v>0?'+':'')+v;
+    const stars=(tid)=>(this.DB.SQUADS[tid]||[]).slice().sort((x,y)=>y.goals-x.goals).slice(0,3);
+    return {
+      homeStars: stars(h.id), awayStars: stars(a.id),
+      ok:true, same:false, matchId:m.id,
+      home:this.chip(h), away:this.chip(a),
+      homePct:this.pct(pr.win), drawPct:this.pct(pr.draw), awayPct:this.pct(pr.lose),
+      favName: (pr.win>=pr.lose?h:a).name, favPct: Math.max(this.pct(pr.win),this.pct(pr.lose)),
+      factors:[
+        { label:'Team rating', sub:'Elo — rises by beating strong teams', h:String(h.elo), a:String(a.elo), hWin:h.elo>=a.elo },
+        { label:'World ranking', sub:'Official FIFA rank', h:'#'+h.fifaRank, a:'#'+a.fifaRank, hWin:h.fifaRank<=a.fifaRank },
+        { label:'Form so far', sub:'How they\'ve played this tournament', h:sign(h.formAdj), a:sign(a.formAdj), hWin:h.formAdj>=a.formAdj },
+        { label:'Squad firepower', sub:'Goals in the squad vs the field', h:sign(h.squadAdj), a:sign(a.squadAdj), hWin:h.squadAdj>=a.squadAdj },
+        { label:'Home boost', sub:'Edge for the three host nations', h:sign(h.hostAdj), a:sign(a.hostAdj), hWin:h.hostAdj>=a.hostAdj },
+        { label:'Our rating', sub:'Everything above, combined', h:String(h.adjRating), a:String(a.adjRating), hWin:h.adjRating>=a.adjRating }
+      ],
+      vote, voted: !!vote, fanHomePct:fanHome, fanAwayPct:100-fanHome,
+      modelPick, modelPickName: modelPick==='home'?h.name:a.name,
+      agree: vote===modelPick,
+      onVoteHome: ()=>this.vote(m.id,'home'),
+      onVoteAway: ()=>this.vote(m.id,'away'),
+      explain:"We start from each team's Elo rating, then nudge it for how they've played here, how dangerous the squad is in front of goal, and a home boost for the three hosts. The draw chance shrinks as the gap between two teams grows."
+    };
+  }
+  vote(matchId, side){
+    const votes={ ...this.state.votes, [matchId]:side };
+    try{ localStorage.setItem('kb_votes', JSON.stringify(votes)); }catch(e){}
+    this.setState({ votes });
+  }
+
+  setHome(v){ try{ localStorage.setItem('kb_home', v); }catch(e){} this.setState({ homeView:v }); }
+  go(hash){ location.hash=hash; }
+
+  renderVals(){
+    if(!this.state.ready || !this.DB) return { loading:true, appReady:false };
+    const { seg, id, params } = this.state;
+    const DB=this.DB;
+    const navKeyFor = (s)=> s===''?'' : (['matches','match','predict'].includes(s)?'matches' : (['stories','story'].includes(s)?'stories' : (['teams','team','players','player'].includes(s)?'teams' : (['bracket','power'].includes(s)?'bracket':''))));
+    const ak=navKeyFor(seg);
+    const NAV=[['','Today'],['matches','Matches'],['stories','Stories'],['teams','Teams'],['bracket','Bracket']];
+    const navItems=NAV.map(([key,label])=>({ href:'#/'+key, label,
+      color: key===ak?'#fff':'#16181d', bg: key===ak?'#16181d':'transparent' }));
+
+    const out = {
+      loading:false, appReady:true, navItems,
+      searchRef: (this._searchRef = this._searchRef || React.createRef()),
+      onSearchSubmit: (e)=>{ e.preventDefault(); const v=this._searchRef.current?this._searchRef.current.value:''; if(v.trim()) location.hash='#/search?q='+encodeURIComponent(v.trim()); },
+      goBack:this.goBack,
+      isHome:false,isStories:false,isStory:false,isMatches:false,isPredict:false,isMatch:false,
+      isTeams:false,isTeam:false,isPower:false,isBracket:false,isPlayers:false,isPlayer:false,isSearch:false,isNotFound:false
+    };
+
+    const storyCard = (s)=>{
+      const a=DB.byId[s.teamA], b=DB.byId[s.teamB];
+      return { id:s.id, href:'#/story/'+s.id, title:s.title, dek:s.dek, dateLabel:this.dateLabel(s.date), read:s.read,
+        kindLabel: s.kind==='preview'?'Preview':s.kind==='recap'?'Match report':'The big picture',
+        accent:DB.ACCENT[s.kind], heroGrad:DB.HEROGRAD[s.kind], heroColor:DB.HEROGRAD[s.kind],
+        aGrad:a?a.grad:'#d8cfbf', bGrad:b?b.grad:'#d8cfbf',
+        aColor:a?a.c1:'#cdc4b2', bColor:b?b.c1:'#d8cfbf',
+        matchup: (a?a.shortCode:'') + (b?(' vs '+b.shortCode):'') };
+    };
+
+    // ===================== HOME =====================
+    if(seg===''){
+      out.isHome=true;
+      const hv=this.state.homeView;
+      out.isHomeStories = hv==='stories'; out.isHomeToday = hv==='today'; out.isHomePulse = hv==='pulse';
+      out.homeTabs=[['stories','Stories'],['today','Today'],['pulse','Tournament']].map(([k,l])=>({
+        label:l, onClick:()=>this.setHome(k), color: hv===k?'#fff':'#6f6655', bg: hv===k?'#1f3fbf':'transparent' }));
+
+      const feat=DB.stories[0]; const fa=DB.byId[feat.teamA], fb=DB.byId[feat.teamB];
+      out.featured={ href:'#/story/'+feat.id, title:feat.title, dek:feat.dek, tag:feat.tag, read:feat.read,
+        byline:'By '+feat.author, heroColor:DB.HEROGRAD[feat.kind], heroImg:'assets/hero.jpg',
+        aGrad:fa?fa.grad:'#ccc', bGrad:fb?fb.grad:'#ccc' };
+
+      out.storyCards = DB.stories.slice(1,5).map(storyCard);
+      out.storyCardsShort = DB.stories.slice(1,4).map(storyCard);
+      out.nextMatches = DB.r32.map(m=>this.matchCard(m));
+      out.recentResults = DB.groupMatches.slice().reverse().slice(0,5).map(m=>this.matchCard(m));
+      const sorted=DB.teams.slice().sort((x,y)=>y.adjRating-x.adjRating);
+      out.contenders = sorted.slice(0,6).map(t=>({ name:t.name, grad:t.grad, strength:t.strength, fifaRank:t.fifaRank, href:'#/team/'+t.id }));
+      out.powerTop = sorted.slice(0,8).map((t,i)=>({ name:t.name, grad:t.grad, strength:t.strength, rankLabel:String(i+1), href:'#/team/'+t.id }));
+      // today's headline match = first r32
+      out.todayMatch = (()=>{ const c=this.matchCard(DB.r32[0]); c.where=DB.r32[0].where; return c; })();
+      const through=DB.teams.filter(t=>t.qualified).length;
+      out.pulseStats=[
+        { value:'48', label:'Teams · 12 groups', color:'#1f3fbf' },
+        { value:String(through), label:'Through to knockouts', color:'#138a5e' },
+        { value:'4', label:'R32 ties confirmed', color:'#2a6fdb' },
+        { value:'Jul 19', label:'Final · MetLife Stadium', color:'#16181d' }
+      ];
+      return out;
+    }
+
+    // ===================== STORIES =====================
+    if(seg==='stories'){
+      out.isStories=true;
+      const sf=this.state.sf;
+      const feat=DB.stories[0]; const fa=DB.byId[feat.teamA], fb=DB.byId[feat.teamB];
+      out.featured={ href:'#/story/'+feat.id, title:feat.title, dek:feat.dek, tag:feat.tag, read:feat.read, byline:'By '+feat.author,
+        heroColor:DB.HEROGRAD[feat.kind], heroImg:'assets/hero.jpg',
+        aGrad:fa?fa.grad:'#ccc', bGrad:fb?fb.grad:'#ccc' };
+      out.storyFilters=[['all','All'],['preview','Previews'],['recap','Match reports']].map(([k,l])=>({
+        label:l, onClick:()=>this.setState({sf:k}),
+        color: sf===k?'#fff':'#6f6655', bg: sf===k?'#16181d':'#fff', border: sf===k?'#16181d':'#e4dccd' }));
+      const tf = params.team && DB.byId[params.team] ? DB.byId[params.team] : null;
+      out.isTeamFiltered = !!tf; out.showFeatured = !tf;
+      out.teamFilterName = tf?tf.name:''; out.teamFilterFlag = tf?tf.grad:'#ccc';
+      let list = tf ? DB.stories.filter(s=>s.teamA===params.team||s.teamB===params.team) : DB.stories.slice(1);
+      if(sf!=='all') list=list.filter(s=>s.kind===sf);
+      out.storyList=list.map(storyCard);
+      out.storyEmpty = list.length===0;
+      return out;
+    }
+
+    // ===================== STORY DETAIL =====================
+    if(seg==='story'){
+      out.isStory=true;
+      const s=DB.storyById[id];
+      if(!s){ out.story={ ok:false, missing:true }; return out; }
+      const a=DB.byId[s.teamA], b=DB.byId[s.teamB];
+      const m=s.matchId?DB.matchById[s.matchId]:null;
+      out.story={ ok:true, missing:false, title:s.title, dek:s.dek, body:s.body, read:s.read,
+        dateLabel:this.dateLabel(s.date), byline:'By '+s.author,
+        kindLabel: s.kind==='preview'?'Round of 32 · Preview':s.kind==='recap'?'Match report':'The big picture',
+        accent:DB.ACCENT[s.kind], heroColor:DB.HEROGRAD[s.kind], heroImg:'assets/story.jpg',
+        aName:a?a.name:'', bName:b?b.name:'', aGrad:a?a.grad:'#ccc', bGrad:b?b.grad:'#ccc',
+        aColor:a?a.c1:'#cdc4b2', bColor:b?b.c1:'#d8cfbf',
+        midLabel: s.score?s.score:'vs',
+        hasMatch:!!m, matchHref: m?'#/match/'+m.id:'#',
+        matchCta: m?(s.kind==='recap'?'See the match':'Open match & vote'):'' };
+      return out;
+    }
+
+    // ===================== MATCHES =====================
+    if(seg==='matches'){
+      out.isMatches=true;
+      out.nextMatches=DB.r32.map(m=>this.matchCard(m));
+      out.recentResults=DB.groupMatches.slice().reverse().map(m=>this.matchCard(m));
+      return out;
+    }
+
+    // ===================== PREDICT =====================
+    if(seg==='predict'){
+      out.isPredict=true;
+      const teams=DB.teams.slice().sort((x,y)=>x.name.localeCompare(y.name));
+      const aId=(DB.byId[params.a]&&params.a)||'spain';
+      const bId=(DB.byId[params.b]&&params.b)||'brazil';
+      out.teamOptionsA=teams.map(t=>({ id:t.id, name:t.name, selected:t.id===aId }));
+      out.teamOptionsB=teams.map(t=>({ id:t.id, name:t.name, selected:t.id===bId }));
+      out.onPredA=(e)=>{ location.hash='#/predict?a='+e.target.value+'&b='+bId; };
+      out.onPredB=(e)=>{ location.hash='#/predict?a='+aId+'&b='+e.target.value; };
+      out.showdown=this.showdownVM({ id:'predict-'+aId+'-'+bId, homeTeamId:aId, awayTeamId:bId });
+      return out;
+    }
+
+    // ===================== MATCH DETAIL =====================
+    if(seg==='match'){
+      out.isMatch=true;
+      const m=DB.matchById[id];
+      if(!m){ out.matchVM={ ok:false }; out.showdown={ok:false}; return out; }
+      const h=DB.byId[m.homeTeamId], a=DB.byId[m.awayTeamId];
+      const fin=m.status==='finished';
+      const sid=DB.storyByMatch[m.id]; const st=sid?DB.storyById[sid]:null;
+      const tab = this.state.matchTab || (fin?'stats':'prediction');
+      const teamSel = this.state.lineupTeam || 'home';
+      const selTeam = teamSel==='away' ? a : h;
+      const lineupSnaps = fin
+        ? [{ label:'Match XI', tokens:this.buildXI(selTeam.id,0) }]
+        : [0,1,2].map((seed,i)=>({ label: i===0?'Most likely XI':(i===1?'Previous lineup':'Earlier lineup'), tokens:this.buildXI(selTeam.id,seed) }));
+      const li = Math.min(this.state.lineupIdx||0, lineupSnaps.length-1);
+      const tabsDef = fin
+        ? [['stats','Stats'],['lineups','Lineups']]
+        : [['prediction','Prediction'],['lineups','Lineups']];
+      out.matchVM={ ok:true, home:this.chip(h), away:this.chip(a),
+        finished:fin, upcoming:!fin, centerLabel: fin?(m.homeScore+' – '+m.awayScore):'VS',
+        metaLine: [ (m.stage==='group'?'Group stage':'Round of 32'), (m.where && m.where!=='Group stage' ? m.where : ''), ((m.kickoff&&m.kickoff.length>7)?this.dateLabel(m.kickoff):'') ].filter(Boolean).join(' · '),
+        hasStory:!!st, storyHref: st?'#/story/'+st.id:'#', storyTitle: st?st.title:'', storyGrad: st?DB.HEROGRAD[st.kind]:'#999',
+        storyKind: st?(fin?'Match report':'Match preview'):'', storyCta: fin?'Read the recap →':'Read the preview →',
+        formationLabel:'4-3-3', homeName:h.name, awayName:a.name, homeColor:h.c1, awayColor:a.c1,
+        tabs: tabsDef.map(([k,l])=>({ label:l, onClick:()=>this.setMatchTab(k), color: tab===k?'#fff':'#6f6655', bg: tab===k?'#16181d':'transparent' })),
+        showPrediction: tab==='prediction', showStats: tab==='stats', showLineups: tab==='lineups',
+        stats: fin ? this.matchStats(m,h,a) : [],
+        hasGoals: fin && ((m.homeScore||0)+(m.awayScore||0))>0,
+        scorers: fin ? this.matchScorers(m,h,a) : {home:[],away:[]},
+        facts: fin ? this.matchFacts(m) : [],
+        lineupTeams: [['home',h],['away',a]].map(([k,t])=>({ name:t.name, onClick:()=>this.setLineupTeam(k), color: teamSel===k?'#fff':'#16181d', bg: teamSel===k?t.c1:'#fff', border: teamSel===k?t.c1:'#e4dccd' })),
+        selTeamName: selTeam.name, selTeamFlag: selTeam.grad, selTeamHref:'#/team/'+selTeam.id,
+        lineupPager: !fin && lineupSnaps.length>1, lineupLabel: lineupSnaps[li].label, lineups: lineupSnaps[li].tokens,
+        lineupNote: fin ? 'Illustrative XI built from the squad — swap in the confirmed lineup when you have it.' : 'No confirmed XI yet — scroll recent lineups to read the likely team.',
+        lineupDots: lineupSnaps.map((sn,i)=>({ active:i===li, color:i===li?'#16181d':'#cabfa9', onClick:()=>this.setLineup(i) })),
+        onPrevLineup: ()=>this.setLineup(Math.max(0,li-1)), onNextLineup: ()=>this.setLineup(Math.min(lineupSnaps.length-1,li+1)) };
+      out.showdown = fin ? {ok:false} : this.showdownVM(m);
+      return out;
+    }
+
+    // ===================== TEAMS =====================
+    if(seg==='teams'){
+      out.isTeams=true;
+      const conf=params.conf||'all', group=params.group||'all';
+      let teams=DB.teams.slice();
+      if(conf!=='all') teams=teams.filter(t=>t.confederation===conf);
+      if(group!=='all') teams=teams.filter(t=>t.groupLetter===group);
+      teams.sort((a,b)=>a.name.localeCompare(b.name));
+      const confs=[...new Set(DB.teams.map(t=>t.confederation))].sort();
+      const grps=[...new Set(DB.teams.map(t=>t.groupLetter))].sort();
+      const SB={in:['#0d6b46','rgba(19,138,94,.14)'],out:['#b23a2a','rgba(232,72,43,.13)'],live:['#9a6b00','rgba(244,180,0,.18)']};
+      out.confOptions=[{id:'all',label:'All confederations',selected:conf==='all'}].concat(confs.map(c=>({id:c,label:c,selected:c===conf})));
+      out.groupOptions=[{id:'all',label:'All groups',selected:group==='all'}].concat(grps.map(g=>({id:g,label:'Group '+g,selected:g===group})));
+      out.onConfChange=(e)=>{ location.hash='#/teams?conf='+e.target.value+'&group='+group; };
+      out.onGroupChange=(e)=>{ location.hash='#/teams?conf='+conf+'&group='+e.target.value; };
+      out.teamCount=teams.length;
+      out.teamsList=teams.map(t=>({ name:t.name, grad:t.grad, groupLetter:t.groupLetter, confederation:t.confederation,
+        statusLabel:t.statusLabel, statusColor:SB[t.statusKind][0], statusBg:SB[t.statusKind][1], href:'#/team/'+t.id }));
+      return out;
+    }
+
+    // ===================== TEAM DETAIL =====================
+    if(seg==='team'){
+      out.isTeam=true;
+      const t=DB.byId[id];
+      if(!t){ out.teamVM={ ok:false }; return out; }
+      const sq=DB.SQUADS[id]||[];
+      const matches=DB.matches.filter(m=>m.homeTeamId===id||m.awayTeamId===id);
+      const stars=sq.slice().sort((a,b)=>b.goals-a.goals).slice(0,3).map(p=>({
+        href:'#/player/'+p.id, name:p.name, initials:this.initials(p.name), posName:this.POSNAME[p.pos], posColor:DB.POSCOLOR[p.pos], club:p.club, goals:p.goals }));
+      const posOrder=[['Goalkeepers','GK'],['Defenders','DF'],['Midfielders','MF'],['Forwards','FW']];
+      const posGroups=posOrder.map(([label,pos])=>({ label, players: sq.filter(p=>p.pos===pos).map(p=>({
+        href:'#/player/'+p.id, name:p.name, pos:p.pos, posColor:DB.POSCOLOR[p.pos], metaLine:'Age '+p.age+' · '+p.caps+' caps · '+p.goals+' goals · '+p.club })) })).filter(g=>g.players.length);
+      out.teamVM={ ok:true, name:t.name, grad:t.grad, c1:t.c1, c2:t.c2, heroImg:'assets/team.jpg', groupLetter:t.groupLetter, confederation:t.confederation,
+        statusLabel:t.statusLabel, coach:t.coach, predictHref:'#/predict?a='+t.id+'&b=brazil',
+        kpis:[ {value:String(t.strength),label:'Power score'},{value:String(t.elo),label:'Team rating'},{value:'#'+t.fifaRank,label:'World rank'},{value:t.points+' pts',label:'Group form'} ],
+        hasMatches:matches.length>0, matches:matches.map(m=>this.matchCard(m)), stars, posGroups };
+      const ts=DB.stories.filter(s=>s.teamA===id||s.teamB===id);
+      out.teamVM.hasStories=ts.length>0;
+      out.teamVM.stories=ts.map(s=>this.storyCardVM(s));
+      out.teamVM.storiesHref='#/stories?team='+id;
+      out.teamVM.storiesCount=ts.length;
+      return out;
+    }
+
+    // ===================== POWER =====================
+    if(seg==='power'){
+      out.isPower=true;
+      out.powerList=DB.teams.slice().sort((x,y)=>y.adjRating-x.adjRating).map((t,i)=>({
+        rankLabel:String(i+1), name:t.name, grad:t.grad, strength:t.strength, statusLabel:t.statusLabel, href:'#/team/'+t.id }));
+      return out;
+    }
+
+    // ===================== BRACKET =====================
+    if(seg==='bracket'){
+      out.isBracket=true;
+      const r32cards=DB.r32.map(m=>{
+        const c=this.matchCard(m);
+        return { href:'#/match/'+m.id, home:c.home, away:c.away, dateLabel:this.dateLabel(m.kickoff), homeScore:'', awayScore:'', bg:'#fff', textColor:'#16181d', cursor:'pointer' };
+      });
+      const tbd=(n)=>Array.from({length:n}).map(()=>({ href:'#', home:{code:'TBD',grad:'#e7dfd0'}, away:{code:'TBD',grad:'#e7dfd0'}, dateLabel:'', homeScore:'', awayScore:'', bg:'#f6f1e7', textColor:'#b3a890', cursor:'default' }));
+      out.bracketCols=[
+        { title:'Round of 32', count:'16 ties', ties:r32cards.concat(tbd(16-r32cards.length)) },
+        { title:'Round of 16', count:'8 ties', ties:tbd(8) },
+        { title:'Quarter-finals', count:'4 ties', ties:tbd(4) },
+        { title:'Semi-finals', count:'2 ties', ties:tbd(2) },
+        { title:'Final', count:'Jul 19', ties:tbd(1) }
+      ];
+      const DOT={in:'#138a5e',out:'#d8cfbf',live:'#f4b400'};
+      out.bracketNote = r32cards.length+' of 16 Round-of-32 ties confirmed — the rest lock in as the final groups finish and the eight best third-placed teams are decided.';
+      out.groupsVM=DB.groups.map(g=>({ name:g.name, rows:g.standings.map((s,i)=>{ const t=DB.byId[s.teamId];
+        return { rank:String(i+1), code:t.shortCode, name:t.name, grad:t.grad, played:'3', pts:String(s.points),
+          gd:(s.goalDifference>0?'+':'')+s.goalDifference, href:'#/team/'+t.id,
+          rowBg: t.statusKind==='in'?'rgba(19,138,94,.09)':(t.statusKind==='live'?'rgba(243,181,10,.12)':'transparent'),
+          accent: t.statusKind==='in'?'#138a5e':(t.statusKind==='live'?'#caa207':'#d8cfbf'),
+          nameColor: t.statusKind==='out'?'#a59a85':'#16181d' }; }) }));
+      return out;
+    }
+
+    // ===================== PLAYERS =====================
+    if(seg==='players'){
+      out.isPlayers=true;
+      const pos=params.pos||'all', sort=params.sort||'goals';
+      let pl=DB.allPlayers.slice();
+      if(pos!=='all') pl=pl.filter(p=>p.pos===pos);
+      pl.sort((a,b)=> sort==='caps'?b.caps-a.caps : sort==='age'?a.age-b.age : b.goals-a.goals);
+      pl=pl.slice(0,120);
+      out.playerTotal=DB.allPlayers.length;
+      out.posOptions=[['all','All positions'],['GK','Goalkeepers'],['DF','Defenders'],['MF','Midfielders'],['FW','Forwards']].map(([k,l])=>({id:k,label:l,selected:k===pos}));
+      out.sortOptions=[['goals','Most goals'],['caps','Most caps'],['age','Youngest']].map(([k,l])=>({id:k,label:l,selected:k===sort}));
+      out.onPosChange=(e)=>{ location.hash='#/players?pos='+e.target.value+'&sort='+sort; };
+      out.onSortChange=(e)=>{ location.hash='#/players?pos='+pos+'&sort='+e.target.value; };
+      out.playerList=pl.map(p=>{ const t=DB.byId[p.teamId];
+        return { href:'#/player/'+p.id, name:p.name, teamGrad:t.grad, posColor:DB.POSCOLOR[p.pos], metaLine:t.shortCode+' · '+this.POSNAME[p.pos]+' · '+p.club,
+          statValue: sort==='caps'?String(p.caps):sort==='age'?String(p.age):String(p.goals),
+          statLabel: sort==='caps'?'caps':sort==='age'?'age':'goals' }; });
+      return out;
+    }
+
+    // ===================== PLAYER DETAIL =====================
+    if(seg==='player'){
+      out.isPlayer=true;
+      const p=DB.allPlayers.find(x=>x.id===id);
+      if(!p){ out.playerVM={ ok:false }; return out; }
+      const t=DB.byId[p.teamId];
+      out.playerVM={ ok:true, name:p.name, initials:this.initials(p.name), posColor:DB.POSCOLOR[p.pos], posName:this.POSNAME[p.pos],
+        teamName:t.name, teamHref:'#/team/'+t.id, club:p.club,
+        kpis:[ {value:String(p.caps),label:'Caps'},{value:String(p.goals),label:'Goals'},{value:(p.caps?(p.goals/p.caps).toFixed(2):'0.00'),label:'Goals per cap'},{value:String(p.age),label:'Age'} ] };
+      return out;
+    }
+
+    // ===================== SEARCH =====================
+    if(seg==='search'){
+      out.isSearch=true;
+      const q=(params.q||'').trim(), ql=q.toLowerCase();
+      out.searchHeading = q?('Search: “'+q+'”'):'Search';
+      const teams=q?DB.teams.filter(t=>t.name.toLowerCase().includes(ql)).slice(0,8):[];
+      const players=q?DB.allPlayers.filter(p=>p.name.toLowerCase().includes(ql)).slice(0,30):[];
+      out.search={ hasTeams:teams.length>0, hasPlayers:players.length>0, empty: q&&!teams.length&&!players.length,
+        teams:teams.map(t=>({ name:t.name, grad:t.grad, href:'#/team/'+t.id })),
+        players:players.map(p=>{ const t=DB.byId[p.teamId]; return { href:'#/player/'+p.id, name:p.name, teamGrad:t.grad, posColor:DB.POSCOLOR[p.pos], metaLine:t.shortCode+' · '+this.POSNAME[p.pos]+' · '+p.club }; }) };
+      return out;
+    }
+
+    out.isNotFound=true;
+    return out;
+  }
+}
+</script>
+</body>
+</html>
