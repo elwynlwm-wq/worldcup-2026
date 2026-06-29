@@ -59,3 +59,19 @@ publishing its data pre-launch knowingly. Before public launch we must EITHER ve
 OR swap to a license-clean source — the provider seam + the `af_*` warehouse namespace make that a
 data-layer change, not a UI rewrite. The dev API key in `data-pipeline/.env` is to be rotated
 before deploy. See `data-pipeline/SOURCING.md`.
+
+## Migration to EXACT Kickabout design (plan — decided 29 Jun, on hold)
+
+Decision: **adopt the prototype's exact design**, ported into our Astro architecture. Wait for the
+incoming prototype update — do NOT restyle current pages against the stale concept (throwaway work).
+
+When the updated prototype files land in `concepts/`:
+1. Extract its exact design (real markup, layouts, spacing, Showdown/story/card components) — palette
+   already done in Phase B.
+2. Port component-by-component into Astro; discard its hash-router SPA shell, recreate its visual
+   components. Keep our architecture (static, real URLs, warehouse-fed, provider seam).
+3. Reuse existing data wiring — components already pull H2H/tiers/photos/fresh results, so it's
+   restyling components that already have real data.
+4. Fidelity: pixel-faithful to the updated prototype; our architecture is the only deviation.
+
+Until the files are updated: **no styling work.** Keep building features/data against current brand.

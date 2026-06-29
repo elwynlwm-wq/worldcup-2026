@@ -10,7 +10,16 @@ import { loadSnapshot } from '../fetch/snapshot';
 import { fetchClubElo } from '../fetch/clubelo';
 import { fetchIntlResults } from '../fetch/intlresults';
 import { fetchOpenfootball } from '../fetch/openfootball';
-import { fetchAfFixtures, fetchAfTeams, fetchAfSquad } from '../fetch/apifootball';
+import {
+  fetchAfFixtures,
+  fetchAfTeams,
+  fetchAfSquad,
+  fetchAfStandings,
+  fetchAfFixtureStats,
+  fetchAfFixtureEvents,
+  fetchAfFixtureLineups,
+  fetchAfFixturePlayers,
+} from '../fetch/apifootball';
 import {
   clubLookupSlug,
   countryToTeamSlug,
@@ -210,6 +219,74 @@ async function main() {
     })();
   }
   console.log(`  ${afPlayerCount} AF players; ${photoMatched}/${snap.players.length} photos matched to our players`);
+
+  // ---- AF standings (group tables) ----
+  const standings = await fetchAfStandings();
+  const insStanding = db.prepare(`INSERT INTO af_standing
+    (group_name,rank,team_id,team_name_raw,played,win,draw,lose,goals_for,goals_against,points,form)
+    VALUES (@group_name,@rank,@team_id,@team_name_raw,@played,@win,@draw,@lose,@goals_for,@goals_against,@points,@form)`);
+  db.transaction(() => {
+    for (const s of standings) {
+      insStanding.run({
+        group_name: s.group, rank: s.rank,
+        team_id: afTeamSlug.get(s.teamId) ?? null, team_name_raw: s.teamName,
+        played: s.played, win: s.win, draw: s.draw, lose: s.lose,
+        goals_for: s.goalsFor, goals_against: s.goalsAgainst, points: s.points, form: s.form,
+      });
+    }
+  })();
+  console.log(`  ${standings.length} standing rows`);
+
+  // ---- Per-fixture rich data (team stats / events / lineups / player stats) ----
+  // One call each per PLAYED fixture. ~73 played × 4 ≈ 290 calls (Pro: 7500/day).
+  const played = afFixtures.filter((f) => f.statusShort === 'FT');
+  const insTeamStat = db.prepare(`INSERT OR REPLACE INTO af_team_stat
+    (fixture_id,af_team_id,team_id,stat_type,stat_value) VALUES (@fixture_id,@af_team_id,@team_id,@stat_type,@stat_value)`);
+  const insEvent = db.prepare(`INSERT INTO af_event
+    (fixture_id,minute,extra,af_team_id,team_id,player_id,player_name,assist_name,type,detail)
+    VALUES (@fixture_id,@minute,@extra,@af_team_id,@team_id,@player_id,@player_name,@assist_name,@type,@detail)`);
+  const insLineup = db.prepare(`INSERT OR REPLACE INTO af_lineup
+    (fixture_id,af_team_id,team_id,formation,coach) VALUES (@fixture_id,@af_team_id,@team_id,@formation,@coach)`);
+  const insLineupP = db.prepare(`INSERT INTO af_lineup_player
+    (fixture_id,af_team_id,player_id,player_name,number,pos,grid,starter)
+    VALUES (@fixture_id,@af_team_id,@player_id,@player_name,@number,@pos,@grid,@starter)`);
+  const insPStat = db.prepare(`INSERT INTO af_player_stat
+    (fixture_id,af_team_id,team_id,player_id,player_name,minutes,rating,goals,assists,shots,shots_on,passes,pass_accuracy,tackles,duels_won,dribbles,yellow,red,captain)
+    VALUES (@fixture_id,@af_team_id,@team_id,@player_id,@player_name,@minutes,@rating,@goals,@assists,@shots,@shots_on,@passes,@pass_accuracy,@tackles,@duels_won,@dribbles,@yellow,@red,@captain)`);
+
+  let nStats = 0, nEvents = 0, nLineups = 0, nPStats = 0;
+  for (let i = 0; i < played.length; i++) {
+    const f = played[i];
+    if (i % 20 === 0) console.log(`  fixtures ${i}/${played.length}…`);
+    const [stats, events, lineups, pstats] = await Promise.all([
+      fetchAfFixtureStats(f.id),
+      fetchAfFixtureEvents(f.id),
+      fetchAfFixtureLineups(f.id),
+      fetchAfFixturePlayers(f.id),
+    ]);
+    db.transaction(() => {
+      for (const t of stats)
+        for (const [type, val] of Object.entries(t.stats)) {
+          insTeamStat.run({ fixture_id: t.fixtureId, af_team_id: t.teamId, team_id: afTeamSlug.get(t.teamId) ?? null, stat_type: type, stat_value: val == null ? null : String(val) });
+          nStats++;
+        }
+      for (const e of events) {
+        insEvent.run({ fixture_id: e.fixtureId, minute: e.minute, extra: e.extra, af_team_id: e.teamId, team_id: e.teamId ? afTeamSlug.get(e.teamId) ?? null : null, player_id: e.playerId, player_name: e.playerName, assist_name: e.assistName, type: e.type, detail: e.detail });
+        nEvents++;
+      }
+      for (const l of lineups) {
+        insLineup.run({ fixture_id: l.fixtureId, af_team_id: l.teamId, team_id: afTeamSlug.get(l.teamId) ?? null, formation: l.formation, coach: l.coach });
+        for (const p of l.startXI) insLineupP.run({ fixture_id: l.fixtureId, af_team_id: l.teamId, player_id: p.id, player_name: p.name, number: p.number, pos: p.pos, grid: p.grid, starter: 1 });
+        for (const p of l.subs) insLineupP.run({ fixture_id: l.fixtureId, af_team_id: l.teamId, player_id: p.id, player_name: p.name, number: p.number, pos: p.pos, grid: null, starter: 0 });
+        nLineups++;
+      }
+      for (const p of pstats) {
+        insPStat.run({ fixture_id: p.fixtureId, af_team_id: p.teamId, team_id: afTeamSlug.get(p.teamId) ?? null, player_id: p.playerId, player_name: p.playerName, minutes: p.minutes, rating: p.rating, goals: p.goals, assists: p.assists, shots: p.shots, shots_on: p.shotsOn, passes: p.passes, pass_accuracy: p.passAccuracy, tackles: p.tackles, duels_won: p.duelsWon, dribbles: p.dribbles, yellow: p.yellow, red: p.red, captain: p.captain ? 1 : 0 });
+        nPStats++;
+      }
+    })();
+  }
+  console.log(`  rich data: ${nStats} team-stat rows, ${nEvents} events, ${nLineups} lineups, ${nPStats} player-match rows`);
 
   // ---- WC matches (openfootball: all 104, with venues + goalscorers) ----
   const of = await fetchOpenfootball();

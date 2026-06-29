@@ -8,7 +8,9 @@
 //
 // Key read from data-pipeline/.env (API_FOOTBALL_KEY), loaded by lib/util.
 
-import { fetchCached } from '../lib/util';
+import { existsSync, readFileSync, writeFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { SOURCES_DIR, ensureDir } from '../lib/util';
 
 const BASE = 'https://v3.football.api-sports.io';
 const WC_LEAGUE = 1;
@@ -21,25 +23,26 @@ function key(): string {
 }
 
 // Cached GET against the API (caches raw JSON under sources/ for reproducible builds).
-async function afGet(path: string, cacheName: string, opts: { force?: boolean } = {}): Promise<any> {
-  const url = `${BASE}${path}`;
-  // fetchCached only does plain fetch; API-Football needs an auth header, so we
-  // do a header-aware variant here but reuse the same on-disk cache convention.
-  const { existsSync, readFileSync, writeFileSync, statSync } = await import('node:fs');
-  const { join } = await import('node:path');
-  const { SOURCES_DIR, ensureDir } = await import('../lib/util');
+// quiet=true suppresses per-call logging for the many per-fixture calls.
+async function afGet(
+  path: string,
+  cacheName: string,
+  opts: { force?: boolean; quiet?: boolean } = {},
+): Promise<any> {
   ensureDir(SOURCES_DIR);
-  const path_ = join(SOURCES_DIR, cacheName);
-  if (!opts.force && existsSync(path_)) {
-    const ageH = (Date.now() - statSync(path_).mtimeMs) / 3.6e6;
-    console.log(`  ✓ cache hit ${cacheName} (${ageH.toFixed(1)}h old)`);
-    return JSON.parse(readFileSync(path_, 'utf8'));
+  const file = join(SOURCES_DIR, cacheName);
+  if (!opts.force && existsSync(file)) {
+    if (!opts.quiet) {
+      const ageH = (Date.now() - statSync(file).mtimeMs) / 3.6e6;
+      console.log(`  ✓ cache hit ${cacheName} (${ageH.toFixed(1)}h old)`);
+    }
+    return JSON.parse(readFileSync(file, 'utf8'));
   }
-  console.log(`  ↓ AF ${path}`);
-  const res = await fetch(url, { headers: { 'x-apisports-key': key() } });
+  if (!opts.quiet) console.log(`  ↓ AF ${path}`);
+  const res = await fetch(`${BASE}${path}`, { headers: { 'x-apisports-key': key() } });
   if (!res.ok) throw new Error(`API-Football ${res.status} for ${path}`);
   const json = await res.json();
-  writeFileSync(path_, JSON.stringify(json));
+  writeFileSync(file, JSON.stringify(json));
   return json;
 }
 
@@ -113,4 +116,169 @@ export async function fetchAfSquad(teamId: number, opts: { force?: boolean } = {
     position: p.position ?? null,
     photo: p.photo ?? null,
   }));
+}
+
+// --- Standings (group tables) ------------------------------------------------
+export interface AfStanding {
+  group: string;
+  rank: number;
+  teamId: number;
+  teamName: string;
+  played: number;
+  win: number;
+  draw: number;
+  lose: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  form: string | null;
+}
+
+export async function fetchAfStandings(opts: { force?: boolean } = {}): Promise<AfStanding[]> {
+  const j = await afGet(
+    `/standings?league=${WC_LEAGUE}&season=${WC_SEASON}`,
+    'apifootball-standings-2026.json',
+    opts,
+  );
+  const groups = j.response?.[0]?.league?.standings || [];
+  const out: AfStanding[] = [];
+  for (const group of groups) {
+    for (const row of group) {
+      out.push({
+        group: row.group,
+        rank: row.rank,
+        teamId: row.team.id,
+        teamName: row.team.name,
+        played: row.all.played,
+        win: row.all.win,
+        draw: row.all.draw,
+        lose: row.all.lose,
+        goalsFor: row.all.goals.for,
+        goalsAgainst: row.all.goals.against,
+        points: row.points,
+        form: row.form ?? null,
+      });
+    }
+  }
+  return out;
+}
+
+// --- Per-fixture: team stats / events / lineups / player stats ---------------
+export interface AfTeamStat {
+  fixtureId: number;
+  teamId: number;
+  stats: Record<string, number | string | null>; // type → value
+}
+
+export async function fetchAfFixtureStats(fixtureId: number): Promise<AfTeamStat[]> {
+  const j = await afGet(`/fixtures/statistics?fixture=${fixtureId}`, `apifootball-stats-${fixtureId}.json`, { quiet: true });
+  return (j.response || []).map((t: any) => ({
+    fixtureId,
+    teamId: t.team.id,
+    stats: Object.fromEntries((t.statistics || []).map((s: any) => [s.type, s.value])),
+  }));
+}
+
+export interface AfEvent {
+  fixtureId: number;
+  minute: number | null;
+  extra: number | null;
+  teamId: number | null;
+  playerId: number | null;
+  playerName: string | null;
+  assistName: string | null;
+  type: string;
+  detail: string;
+}
+
+export async function fetchAfFixtureEvents(fixtureId: number): Promise<AfEvent[]> {
+  const j = await afGet(`/fixtures/events?fixture=${fixtureId}`, `apifootball-events-${fixtureId}.json`, { quiet: true });
+  return (j.response || []).map((e: any) => ({
+    fixtureId,
+    minute: e.time?.elapsed ?? null,
+    extra: e.time?.extra ?? null,
+    teamId: e.team?.id ?? null,
+    playerId: e.player?.id ?? null,
+    playerName: e.player?.name ?? null,
+    assistName: e.assist?.name ?? null,
+    type: e.type,
+    detail: e.detail,
+  }));
+}
+
+export interface AfLineup {
+  fixtureId: number;
+  teamId: number;
+  formation: string | null;
+  coach: string | null;
+  startXI: { id: number; name: string; number: number | null; pos: string | null; grid: string | null }[];
+  subs: { id: number; name: string; number: number | null; pos: string | null }[];
+}
+
+export async function fetchAfFixtureLineups(fixtureId: number): Promise<AfLineup[]> {
+  const j = await afGet(`/fixtures/lineups?fixture=${fixtureId}`, `apifootball-lineups-${fixtureId}.json`, { quiet: true });
+  return (j.response || []).map((l: any) => ({
+    fixtureId,
+    teamId: l.team.id,
+    formation: l.formation ?? null,
+    coach: l.coach?.name ?? null,
+    startXI: (l.startXI || []).map((x: any) => ({
+      id: x.player.id, name: x.player.name, number: x.player.number ?? null, pos: x.player.pos ?? null, grid: x.player.grid ?? null,
+    })),
+    subs: (l.substitutes || []).map((x: any) => ({
+      id: x.player.id, name: x.player.name, number: x.player.number ?? null, pos: x.player.pos ?? null,
+    })),
+  }));
+}
+
+export interface AfPlayerStat {
+  fixtureId: number;
+  teamId: number;
+  playerId: number;
+  playerName: string;
+  minutes: number | null;
+  rating: string | null;
+  goals: number | null;
+  assists: number | null;
+  shots: number | null;
+  shotsOn: number | null;
+  passes: number | null;
+  passAccuracy: number | null;
+  tackles: number | null;
+  duelsWon: number | null;
+  dribbles: number | null;
+  yellow: number | null;
+  red: number | null;
+  captain: boolean;
+}
+
+export async function fetchAfFixturePlayers(fixtureId: number): Promise<AfPlayerStat[]> {
+  const j = await afGet(`/fixtures/players?fixture=${fixtureId}`, `apifootball-fplayers-${fixtureId}.json`, { quiet: true });
+  const out: AfPlayerStat[] = [];
+  for (const team of j.response || []) {
+    for (const p of team.players || []) {
+      const s = p.statistics?.[0] || {};
+      out.push({
+        fixtureId,
+        teamId: team.team.id,
+        playerId: p.player.id,
+        playerName: p.player.name,
+        minutes: s.games?.minutes ?? null,
+        rating: s.games?.rating ?? null,
+        goals: s.goals?.total ?? null,
+        assists: s.goals?.assists ?? null,
+        shots: s.shots?.total ?? null,
+        shotsOn: s.shots?.on ?? null,
+        passes: s.passes?.total ?? null,
+        passAccuracy: s.passes?.accuracy ?? null,
+        tackles: s.tackles?.total ?? null,
+        duelsWon: s.duels?.won ?? null,
+        dribbles: s.dribbles?.success ?? null,
+        yellow: s.cards?.yellow ?? null,
+        red: s.cards?.red ?? null,
+        captain: !!s.games?.captain,
+      });
+    }
+  }
+  return out;
 }

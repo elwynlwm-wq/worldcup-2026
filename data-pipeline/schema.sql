@@ -11,6 +11,12 @@
 PRAGMA foreign_keys = ON;
 
 -- Drop in dependency order so the build is idempotent (rebuild from scratch).
+DROP TABLE IF EXISTS af_player_stat;
+DROP TABLE IF EXISTS af_lineup_player;
+DROP TABLE IF EXISTS af_lineup;
+DROP TABLE IF EXISTS af_event;
+DROP TABLE IF EXISTS af_team_stat;
+DROP TABLE IF EXISTS af_standing;
 DROP TABLE IF EXISTS af_fixture;
 DROP TABLE IF EXISTS af_player;
 DROP TABLE IF EXISTS player_tier;
@@ -193,3 +199,71 @@ CREATE TABLE af_player (
   position      TEXT,
   photo         TEXT
 );
+
+-- Official group standings (snapshot).
+CREATE TABLE af_standing (
+  group_name    TEXT,
+  rank          INTEGER,
+  team_id       TEXT,                      -- our slug if mapped
+  team_name_raw TEXT,
+  played        INTEGER, win INTEGER, draw INTEGER, lose INTEGER,
+  goals_for     INTEGER, goals_against INTEGER, points INTEGER,
+  form          TEXT
+);
+
+-- Per-match team statistics (possession, shots, xG, passes, …). Long form:
+-- one row per (fixture, team, stat type) for easy querying.
+CREATE TABLE af_team_stat (
+  fixture_id    INTEGER,
+  af_team_id    INTEGER,
+  team_id       TEXT,                      -- our slug if mapped
+  stat_type     TEXT,                      -- "Ball Possession", "expected_goals", …
+  stat_value    TEXT,                      -- raw value (e.g. "55%", "1.8")
+  PRIMARY KEY (fixture_id, af_team_id, stat_type)
+);
+
+-- Match events timeline (goals, cards, subs, VAR).
+CREATE TABLE af_event (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  fixture_id    INTEGER,
+  minute        INTEGER, extra INTEGER,
+  af_team_id    INTEGER, team_id TEXT,
+  player_id     INTEGER, player_name TEXT, assist_name TEXT,
+  type          TEXT, detail TEXT
+);
+CREATE INDEX idx_event_fixture ON af_event(fixture_id);
+
+-- Lineups (one per fixture+team) + their players.
+CREATE TABLE af_lineup (
+  fixture_id    INTEGER,
+  af_team_id    INTEGER,
+  team_id       TEXT,
+  formation     TEXT,
+  coach         TEXT,
+  PRIMARY KEY (fixture_id, af_team_id)
+);
+CREATE TABLE af_lineup_player (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  fixture_id    INTEGER,
+  af_team_id    INTEGER,
+  player_id     INTEGER, player_name TEXT, number INTEGER,
+  pos           TEXT, grid TEXT,
+  starter       INTEGER                    -- 1 startXI, 0 sub
+);
+CREATE INDEX idx_lineupp_fixture ON af_lineup_player(fixture_id);
+
+-- Per-player per-match stats (ratings, shots, passes, duels, …).
+CREATE TABLE af_player_stat (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  fixture_id    INTEGER,
+  af_team_id    INTEGER, team_id TEXT,
+  player_id     INTEGER, player_name TEXT,
+  minutes       INTEGER, rating TEXT,
+  goals INTEGER, assists INTEGER,
+  shots INTEGER, shots_on INTEGER,
+  passes INTEGER, pass_accuracy INTEGER,
+  tackles INTEGER, duels_won INTEGER, dribbles INTEGER,
+  yellow INTEGER, red INTEGER, captain INTEGER
+);
+CREATE INDEX idx_pstat_fixture ON af_player_stat(fixture_id);
+CREATE INDEX idx_pstat_player ON af_player_stat(player_id);

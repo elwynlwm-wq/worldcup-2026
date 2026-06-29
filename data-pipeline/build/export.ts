@@ -91,6 +91,22 @@ function main() {
     .all();
   write('af-fixtures.json', afFixtures);
 
+  // standings.json — official group tables (API-Football), grouped by group name.
+  const standingRows = db
+    .prepare(
+      `SELECT group_name AS groupName, rank, team_id AS teamId, team_name_raw AS teamNameRaw,
+              played, win, draw, lose, goals_for AS goalsFor, goals_against AS goalsAgainst,
+              points, form
+       FROM af_standing WHERE team_id IS NOT NULL ORDER BY group_name, rank`,
+    )
+    .all() as Array<{ groupName: string; [k: string]: unknown }>;
+  const standings: Record<string, unknown[]> = {};
+  for (const r of standingRows) {
+    const { groupName, ...rest } = r;
+    (standings[groupName] ??= []).push(rest);
+  }
+  write('standings.json', standings);
+
   // match-goals.json — goalscorers keyed by match id
   const goalRows = db
     .prepare(
@@ -118,6 +134,11 @@ function main() {
       intlResults: count('intl_result'),
       wcMatches: count('wc_match'),
       goals: count('match_goal'),
+      afFixtures: count('af_fixture'),
+      teamMatchStats: count('af_team_stat'),
+      matchEvents: count('af_event'),
+      lineups: count('af_lineup'),
+      playerMatchStats: count('af_player_stat'),
     },
   });
 
