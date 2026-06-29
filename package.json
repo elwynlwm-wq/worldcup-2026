@@ -1,0 +1,29 @@
+{
+  "name": "worldcup-2026",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "World Cup 2026 — predictions, analysis & blog. SEO-first content site.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^7.0.0",
+    "@astrojs/preact": "^6.0.0",
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/typography": "^0.5.20",
+    "@tailwindcss/vite": "^4.3.1",
+    "astro": "^7.0.3",
+    "preact": "^10.29.3",
+    "tailwindcss": "^4.3.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.7.0"
+  }
+}

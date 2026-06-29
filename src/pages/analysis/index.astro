@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Placeholder for the analysis section. This is where the ported Elo model
+// (from the legacy index.html prototype) and data-plane-driven analytics pages
+// will live. See docs/architecture.md — these pages use static or scheduled-rebuild
+// rendering, with live islands only for genuinely in-the-moment data.
+---
+
+<BaseLayout
+  title="Analysis — World Cup 2026"
+  description="Predictions and data-driven analysis for the 2026 World Cup: forecasts, standings and the numbers behind who wins."
+>
+  <section class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-4xl font-extrabold tracking-tight">Analysis</h1>
+    <p class="mt-4 text-lg text-gray-600">
+      Our predictions and data-driven analysis will live here. The forecast model from the
+      prototype is being ported into the site — see <code>docs/architecture.md</code>.
+    </p>
+  </section>
+</BaseLayout>

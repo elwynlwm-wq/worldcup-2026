@@ -1,0 +1,61 @@
+---
+// Standard article layout: a centered, readable column using @tailwindcss/typography.
+// Builds BlogPosting JSON-LD from the article's frontmatter. See docs/seo.md.
+import BaseLayout from './BaseLayout.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'articles'>;
+}
+
+const { entry } = Astro.props;
+const { title, description, publishDate, updatedDate, author } = entry.data;
+
+const canonical = `/articles/${entry.id}/`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: publishDate.toISOString(),
+  ...(updatedDate && { dateModified: updatedDate.toISOString() }),
+  author: { '@type': 'Person', name: author },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': new URL(canonical, Astro.site).href },
+};
+
+const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  type="article"
+  canonical={canonical}
+  publishDate={publishDate}
+  updatedDate={updatedDate}
+  author={author}
+  jsonLd={jsonLd}
+>
+  <article class="mx-auto max-w-3xl px-4 py-10">
+    <header class="mb-8">
+      <h1 class="text-4xl font-extrabold tracking-tight text-balance">{title}</h1>
+      <p class="mt-4 text-lg text-gray-600">{description}</p>
+      <div class="mt-4 flex items-center gap-2 text-sm text-gray-500">
+        <span>{author}</span>
+        <span aria-hidden="true">·</span>
+        <time datetime={publishDate.toISOString()}>{dateFmt.format(publishDate)}</time>
+        {updatedDate && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span>Updated {dateFmt.format(updatedDate)}</span>
+          </>
+        )}
+      </div>
+    </header>
+
+    <div class="prose prose-lg max-w-none prose-headings:tracking-tight">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

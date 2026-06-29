@@ -1,0 +1,19 @@
+---
+// A simple content-library component, droppable into MDX:
+//   <StatCallout label="Win probability" value="23%" />
+// Build static components like this for prose embellishments; reach for a
+// Preact island only when something genuinely needs interactivity.
+// See docs/content-authoring.md.
+interface Props {
+  label: string;
+  value: string;
+  hint?: string;
+}
+const { label, value, hint } = Astro.props;
+---
+
+<div class="not-prose my-6 rounded-xl border border-gray-200 bg-gray-50 p-5">
+  <div class="text-sm font-medium uppercase tracking-wide text-gray-500">{label}</div>
+  <div class="mt-1 text-3xl font-extrabold text-gray-900">{value}</div>
+  {hint && <div class="mt-1 text-sm text-gray-500">{hint}</div>}
+</div>

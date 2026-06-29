@@ -2,6 +2,8 @@
 
 *Companion to the product spec. FIFA Men's World Cup 2026.*
 
+> **Scope note (added 29 June 2026).** This is the **data plane's** schema (see [architecture.md](./architecture.md)). It describes the live/derived football data served by the backend (Cloudflare Workers), not the editorial content plane — articles live in the repo as MDX and are not modelled here (see [content-authoring.md](./content-authoring.md)). Everything below — entities, `sourceRefs`, freshness tiers, the provider abstraction, the sync strategy — still stands as the data plane's design.
+
 ## Principles
 
 The schema describes one tournament's worth of football, normalised so the frontend reads one consistent shape regardless of which API supplies it. Three rules shaped every decision below.

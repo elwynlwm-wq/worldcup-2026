@@ -2,6 +2,8 @@
 
 *FIFA Men's World Cup 2026. Drafted 27 June 2026.*
 
+> **Scope note (added 29 June 2026).** Since this was written, the site has been reframed as two planes — a static **content plane** (articles/blog, in-repo MDX) and a dynamic **data plane** (live/derived football data via a backend). See [architecture.md](./architecture.md). **This spec is now the spec for the data plane.** Its data-driven parts — the entity coverage, freshness tiers, the live football API, the provider abstraction, the sync strategy — all still apply and live on Cloudflare Workers. Where this doc implies the *whole* site is a single API-fed app (e.g. "no editorial or written match reports"), that is superseded: editorial content is now a first-class part of the site via the content plane. Not all of the data plane ships first; treat this as the target design for it, sequenced after the content site. The new stack (Astro/Preact/MDX/Tailwind, Cloudflare) replaces the "Tech direction (proposed)" section below — see [stack.md](./stack.md).
+
 ## What this is
 
 A single source of truth for the 2026 World Cup that gives audiences the information they need to judge who will win: every team, every player, every coach, with recent form, injuries and match stats pulled from a live football API. Voting comes later. v1 earns trust by being the place where the data is complete, current and easy to read.

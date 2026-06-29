@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Tailwind v4 plugin loading (CSS-based config). */
+@plugin "@tailwindcss/typography";
+
+/* Theme tokens go here as we develop the design system.
+   Example (uncomment / extend as the brand takes shape):
+@theme {
+  --color-brand: #009b3a;
+  --font-display: "Inter", system-ui, sans-serif;
+}
+*/
