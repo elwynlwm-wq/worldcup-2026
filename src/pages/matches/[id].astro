@@ -14,8 +14,9 @@ import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
 import { getAfFixtures, getSsPair, getH2H, getMatchDetail, getOddsPair } from '../../lib/warehouse';
 import Flag from '../../components/Flag.astro';
-import { teamColors } from '../../data/teamColors';
 import { storyForMatch, KIND_META } from '../../lib/stories';
+import PlayerModal from '../../components/PlayerModal.astro';
+import CommunityCTA from '../../components/CommunityCTA.astro';
 import { getCollection } from 'astro:content';
 
 const FINISHED = new Set(['FT', 'AET', 'PEN']);
@@ -227,14 +228,12 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
 
     {/* story banner — links to this match's preview/recap (design's storyGrad card) */}
     {matchStory && storyKindMeta && (
-      <a href={`/articles/${matchStory.entry.id}/`} class="kb-card-hover relative mt-3 flex items-center gap-3.5 overflow-hidden rounded-[14px] px-[18px] py-[15px] text-white" style={`background:${teamColors(h.id).c1}`}>
-        {/* dark wash so white text + gold CTA read on any team colour (e.g. bright kits) */}
-        <span class="absolute inset-0" style="background:linear-gradient(90deg,rgba(16,18,24,.55) 0%,rgba(16,18,24,.32) 60%,rgba(16,18,24,.5) 100%)"></span>
-        <span class="relative min-w-0 flex-1">
-          <span class="font-display block text-[10.5px] font-extrabold uppercase tracking-[1px]" style="opacity:.9">{storyKindMeta.bannerLabel}</span>
-          <span class="font-display mt-[3px] block text-[17.5px] font-extrabold leading-[1.15] text-balance" style="text-shadow:0 1px 4px rgba(0,0,0,.4)">{matchStory.entry.data.title}</span>
+      <a href={`/articles/${matchStory.entry.id}/`} class="kb-card-hover mt-3 flex items-center gap-3.5 rounded-[14px] px-[18px] py-[15px] text-white" style={`background:${storyKindMeta.hero}`}>
+        <span class="min-w-0 flex-1">
+          <span class="font-display block text-[10.5px] font-extrabold uppercase tracking-[1px]" style="opacity:.85">{storyKindMeta.bannerLabel}</span>
+          <span class="font-display mt-[3px] block text-[17.5px] font-extrabold leading-[1.15] text-balance">{matchStory.entry.data.title}</span>
         </span>
-        <span class="relative flex-none text-[13px] font-bold" style="color:var(--color-gold)">Read the {storyKindMeta.label.toLowerCase()} →</span>
+        <span class="flex-none text-[13px] font-bold" style="color:var(--color-gold)">Read the {storyKindMeta.label.toLowerCase()} →</span>
       </a>
     )}
 
@@ -413,6 +412,9 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
         </div>
       </div>
     )}
+
+    {/* community CTA — upcoming matches only (per the design) */}
+    {!ended && <CommunityCTA variant="match" />}
   </div>
 
   <script is:inline>
@@ -426,4 +428,5 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
       }));
     })();
   </script>
+  <PlayerModal />
 </BaseLayout>

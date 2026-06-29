@@ -52,7 +52,7 @@
   <p style="color:#6f6655;font-size:14.5px;margin:0 0 12px">{{ favSentence }}</p>
   <div style="height:34px;border-radius:10px;overflow:hidden;display:flex;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px">
     <div style="width:{{ sd.homePct }}%;min-width:30px;background:#1f3fbf;color:#fff;display:flex;align-items:center;justify-content:center">{{ sd.homePct }}</div>
-    <div style="width:{{ sd.drawPct }}%;min-width:30px;background:#e7dfce;color:#6f6655;display:flex;align-items:center;justify-content:center">{{ sd.drawPct }}</div>
+    <div style="width:{{ sd.drawPct }}%;min-width:30px;background:#c2b69c;color:#fff;display:flex;align-items:center;justify-content:center">{{ sd.drawPct }}</div>
     <div style="width:{{ sd.awayPct }}%;min-width:30px;background:#2b2e36;color:#fff;display:flex;align-items:center;justify-content:center">{{ sd.awayPct }}</div>
   </div>
   <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#a59a85;font-weight:700;margin-top:6px">
@@ -106,7 +106,7 @@
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:26px;height:19px;border-radius:4px;background:{{ sd.home.grad }}"></span><b style="font-size:14px">{{ sd.home.name }}</b></div>
       <div style="display:flex;flex-direction:column;gap:7px">
         <sc-for list="{{ homeStars }}" as="p" hint-placeholder-count="3">
-          <a href="{{ p.href }}" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
+          <a onClick="{{ p.onOpen }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
             <img src="assets/avatar.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:1.5px solid {{ p.posColor }};background:#e7e2d4" />
             <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:10px;color:#fff;background:{{ p.posColor }};padding:3px 6px;border-radius:6px;flex:none">{{ p.pos }}</span>
             <span style="flex:1;min-width:0"><b style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><span style="font-size:11px;color:#a59a85">{{ p.club }}</span></span>
@@ -119,7 +119,7 @@
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:26px;height:19px;border-radius:4px;background:{{ sd.away.grad }}"></span><b style="font-size:14px">{{ sd.away.name }}</b></div>
       <div style="display:flex;flex-direction:column;gap:7px">
         <sc-for list="{{ awayStars }}" as="p" hint-placeholder-count="3">
-          <a href="{{ p.href }}" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
+          <a onClick="{{ p.onOpen }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
             <img src="assets/avatar.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:1.5px solid {{ p.posColor }};background:#e7e2d4" />
             <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:10px;color:#fff;background:{{ p.posColor }};padding:3px 6px;border-radius:6px;flex:none">{{ p.pos }}</span>
             <span style="flex:1;min-width:0"><b style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><span style="font-size:11px;color:#a59a85">{{ p.club }}</span></span>
@@ -142,7 +142,7 @@ class Component extends DCLogic {
     const POSCOLOR={GK:'#e0a200',DF:'#5b6470',MF:'#1f7a4d',FW:'#b23b2e'};
     const factors = (sd.factors||[]).map(f=>({ ...f,
       hColor: f.hWin?'#0d6b46':'#b3a890', aColor: f.hWin?'#b3a890':'#0d6b46' }));
-    const star = (arr)=> (arr||[]).map(p=>({ href:'#/player/'+p.id, name:p.name, pos:p.pos, posColor:POSCOLOR[p.pos], club:p.club, goals:p.goals }));
+    const star = (arr)=> (arr||[]).map(p=>({ onOpen:p.onOpen, name:p.name, pos:p.pos, posColor:POSCOLOR[p.pos], club:p.club, goals:p.goals }));
     // best (lowest) price per column highlighted
     const ods = sd.odds||[];
     const best = (key)=> ods.reduce((m,o)=>Math.min(m, parseFloat(o[key])), 99);

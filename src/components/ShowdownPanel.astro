@@ -10,6 +10,7 @@ import { getTeamPlayers } from '../lib/warehouse';
 import { provider } from '../lib/provider';
 import Flag from './Flag.astro';
 import Avatar from './analysis/Avatar.astro';
+import { playerTriggerAttrs } from '../lib/playerModal';
 
 interface Props {
   home: Team;
@@ -87,7 +88,7 @@ const matchKey = [home.id, away.id].sort().join('|');
             class="flex flex-1 items-center justify-center gap-2.5 rounded-[12px] px-4 py-3 text-center text-white"
             style={`border:2.5px solid ${isPick ? 'var(--color-gold)' : 'rgba(255,255,255,.15)'};background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), ${c.c1}`}
           >
-            <Flag team={t.id} w={30} class="flex-none shadow-[0_3px_8px_-2px_rgba(0,0,0,.5)]" />
+            <Flag team={t.id} w={34} class="flex-none border-2 border-white/70 shadow-[0_3px_8px_-2px_rgba(0,0,0,.5)]" />
             <span class="min-w-0">
               <span class="font-display block text-[15px] font-extrabold leading-tight" style="text-shadow:0 1px 4px rgba(0,0,0,.55)">{t.name}</span>
               <span class="block text-[11.5px] font-bold" style="opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,.5)">
@@ -168,18 +169,18 @@ const matchKey = [home.id, away.id].sort().join('|');
   <>
   {/* STAR MEN TO WATCH */}
   <h2 class="font-display mt-[26px] mb-3 text-[21px] font-extrabold">Star men to watch</h2>
-  <div class="grid items-start gap-4" style="grid-template-columns:1fr 1fr">
+  <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
     {[home, away].map((t) => (
       <div>
         <div class="mb-2.5 flex items-center gap-2"><Flag team={t.id} w={26} /><b class="text-[14px]">{t.name}</b></div>
         <div class="flex flex-col gap-2">
           {starsFor(t.id).map((p) => (
-            <a href={`/players/${p.id}/`} class="kb-card-hover flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+            <button {...playerTriggerAttrs(p)} class="kb-card-hover flex w-full cursor-pointer items-center gap-2.5 rounded-[11px] border px-3 py-2.5 text-left" style="background:var(--color-surface);border-color:var(--color-line-2)">
               <Avatar name={p.name} position={p.pos} photo={photoFor(p.name)} size={34} />
               <span class="font-display flex-none rounded-md px-1.5 py-0.5 text-[10px] font-extrabold text-white" style={`background:${p.pos === 'GK' ? '#e0a200' : p.pos === 'DF' ? '#5b6470' : p.pos === 'MF' ? '#1f7a4d' : '#b23b2e'}`}>{POSNAME[p.pos] ?? p.pos}</span>
               <span class="min-w-0 flex-1"><b class="block truncate text-[13px]">{p.name}</b><span class="text-[11px]" style="color:var(--color-ink-3)">{p.club}</span></span>
               <span class="font-display flex-none text-[13px] font-extrabold" style="color:var(--color-royal)">{p.goals}G</span>
-            </a>
+            </button>
           ))}
         </div>
       </div>

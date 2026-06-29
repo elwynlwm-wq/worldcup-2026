@@ -5,6 +5,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { provider } from '../lib/provider';
 import { teamIso } from '../data/teamFlags';
+import PlayerModal from '../components/PlayerModal.astro';
+import { playerModalData } from '../lib/playerModal';
 
 // Real country flag URL (matches Flag.astro), or '' when we have no flag.
 const flagUrl = (slug: string) => (teamIso(slug) ? `/flags-country/${slug}.svg` : '');
@@ -18,7 +20,8 @@ const playerIndex = provider.getAllPlayers()
   .slice(0, 400)
   .map((p) => {
     const t = provider.getTeam(p.teamId)!;
-    return { n: p.name, m: `${p.pos} · ${t.shortCode} · ${p.club}`, f: flagUrl(p.teamId), h: `/players/${p.id}/` };
+    // d = full modal payload so a search hit opens the player modal (no page).
+    return { n: p.name, m: `${p.pos} · ${t.shortCode} · ${p.club}`, f: flagUrl(p.teamId), d: playerModalData(p) };
   });
 ---
 
@@ -71,11 +74,13 @@ const playerIndex = provider.getAllPlayers()
           `<a href="${t.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:12px 14px">${flag(t.f, 30)}<b>${t.n}</b></a>`).join('');
       }
       if (players.length) {
+        const escAttr = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
         document.getElementById('players-block').style.display = '';
         document.getElementById('players-results').innerHTML = players.map((p) =>
-          `<a href="${p.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">${flag(p.f, 26)}<span style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</b><span style="color:#a59a85;font-size:12px">${p.m}</span></span></a>`).join('');
+          `<button data-player="${escAttr(JSON.stringify(p.d))}" class="kb-card-hover" style="cursor:pointer;text-align:left;display:flex;align-items:center;gap:11px;width:100%;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">${flag(p.f, 26)}<span style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</b><span style="color:#a59a85;font-size:12px">${p.m}</span></span></button>`).join('');
       }
       if (!teams.length && !players.length) empty.style.display = '';
     })();
   </script>
+  <PlayerModal />
 </BaseLayout>

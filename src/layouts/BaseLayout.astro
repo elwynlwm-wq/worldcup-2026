@@ -48,7 +48,7 @@ const href = (key: string) =>
       class="sticky top-0 z-40 border-b backdrop-blur"
       style="background:rgba(231,226,212,.86);border-color:var(--color-line-2)"
     >
-      <div class="mx-auto flex max-w-[1080px] flex-wrap items-center gap-4 px-5 py-3">
+      <div class="mx-auto flex max-w-[1080px] items-center gap-4 px-5 py-3">
         <a href="/" class="font-display flex flex-none items-center gap-2 text-[20px] font-black tracking-tight">
           <span
             class="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] text-[16px]"
@@ -57,33 +57,61 @@ const href = (key: string) =>
           >
           Kick<span style="color:var(--color-royal)">about</span>
         </a>
-        <nav class="flex flex-1 flex-wrap gap-1">
+        {/* desktop nav */}
+        <nav class="hidden flex-1 flex-wrap gap-1 md:flex">
           {NAV.map(([key, label]) => (
             <a
               href={href(key)}
               class:list={['rounded-[10px] px-3 py-2 text-sm font-bold transition']}
-              style={
-                active === key
-                  ? 'color:#fff;background:var(--color-night)'
-                  : 'color:var(--color-ink-2)'
-              }
+              style={active === key ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2)'}
             >
               {label}
             </a>
           ))}
         </nav>
-        <form action="/search" method="get" class="flex items-center gap-2 rounded-[11px] border px-3 py-2"
+        {/* desktop search */}
+        <form action="/search" method="get" class="ml-auto hidden items-center gap-2 rounded-[11px] border px-3 py-2 md:flex"
           style="background:#fff;border-color:var(--color-line)">
           <span style="color:var(--color-ink-3)">⌕</span>
-          <input
-            name="q"
-            placeholder="Search teams, players…"
-            class="w-[150px] border-none bg-transparent text-sm outline-none"
-            style="font-family:inherit;color:var(--color-ink)"
-          />
+          <input name="q" placeholder="Search teams, players…" class="w-[150px] border-none bg-transparent text-sm outline-none" style="font-family:inherit;color:var(--color-ink)" />
+        </form>
+        {/* mobile actions: search toggle + hamburger */}
+        <div class="ml-auto flex items-center gap-2 md:hidden">
+          <button id="m-search-btn" aria-label="Search" class="flex h-9 w-9 items-center justify-center rounded-[10px] border" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">⌕</button>
+          <button id="m-nav-btn" aria-label="Menu" class="flex h-9 w-9 items-center justify-center rounded-[10px] border text-[15px]" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">☰</button>
+        </div>
+      </div>
+
+      {/* mobile search dropdown */}
+      <div id="m-search" class="mx-auto hidden max-w-[1080px] px-5 pb-3 md:!hidden">
+        <form action="/search" method="get" class="flex items-center gap-2 rounded-[11px] border px-3 py-2.5" style="background:#fff;border-color:var(--color-line)">
+          <span style="color:var(--color-ink-3)">⌕</span>
+          <input name="q" placeholder="Search teams, players…" class="w-full border-none bg-transparent text-sm outline-none" style="font-family:inherit;color:var(--color-ink)" />
         </form>
       </div>
+
+      {/* mobile nav dropdown */}
+      <nav id="m-nav" class="mx-auto hidden max-w-[1080px] flex-col gap-1 px-5 pb-3 md:!hidden">
+        {NAV.map(([key, label]) => (
+          <a
+            href={href(key)}
+            class="rounded-[10px] px-3 py-2.5 text-[15px] font-bold"
+            style={active === key ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2)'}
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
     </header>
+    <script is:inline>
+      (() => {
+        const tgl = (el) => { if (el) el.style.display = el.style.display === 'flex' ? 'none' : 'flex'; };
+        const nav = document.getElementById('m-nav');
+        const search = document.getElementById('m-search');
+        document.getElementById('m-nav-btn')?.addEventListener('click', () => { if (search) search.style.display = 'none'; tgl(nav); });
+        document.getElementById('m-search-btn')?.addEventListener('click', () => { if (nav) nav.style.display = 'none'; tgl(search); const i = search?.querySelector('input'); if (search?.style.display === 'flex') setTimeout(() => i?.focus(), 30); });
+      })();
+    </script>
 
     <main class="mx-auto w-full max-w-[1080px] flex-1 px-5 pt-6 pb-[70px]">
       <slot />

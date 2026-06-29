@@ -54,11 +54,9 @@ const kindOf = (tags: string[] = []) => {
   return { label: 'Feature', accent: '#b23b2e' };
 };
 
-// Featured hero base colour — first team in the featured story's tags, else night.
-const featuredHero = (() => {
-  const m = featured ? storyMatch(featured.data.tags) : null;
-  return m ? teamColors(m.a.id).c1 : '#16181d';
-})();
+// Featured hero base colour — FIXED by story kind (design), not by team.
+const HERO_BY_KIND: Record<string, string> = { Preview: '#11643f', Recap: '#9d2730', Feature: '#1f3fbf' };
+const featuredHero = featured ? (HERO_BY_KIND[kindOf(featured.data.tags).label] ?? '#16181d') : '#16181d';
 
 const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kickabout', url: Astro.site?.href };
 ---

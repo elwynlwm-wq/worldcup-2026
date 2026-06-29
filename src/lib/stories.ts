@@ -8,10 +8,12 @@ import { getAfFixtures, type AfFixture } from './warehouse';
 import type { CollectionEntry } from 'astro:content';
 
 export type StoryKind = 'preview' | 'recap' | 'feature';
-export const KIND_META: Record<StoryKind, { label: string; accent: string; bannerLabel: string }> = {
-  preview: { label: 'Preview', accent: '#1f3fbf', bannerLabel: 'Match preview' },
-  recap: { label: 'Recap', accent: '#138a5e', bannerLabel: 'Match recap' },
-  feature: { label: 'Feature', accent: '#b23b2e', bannerLabel: 'Feature' },
+// `hero` is the FIXED panel colour per kind (design: HEROGRAD) — story heroes and
+// the match→story banner are coloured by kind, NOT by team.
+export const KIND_META: Record<StoryKind, { label: string; accent: string; bannerLabel: string; hero: string }> = {
+  preview: { label: 'Preview', accent: '#1f3fbf', bannerLabel: 'Match preview', hero: '#11643f' },
+  recap: { label: 'Recap', accent: '#138a5e', bannerLabel: 'Match recap', hero: '#9d2730' },
+  feature: { label: 'Feature', accent: '#b23b2e', bannerLabel: 'Feature', hero: '#1f3fbf' },
 };
 
 const FINISHED = new Set(['FT', 'AET', 'PEN']);

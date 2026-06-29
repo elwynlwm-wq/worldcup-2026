@@ -13,6 +13,8 @@ import { teamColors } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
 import { storyMeta, KIND_META } from '../../lib/stories';
+import PlayerModal from '../../components/PlayerModal.astro';
+import { playerTriggerAttrs } from '../../lib/playerModal';
 
 export function getStaticPaths() {
   return provider.getTeams().map((t) => ({ params: { id: t.id }, props: { teamId: t.id } }));
@@ -104,26 +106,25 @@ const jsonLd = {
       ))}
     </div>
 
-    {nextMatch && (
-      <a
-        href={matchHref(nextMatch)}
-        class="kb-card-hover mt-4 inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-sm font-bold text-white"
-        style="background:var(--color-night)"
-      >⚡ {nextMatch.status === 'FT' ? 'See' : 'Predict'} {t.name}’s {nextMatch.status === 'FT' ? 'last match' : 'next match'}</a>
-    )}
-
-    {/* Matches — all of this team's fixtures (played + upcoming) */}
+    {/* Matches — all of this team's fixtures (played + upcoming). Center slot:
+        final score for finished, a Predict button for upcoming (per the design). */}
     {matches.length > 0 && (
       <>
         <h2 class="font-display mt-7 mb-3 text-[20px] font-extrabold">Matches</h2>
         <div class="flex flex-col gap-2.5">
           {matches.map((m) => {
             const hh = provider.getTeam(m.homeTeamId)!, aa = provider.getTeam(m.awayTeamId)!;
-            const center = m.status === 'FT' ? `${m.homeScore}–${m.awayScore}` : 'vs';
+            const finished = m.status === 'FT';
             return (
               <a href={matchHref(m)} class="kb-card-hover flex items-center justify-between rounded-[13px] border px-4 py-3" style="background:var(--color-surface);border-color:var(--color-line-2)">
                 <div class="flex flex-1 items-center gap-2.5"><Flag team={hh.id} w={28} /><b class="text-[14px]">{hh.name}</b></div>
-                <div class="font-display flex-none px-3 text-[15px] font-black" style={m.status === 'FT' ? '' : 'color:var(--color-ink-3)'}>{center}</div>
+                <div class="flex flex-none justify-center px-3" style="min-width:96px">
+                  {finished ? (
+                    <span class="font-display text-[15px] font-black">{m.homeScore}–{m.awayScore}</span>
+                  ) : (
+                    <span class="font-display inline-flex items-center gap-1.5 rounded-[8px] px-[14px] py-[6px] text-[11.5px] font-extrabold tracking-[.3px] text-white" style="background:var(--color-night)">Predict</span>
+                  )}
+                </div>
                 <div class="flex flex-1 items-center justify-end gap-2.5"><b class="text-[14px]">{aa.name}</b><Flag team={aa.id} w={28} /></div>
               </a>
             );
@@ -166,8 +167,8 @@ const jsonLd = {
     <h2 class="font-display mt-7 mb-3 text-[20px] font-extrabold">Star players</h2>
     <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
       {stars.map((p) => (
-        <a href={`/players/${p.id}/`} class="kb-card-hover flex items-center gap-3 rounded-[14px] border p-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
-          <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={46} />
+        <button {...playerTriggerAttrs(p)} class="kb-card-hover flex w-full cursor-pointer items-center gap-3 rounded-[14px] border p-3.5 text-left" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={54} />
           <div class="min-w-0 flex-1">
             <b class="block truncate text-[15px]">{p.name}</b>
             <div class="text-xs" style="color:var(--color-ink-3)">{posName[p.pos]} · {p.club}</div>
@@ -176,7 +177,7 @@ const jsonLd = {
             <div class="font-display text-[16px] font-black" style="color:var(--color-royal)">{p.goals}</div>
             <div class="text-[11px]" style="color:var(--color-ink-3)">goals</div>
           </div>
-        </a>
+        </button>
       ))}
     </div>
 
@@ -186,16 +187,17 @@ const jsonLd = {
         <h3 class="font-display mt-[18px] mb-2 text-[15px] font-extrabold" style="color:var(--color-ink-2)">{label}</h3>
         <div class="grid gap-2.5" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
           {byPos(pos).map((p) => (
-            <a href={`/players/${p.id}/`} class="kb-card-hover flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-surface-3)">
-              <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={34} />
+            <button {...playerTriggerAttrs(p)} class="kb-card-hover flex w-full cursor-pointer items-center gap-2.5 rounded-[11px] border px-3 py-2.5 text-left" style="background:var(--color-surface);border-color:var(--color-surface-3)">
+              <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={46} />
               <span class="min-w-0 flex-1">
                 <b class="block truncate text-[13.5px]">{p.name}</b>
                 <span class="text-[11.5px]" style="color:var(--color-ink-3)">{p.age}y · {p.club} · {p.goals}g</span>
               </span>
-            </a>
+            </button>
           ))}
         </div>
       </div>
     ))}
   </div>
+  <PlayerModal />
 </BaseLayout>

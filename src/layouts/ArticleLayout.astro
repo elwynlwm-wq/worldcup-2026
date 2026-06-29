@@ -4,9 +4,9 @@
 import BaseLayout from './BaseLayout.astro';
 import type { CollectionEntry } from 'astro:content';
 import { provider } from '../lib/provider';
-import { teamGrad } from '../data/teamColors';
 import Flag from '../components/Flag.astro';
-import { fixtureForStory, matchHref } from '../lib/stories';
+import { fixtureForStory, matchHref, KIND_META } from '../lib/stories';
+import CommunityCTA from '../components/CommunityCTA.astro';
 
 interface Props {
   entry: CollectionEntry<'articles'>;
@@ -19,17 +19,13 @@ const canonical = `/articles/${entry.id}/`;
 
 // Derive kind + the two teams from tags (matches the stories hub vocabulary).
 const tags = (entry.data.tags || []).map((t) => t.toLowerCase());
-const KIND = {
-  preview: { label: 'Preview', accent: '#1f3fbf' },
-  recap: { label: 'Recap', accent: '#138a5e' },
-  feature: { label: 'Feature', accent: '#b23b2e' },
-} as const;
 const kindKey = (['preview', 'recap', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
-const kind = KIND[kindKey];
+const kind = KIND_META[kindKey];
 const teamIds = new Set(provider.getTeams().map((t) => t.id));
 const matchTeams = tags.filter((t) => teamIds.has(t)).slice(0, 2).map((id) => provider.getTeam(id)!);
 const [ta, tb] = matchTeams;
-const heroColor = ta ? teamGrad(ta.id) : 'var(--color-night)';
+// Hero panel colour is FIXED by kind (design), not by team.
+const heroColor = kind.hero;
 const readMins = Math.max(1, Math.round((entry.body?.split(/\s+/).length ?? 200) / 200));
 const dateMed = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
 
@@ -91,6 +87,8 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
     <div class="mt-3.5 border-t pt-4 text-[13px]" style="border-color:#e4dccd;color:#a59a85">
       {author}. Built on real squads, standings and our prediction model — not betting advice.
     </div>
+
+    <CommunityCTA variant="story" />
   </article>
 
   <style>

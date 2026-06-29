@@ -19,6 +19,7 @@
   ::selection{background:#f3b50a}
   @keyframes kb-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @keyframes kb-pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes kb-fade{from{opacity:0}to{opacity:1}}
   @keyframes kb-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
   .kb-route{animation:kb-rise .28s ease both}
   .kb-card-hover{transition:transform .12s ease, box-shadow .12s ease}
@@ -188,7 +189,7 @@
                 <div style="display:flex;align-items:center;gap:7px"><b>{{ m.away.code }}</b><span style="width:26px;height:19px;border-radius:4px;background:{{ m.away.grad }}"></span></div>
               </div>
               <div style="margin-top:11px;height:9px;border-radius:6px;overflow:hidden;display:flex">
-                <span style="width:{{ m.homePct }}%;background:#1f3fbf"></span><span style="width:{{ m.drawPct }}%;background:#d8cfbf"></span><span style="width:{{ m.awayPct }}%;background:#2b2e36"></span>
+                <span style="width:{{ m.homePct }}%;background:#1f3fbf"></span><span style="width:{{ m.drawPct }}%;background:#c2b69c"></span><span style="width:{{ m.awayPct }}%;background:#2b2e36"></span>
               </div>
               <div style="margin-top:8px;font-size:12px;font-weight:700;color:#6f6655">{{ m.favLine }}</div>
             </a>
@@ -354,6 +355,15 @@
           </sc-for>
         </div>
         <div style="border-top:1px solid #e4dccd;margin-top:14px;padding-top:16px;color:#a59a85;font-size:13px">{{ story.byline }}. Built on real squads, standings and our prediction model — not betting advice.</div>
+        <div class="kb-card-hover" style="cursor:pointer;display:block;position:relative;overflow:hidden;background:#16181d;border-radius:18px;padding:24px 26px;margin-top:22px;color:#fff">
+          <div style="position:absolute;top:-30px;right:-20px;width:210px;height:200px;background:url('assets/pitch.svg') no-repeat center/contain;opacity:.5;pointer-events:none"></div>
+          <div style="position:relative;z-index:2">
+            <div style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#f3b50a">Kickabout community</div>
+            <div style="font-family:'Archivo';font-weight:900;font-size:23px;letter-spacing:-.5px;margin:8px 0 6px;max-width:480px;text-wrap:balance">Got a take on this one?</div>
+            <div style="font-family:'Newsreader',Georgia,serif;font-size:15.5px;opacity:.9;max-width:520px;line-height:1.45">Join the community to post your prediction, argue it out with other fans, and see who actually called the result.</div>
+            <span style="display:inline-flex;align-items:center;gap:7px;margin-top:15px;background:#f3b50a;color:#16181d;font-family:'Archivo';font-weight:800;font-size:14px;padding:10px 17px;border-radius:11px">Join the community →</span>
+          </div>
+        </div>
       </article>
       </sc-if>
       <sc-if value="{{ story.missing }}" hint-placeholder-val="{{ false }}">
@@ -366,12 +376,9 @@
     <!-- ======================= MATCHES ======================= -->
     <sc-if value="{{ isMatches }}" hint-placeholder-val="{{ false }}">
     <div class="kb-route">
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px">
-        <div>
-          <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Matches</h1>
-          <p style="color:#6f6655;font-size:15px;margin:0">What's next, what just happened, and who we think wins.</p>
-        </div>
-        <a href="#/predict" class="kb-card-hover" style="display:inline-flex;align-items:center;gap:8px;background:#16181d;color:#fff;font-weight:700;font-size:14px;padding:11px 16px;border-radius:12px">⚡ Predict any matchup</a>
+      <div>
+        <h1 style="font-family:'Archivo';font-weight:900;font-size:34px;letter-spacing:-1px;margin:4px 0 2px">Matches</h1>
+        <p style="color:#6f6655;font-size:15px;margin:0">What's next, what just happened, and who we think wins.</p>
       </div>
       <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:26px 0 12px">Round of 32 · this weekend</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:15px">
@@ -383,7 +390,7 @@
             </div>
             <div style="display:flex;align-items:center;gap:9px"><span style="width:34px;height:24px;border-radius:5px;background:{{ m.away.grad }}"></span><b style="font-size:16px">{{ m.away.name }}</b></div>
             <div style="margin-top:13px;height:10px;border-radius:6px;overflow:hidden;display:flex">
-              <span style="width:{{ m.homePct }}%;background:#1f3fbf"></span><span style="width:{{ m.drawPct }}%;background:#d8cfbf"></span><span style="width:{{ m.awayPct }}%;background:#2b2e36"></span>
+              <span style="width:{{ m.homePct }}%;background:#1f3fbf"></span><span style="width:{{ m.drawPct }}%;background:#c2b69c"></span><span style="width:{{ m.awayPct }}%;background:#2b2e36"></span>
             </div>
             <div style="margin-top:8px;font-size:13px;font-weight:700;color:#6f6655">{{ m.favLine }} · tap to vote</div>
           </a>
@@ -467,24 +474,7 @@
 
       <sc-if value="{{ matchVM.showStats }}" hint-placeholder-val="{{ false }}">
         <sc-if value="{{ matchVM.finished }}" hint-placeholder-val="{{ true }}">
-        <div style="max-width:600px;margin:18px auto 0">
-          <sc-if value="{{ matchVM.hasGoals }}" hint-placeholder-val="{{ false }}">
-            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px 18px;margin-bottom:14px">
-              <div style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#a59a85;text-align:center;margin-bottom:11px">⚽ Goals</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-                <div style="display:flex;flex-direction:column;gap:6px">
-                  <sc-for list="{{ matchVM.scorers.home }}" as="g" hint-placeholder-count="2">
-                    <div style="font-size:14px"><b>{{ g.name }}</b> <span style="color:#a59a85;font-weight:700">{{ g.minute }}'</span></div>
-                  </sc-for>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:6px;text-align:right">
-                  <sc-for list="{{ matchVM.scorers.away }}" as="g" hint-placeholder-count="1">
-                    <div style="font-size:14px"><span style="color:#a59a85;font-weight:700">{{ g.minute }}'</span> <b>{{ g.name }}</b></div>
-                  </sc-for>
-                </div>
-              </div>
-            </div>
-          </sc-if>
+        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px;align-items:start;margin-top:18px" class="kb-home-grid">
           <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:6px 18px 14px">
             <div style="display:flex;align-items:center;justify-content:center;gap:11px;padding:13px 0 9px;border-bottom:1px solid #f1ebdf;margin-bottom:6px">
               <span style="width:26px;height:18px;border-radius:3px;background:{{ matchVM.home.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
@@ -507,54 +497,71 @@
               </div>
             </sc-for>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-if value="{{ matchVM.hasGoals }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px 18px">
+                <div style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#a59a85;text-align:center;margin-bottom:11px">⚽ Goals</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ matchVM.scorers.home }}" as="g" hint-placeholder-count="2">
+                      <div style="font-size:14px"><b>{{ g.name }}</b> <span style="color:#a59a85;font-weight:700">{{ g.minute }}'</span></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px;text-align:right">
+                    <sc-for list="{{ matchVM.scorers.away }}" as="g" hint-placeholder-count="1">
+                      <div style="font-size:14px"><span style="color:#a59a85;font-weight:700">{{ g.minute }}'</span> <b>{{ g.name }}</b></div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
             <sc-for list="{{ matchVM.facts }}" as="f" hint-placeholder-count="3">
-              <div style="background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:11px 13px">
+              <div style="background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:12px 15px">
                 <div style="font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#a59a85">{{ f.label }}</div>
                 <div style="font-size:13.5px;font-weight:700;margin-top:3px;line-height:1.25">{{ f.value }}</div>
               </div>
             </sc-for>
+            <div style="color:#a59a85;font-size:12px;line-height:1.45">Sample data for layout — live stats, goals and match facts arrive from the data feed.</div>
           </div>
-          <div style="margin-top:12px;color:#a59a85;font-size:12px;text-align:center">Sample data for layout — live stats, goals and match facts arrive from the data feed.</div>
         </div>
         </sc-if>
         <sc-if value="{{ matchVM.upcoming }}" hint-placeholder-val="{{ false }}">
-        <div style="max-width:600px;margin:18px auto 0">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:14px 16px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:24px;height:17px;border-radius:3px;background:{{ matchVM.home.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span><b style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ matchVM.home.name }}</b></div>
-              <div style="font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#a59a85;margin-bottom:6px">Form · last 5</div>
-              <div style="display:flex;gap:5px">
-                <sc-for list="{{ matchVM.preMatch.formHome }}" as="f" hint-placeholder-count="5">
-                  <span style="width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:800;font-size:12px;color:{{ f.color }};background:{{ f.bg }}">{{ f.ch }}</span>
+        <div style="margin-top:18px">
+          <div style="display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;align-items:stretch" class="kb-home-grid">
+            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:16px 18px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="width:26px;height:18px;border-radius:3px;background:{{ matchVM.home.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span><b style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ matchVM.home.name }}</b></div>
+              <div style="font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#a59a85;margin-bottom:8px">{{ matchVM.preMatch.formLabel }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ matchVM.preMatch.formHome }}" as="f" hint-placeholder-count="4">
+                  <span style="width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:800;font-size:13px;color:{{ f.color }};background:{{ f.bg }}">{{ f.ch }}</span>
                 </sc-for>
               </div>
             </div>
-            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:14px 16px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:24px;height:17px;border-radius:3px;background:{{ matchVM.away.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span><b style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ matchVM.away.name }}</b></div>
-              <div style="font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#a59a85;margin-bottom:6px">Form · last 5</div>
-              <div style="display:flex;gap:5px">
-                <sc-for list="{{ matchVM.preMatch.formAway }}" as="f" hint-placeholder-count="5">
-                  <span style="width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:800;font-size:12px;color:{{ f.color }};background:{{ f.bg }}">{{ f.ch }}</span>
+            <div style="background:#16181d;color:#fff;border-radius:14px;padding:18px;text-align:center;display:flex;flex-direction:column;justify-content:center">
+              <div style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#f3b50a">Head to head</div>
+              <div style="font-family:'Archivo';font-weight:900;font-size:24px;margin-top:8px;line-height:1.05">{{ matchVM.preMatch.h2h.line }}</div>
+              <div style="font-size:12px;color:#a59a85;margin-top:4px">{{ matchVM.preMatch.h2h.sub }}</div>
+            </div>
+            <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:16px 18px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="width:26px;height:18px;border-radius:3px;background:{{ matchVM.away.grad }};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span><b style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ matchVM.away.name }}</b></div>
+              <div style="font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#a59a85;margin-bottom:8px">{{ matchVM.preMatch.formLabel }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ matchVM.preMatch.formAway }}" as="f" hint-placeholder-count="4">
+                  <span style="width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:800;font-size:13px;color:{{ f.color }};background:{{ f.bg }}">{{ f.ch }}</span>
                 </sc-for>
               </div>
             </div>
           </div>
-          <div style="background:#16181d;color:#fff;border-radius:14px;padding:16px 18px;margin-top:12px;text-align:center">
-            <div style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#f3b50a">Head to head</div>
-            <div style="font-family:'Archivo';font-weight:900;font-size:21px;margin-top:6px">{{ matchVM.preMatch.h2h.line }}</div>
-            <div style="font-size:12px;color:#a59a85;margin-top:3px">{{ matchVM.preMatch.h2h.sub }}</div>
-          </div>
-          <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:6px 18px 14px;margin-top:12px">
+          <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:6px 22px 16px;margin-top:14px">
             <div style="text-align:center;font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#a59a85;padding:13px 0 9px;border-bottom:1px solid #f1ebdf;margin-bottom:6px">Season form compared</div>
             <sc-for list="{{ matchVM.preMatch.rows }}" as="s" hint-placeholder-count="4">
-              <div style="padding:8px 0;border-bottom:1px solid #f4eee1">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+              <div style="padding:9px 0;border-bottom:1px solid #f4eee1">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                   <b style="font-family:'Archivo';font-size:14px;width:52px">{{ s.home }}</b>
                   <span style="color:#6f6655;font-weight:600;font-size:12.5px">{{ s.label }}</span>
                   <b style="font-family:'Archivo';font-size:14px;width:52px;text-align:right">{{ s.away }}</b>
                 </div>
-                <div style="display:flex;gap:5px;height:5px">
+                <div style="display:flex;gap:6px;height:6px">
                   <span style="flex:1;display:flex;justify-content:flex-end;background:#f0e9db;border-radius:3px;overflow:hidden"><span style="width:{{ s.homePct }}%;background:#1f3fbf;border-radius:3px"></span></span>
                   <span style="flex:1;background:#f0e9db;border-radius:3px;overflow:hidden"><span style="display:block;width:{{ s.awayPct }}%;height:100%;background:#2b2e36;border-radius:3px"></span></span>
                 </div>
@@ -603,7 +610,7 @@
             <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:5.5%;height:26%;border:1.5px solid rgba(255,255,255,.14);border-left:none;border-radius:0 6px 6px 0"></div>
             <div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:5.5%;height:26%;border:1.5px solid rgba(255,255,255,.14);border-right:none;border-radius:6px 0 0 6px"></div>
             <sc-for list="{{ matchVM.lineupTokens }}" as="p" hint-placeholder-count="22">
-              <a href="{{ p.href }}" style="position:absolute;left:{{ p.x }}%;top:{{ p.y }}%;transform:translate(-50%,-50%);width:66px;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center">
+              <a onClick="{{ p.onOpen }}" style="cursor:pointer;position:absolute;left:{{ p.x }}%;top:{{ p.y }}%;transform:translate(-50%,-50%);width:66px;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center">
                 <span style="position:relative;width:38px;height:34px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.55))">
                   <svg viewBox="0 0 64 56" style="width:100%;height:100%;display:block"><path d="M20 6 L6 13 L11 25 L19 22 L19 50 L45 50 L45 22 L53 25 L58 13 L44 6 C44 12 38 15 32 15 C26 15 20 12 20 6 Z" fill="{{ p.fill }}" stroke="rgba(255,255,255,.92)" stroke-width="2.5" stroke-linejoin="round"></path></svg>
                   <span style="position:absolute;left:0;right:0;top:46%;transform:translateY(-50%);font-family:'Archivo';font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)">{{ p.number }}</span>
@@ -649,6 +656,17 @@
           <div style="display:flex;gap:16px;flex:none">
             <a href="{{ matchVM.home.href }}" style="color:#1f3fbf;font-weight:700;font-size:13px;white-space:nowrap">{{ matchVM.home.code }} squad →</a>
             <a href="{{ matchVM.away.href }}" style="color:#1f3fbf;font-weight:700;font-size:13px;white-space:nowrap">{{ matchVM.away.code }} squad →</a>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ matchVM.upcoming }}" hint-placeholder-val="{{ false }}">
+        <div class="kb-card-hover" style="cursor:pointer;display:block;position:relative;overflow:hidden;background:#16181d;border-radius:18px;padding:26px 28px;margin-top:20px;color:#fff">
+          <div style="position:absolute;top:-30px;right:-20px;width:230px;height:210px;background:url('assets/pitch.svg') no-repeat center/contain;opacity:.5;pointer-events:none"></div>
+          <div style="position:relative;z-index:2">
+            <div style="font-family:'Archivo';font-weight:800;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#f3b50a">Kickabout community</div>
+            <div style="font-family:'Archivo';font-weight:900;font-size:25px;letter-spacing:-.5px;margin:8px 0 6px;max-width:520px;text-wrap:balance">Got a call on this one? Stake your claim.</div>
+            <div style="font-family:'Newsreader',Georgia,serif;font-size:16px;opacity:.9;max-width:540px;line-height:1.45">Lock in your prediction, back up your hot take, and climb the tipsters' table. The sharpest reads — and the boldest calls — rise to the top.</div>
+            <span style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;background:#f3b50a;color:#16181d;font-family:'Archivo';font-weight:800;font-size:14px;padding:11px 18px;border-radius:11px">Join the community →</span>
           </div>
         </div>
       </sc-if>
@@ -709,14 +727,20 @@
           <div style="background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:15px"><div style="font-family:'Archivo';font-weight:900;font-size:26px;letter-spacing:-.5px;color:#16181d">{{ k.value }}</div><div style="color:#6f6655;font-size:12.5px;font-weight:600;margin-top:1px">{{ k.label }}</div></div>
         </sc-for>
       </div>
-      <a href="{{ teamVM.predictHref }}" class="kb-card-hover" style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:#16181d;color:#fff;font-weight:700;font-size:14px;padding:11px 16px;border-radius:12px">⚡ Predict a match for {{ teamVM.name }}</a>
       <sc-if value="{{ teamVM.hasMatches }}" hint-placeholder-val="{{ false }}">
         <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:26px 0 12px">Matches</h2>
         <div style="display:flex;flex-direction:column;gap:10px">
           <sc-for list="{{ teamVM.matches }}" as="m" hint-placeholder-count="2">
             <a href="{{ m.href }}" class="kb-card-hover" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:12px 15px">
               <div style="display:flex;align-items:center;gap:8px;flex:1"><span style="width:28px;height:20px;border-radius:4px;background:{{ m.home.grad }}"></span><b style="font-size:14px">{{ m.home.name }}</b></div>
-              <div style="font-family:'Archivo';font-weight:900;font-size:15px;flex:none;padding:0 12px">{{ m.centerLabel }}</div>
+              <div style="flex:none;padding:0 12px;display:flex;justify-content:center;min-width:96px">
+                <sc-if value="{{ m.finished }}" hint-placeholder-val="{{ true }}">
+                  <span style="font-family:'Archivo';font-weight:900;font-size:15px">{{ m.centerLabel }}</span>
+                </sc-if>
+                <sc-if value="{{ m.upcoming }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex;align-items:center;gap:5px;background:#16181d;color:#fff;font-family:'Archivo';font-weight:800;font-size:11.5px;letter-spacing:.3px;padding:6px 14px;border-radius:8px">Predict</span>
+                </sc-if>
+              </div>
               <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end"><b style="font-size:14px">{{ m.away.name }}</b><span style="width:28px;height:20px;border-radius:4px;background:{{ m.away.grad }}"></span></div>
             </a>
           </sc-for>
@@ -744,8 +768,8 @@
       <h2 style="font-family:'Archivo';font-weight:800;font-size:20px;margin:26px 0 6px">Star players</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:18px">
         <sc-for list="{{ teamVM.stars }}" as="p" hint-placeholder-count="3">
-          <a href="{{ p.href }}" class="kb-card-hover" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:13px 15px">
-            <img src="assets/avatar.png" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
+          <a onClick="{{ p.onOpen }}" class="kb-card-hover" style="cursor:pointer;display:flex;align-items:center;gap:13px;background:#fff;border:1px solid #e9e1d2;border-radius:14px;padding:13px 15px">
+            <img src="assets/avatar.png" alt="" style="width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
             <div style="flex:1;min-width:0"><b style="font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><div style="color:#a59a85;font-size:12px">{{ p.posName }} · {{ p.club }}</div></div>
             <div style="text-align:right;flex:none"><div style="font-family:'Archivo';font-weight:900;font-size:16px;color:#1f3fbf">{{ p.goals }}</div><div style="color:#a59a85;font-size:11px">goals</div></div>
           </a>
@@ -755,8 +779,8 @@
         <h3 style="font-family:'Archivo';font-weight:800;font-size:15px;margin:18px 0 9px;color:#6f6655">{{ g.label }}</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:9px">
           <sc-for list="{{ g.players }}" as="p" hint-placeholder-count="4">
-            <a href="{{ p.href }}" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
-              <img src="assets/avatar.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:1.5px solid {{ p.posColor }};background:#e7e2d4" />
+            <a onClick="{{ p.onOpen }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
+              <img src="assets/avatar.png" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
               <span style="font-family:'Archivo';font-weight:800;font-size:10.5px;color:#fff;background:{{ p.posColor }};padding:3px 7px;border-radius:6px;flex:none">{{ p.pos }}</span>
               <span style="flex:1;min-width:0"><b style="font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><span style="color:#a59a85;font-size:11.5px">{{ p.metaLine }}</span></span>
             </a>
@@ -860,9 +884,9 @@
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
         <sc-for list="{{ playerList }}" as="p" hint-placeholder-count="12">
-          <a href="{{ p.href }}" class="kb-card-hover" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">
-            <img src="assets/avatar.png" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
-            <span style="width:26px;height:18px;border-radius:3px;background:{{ p.teamGrad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
+          <a onClick="{{ p.onOpen }}" class="kb-card-hover" style="cursor:pointer;display:flex;align-items:center;gap:13px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:12px 15px">
+            <img src="assets/avatar.png" alt="" style="width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
+            <span style="width:30px;height:21px;border-radius:3px;background:{{ p.teamGrad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
             <div style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><div style="color:#a59a85;font-size:12px">{{ p.metaLine }}</div></div>
             <div style="text-align:right;flex:none"><div style="font-family:'Archivo';font-weight:900;font-size:15px;color:#1f3fbf">{{ p.statValue }}</div><div style="color:#a59a85;font-size:10.5px">{{ p.statLabel }}</div></div>
           </a>
@@ -909,8 +933,8 @@
         <h2 style="font-family:'Archivo';font-weight:800;font-size:18px;margin:0 0 11px">Players</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
           <sc-for list="{{ search.players }}" as="p" hint-placeholder-count="6">
-            <a href="{{ p.href }}" class="kb-card-hover" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">
-              <img src="assets/avatar.png" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
+            <a onClick="{{ p.onOpen }}" class="kb-card-hover" style="cursor:pointer;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">
+              <img src="assets/avatar.png" alt="" style="width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:2px solid {{ p.posColor }};background:#e7e2d4" />
               <span style="width:26px;height:18px;border-radius:3px;background:{{ p.teamGrad }};flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)"></span>
               <div style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><div style="color:#a59a85;font-size:12px">{{ p.metaLine }}</div></div>
             </a>
@@ -934,6 +958,31 @@
     <b style="color:#6f6655">Kickabout</b> · Squads, standings, fixtures and ratings are real, current to late June 2026.<br/>
     Our forecast is a transparent model (team rating + form + squad + home advantage), not betting advice. Stories are editorial.
   </footer>
+
+  <sc-if value="{{ playerModal.open }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ playerModal.onClose }}" style="position:fixed;inset:0;z-index:90;background:rgba(16,18,24,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;animation:kb-fade .18s ease both">
+      <div onClick="{{ stop }}" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.55);animation:kb-pop .22s ease both">
+        <button onClick="{{ playerModal.onClose }}" style="position:absolute;top:14px;right:14px;z-index:3;border:none;cursor:pointer;width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.85);color:#16181d;font-size:17px;line-height:1;font-family:'Archivo'">✕</button>
+        <div style="background:#16181d;padding:26px 24px 22px;color:#fff;display:flex;align-items:center;gap:16px">
+          <img src="assets/avatar.png" alt="" style="width:84px;height:84px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:3px solid {{ playerModal.posColor }};background:#e7e2d4" />
+          <div style="min-width:0">
+            <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-family:'Archivo';font-weight:800;font-size:10.5px;color:#fff;background:{{ playerModal.posColor }};padding:3px 8px;border-radius:6px">{{ playerModal.pos }}</span><span style="font-size:12px;color:#a59a85;font-weight:600">{{ playerModal.posName }}</span></div>
+            <div style="font-family:'Archivo';font-weight:900;font-size:25px;letter-spacing:-.6px;line-height:1.05">{{ playerModal.name }}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:7px">
+              <a onClick="{{ playerModal.onTeam }}" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px"><span style="width:22px;height:15px;border-radius:3px;background:{{ playerModal.teamGrad }};box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)"></span><b style="font-size:13px;color:#f3b50a">{{ playerModal.teamName }}</b></a>
+              <span style="font-size:12.5px;color:#a59a85">· {{ playerModal.club }}</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:18px 22px 8px;display:grid;grid-template-columns:1fr 1fr;gap:11px">
+          <sc-for list="{{ playerModal.kpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#faf6ee;border:1px solid #eee6d8;border-radius:13px;padding:13px 15px"><div style="font-family:'Archivo';font-weight:900;font-size:24px;letter-spacing:-.5px">{{ k.value }}</div><div style="color:#6f6655;font-size:12px;font-weight:600;margin-top:1px">{{ k.label }}</div></div>
+          </sc-for>
+        </div>
+        <div style="padding:6px 22px 20px;color:#a59a85;font-size:12px;line-height:1.45">Career international totals. Live tournament stats — minutes, goals, match ratings — stream in from the data feed.</div>
+      </div>
+    </div>
+  </sc-if>
   </sc-if>
 
   <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
@@ -970,6 +1019,23 @@ class Component extends DCLogic {
     if(typeof window!=='undefined') window.scrollTo(0,0);
   }
   goBack = ()=>{ if(history.length>1) history.back(); else location.hash='#/'; };
+
+  // ---------- player modal (overlay, no navigation) ----------
+  openPlayer = (id)=>{ this.setState({ modalPlayer:id }); };
+  closePlayer = ()=>{ this.setState({ modalPlayer:null }); };
+  gotoFromModal = (hash)=>{ this.setState({ modalPlayer:null }); location.hash=hash; };
+  playerModalVM(){
+    const id=this.state.modalPlayer;
+    if(!id || !this.DB) return { open:false };
+    const p=this.DB.allPlayers.find(x=>x.id===id);
+    if(!p) return { open:false };
+    const t=this.DB.byId[p.teamId];
+    return { open:true, name:p.name, initials:this.initials(p.name), posColor:this.DB.POSCOLOR[p.pos],
+      pos:p.pos, posName:this.POSNAME[p.pos], teamName:t.name, teamGrad:t.grad, club:p.club,
+      onClose:this.closePlayer, onTeam:()=>this.gotoFromModal('#/team/'+t.id),
+      kpis:[ {value:String(p.caps),label:'Caps'},{value:String(p.goals),label:'Goals'},
+        {value:(p.caps?(p.goals/p.caps).toFixed(2):'0.00'),label:'Goals / cap'},{value:String(p.age),label:'Age'} ] };
+  }
 
   // ---------- helpers ----------
   slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
@@ -1095,7 +1161,7 @@ class Component extends DCLogic {
     rows.forEach((r,idx)=>{ const [pos,n,ys]=r; const players=pick(pos,n,pos==='FW'?'goals':'caps');
       const x = side==='away'?depthA[idx]:depthH[idx];
       players.forEach((pl,i)=>{ tokens.push({ x, y:ys[i], name:pl.name.split(' ').slice(-1)[0], number:String(num), pos:pl.pos,
-        href:'#/player/'+pl.id, fill:(pl.pos==='GK'?'#1b1e26':team.c1) }); num++; }); });
+        onOpen:()=>this.openPlayer(pl.id), fill:(pl.pos==='GK'?'#1b1e26':team.c1) }); num++; }); });
     const bench=sq.filter(p=>!used.has(p.id)).sort((a,b)=>(b.caps||0)-(a.caps||0)).slice(0,11)
       .map((p,i)=>({ num:String(12+i), label:p.name, gk:p.pos==='GK' }));
     return { tokens, bench, formation };
@@ -1106,14 +1172,15 @@ class Component extends DCLogic {
     let s=0; const id=m.id+'|pm'; for(let i=0;i<id.length;i++) s=(s*31+id.charCodeAt(i))>>>0;
     const rnd=()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; };
     const edge=(h.adjRating-a.adjRating)/400;
-    const form=(bias)=>Array.from({length:5}).map(()=>{ const r=rnd()+bias*0.12; const ch=r>0.62?'W':r>0.38?'D':'L'; return { ch, color:'#fff', bg: ch==='W'?'#1f7a4d':ch==='D'?'#9a8e74':'#b23b2e' }; });
-    const played=3+Math.floor(rnd()*6);
+    const form=(bias,n)=>Array.from({length:n}).map(()=>{ const r=rnd()+bias*0.12; const ch=r>0.62?'W':r>0.38?'D':'L'; return { ch, color:'#fff', bg: ch==='W'?'#1f7a4d':ch==='D'?'#9a8e74':'#b23b2e' }; });
+    const played=3+Math.floor(rnd()*4);
     let hw=0,dr=0; for(let i=0;i<played;i++){ const r=rnd()+edge*0.15; if(r>0.62)hw++; else if(r>0.4)dr++; }
     const aw=played-hw-dr;
     const row=(label,hv,av,suffix)=>{ const tot=(hv+av)||1; return { label, home:hv+(suffix||''), away:av+(suffix||''), homePct:Math.round(hv/tot*100), awayPct:Math.round(av/tot*100) }; };
     const gpg=(b)=>(1.1+rnd()*1.3+b*0.4).toFixed(1), cpg=(b)=>(0.7+rnd()*1.1-b*0.3).toFixed(1);
     return {
-      formHome:form(edge), formAway:form(-edge),
+      formCount: played, formLabel: 'Form · last '+played,
+      formHome:form(edge,played), formAway:form(-edge,played),
       h2h:{ played, line: h.shortCode+' '+hw+' · '+dr+' draws · '+aw+' '+a.shortCode, sub:'Last '+played+' meetings' },
       rows:[ row('Goals per game', gpg(edge), gpg(-edge)),
         row('Goals conceded / game', cpg(edge), cpg(-edge)),
@@ -1171,7 +1238,7 @@ class Component extends DCLogic {
     const fav = pr.win>=pr.lose ? h : a, favp=Math.max(pr.win,pr.lose);
     return { id:m.id, href:'#/match/'+m.id, home:this.chip(h), away:this.chip(a),
       dateLabel:m.stage==='group'?'Group stage':this.dateLabel(m.kickoff), stageLabel:m.stage==='group'?'Group':'Round of 32',
-      where:m.where||'', finished:m.status==='finished', scoreLabel:m.status==='finished'?(m.homeScore+' – '+m.awayScore):'vs',
+      where:m.where||'', finished:m.status==='finished', upcoming:m.status!=='finished', scoreLabel:m.status==='finished'?(m.homeScore+' – '+m.awayScore):'vs',
       centerLabel:m.status==='finished'?(m.homeScore+' – '+m.awayScore):'vs',
       homePct:this.pct(pr.win), drawPct:this.pct(pr.draw), awayPct:this.pct(pr.lose),
       favLine: fav.name+' favoured · '+this.pct(favp)+'%' };
@@ -1190,7 +1257,7 @@ class Component extends DCLogic {
     fanHome=Math.max(6,Math.min(94,fanHome));
     const modelPick = pr.win>=pr.lose ? 'home':'away';
     const sign=v=>(v>0?'+':'')+v;
-    const stars=(tid)=>(this.DB.SQUADS[tid]||[]).slice().sort((x,y)=>y.goals-x.goals).slice(0,3);
+    const stars=(tid)=>(this.DB.SQUADS[tid]||[]).slice().sort((x,y)=>y.goals-x.goals).slice(0,3).map(p=>({ ...p, onOpen:()=>this.openPlayer(p.id) }));
     const toDec=(p,j)=>((1/Math.max(.03,p))*(1.03+0.025*j)).toFixed(2);
     const odds=['BetVision','OddsLab','GoalLine'].map((bk,j)=>({ book:bk, home:toDec(pr.win,j), draw:toDec(pr.draw,j), away:toDec(pr.lose,j) }));
     return {
@@ -1239,6 +1306,8 @@ class Component extends DCLogic {
       searchRef: (this._searchRef = this._searchRef || React.createRef()),
       onSearchSubmit: (e)=>{ e.preventDefault(); const v=this._searchRef.current?this._searchRef.current.value:''; if(v.trim()) location.hash='#/search?q='+encodeURIComponent(v.trim()); },
       goBack:this.goBack,
+      playerModal:this.playerModalVM(),
+      stop:(e)=>{ e.stopPropagation(); },
       isHome:false,isStories:false,isStory:false,isMatches:false,isPredict:false,isMatch:false,
       isTeams:false,isTeam:false,isPower:false,isBracket:false,isPlayers:false,isPlayer:false,isSearch:false,isNotFound:false
     };
@@ -1419,10 +1488,10 @@ class Component extends DCLogic {
       const sq=DB.SQUADS[id]||[];
       const matches=DB.matches.filter(m=>m.homeTeamId===id||m.awayTeamId===id);
       const stars=sq.slice().sort((a,b)=>b.goals-a.goals).slice(0,3).map(p=>({
-        href:'#/player/'+p.id, name:p.name, initials:this.initials(p.name), posName:this.POSNAME[p.pos], posColor:DB.POSCOLOR[p.pos], club:p.club, goals:p.goals }));
+        onOpen:()=>this.openPlayer(p.id), name:p.name, initials:this.initials(p.name), posName:this.POSNAME[p.pos], posColor:DB.POSCOLOR[p.pos], club:p.club, goals:p.goals }));
       const posOrder=[['Goalkeepers','GK'],['Defenders','DF'],['Midfielders','MF'],['Forwards','FW']];
       const posGroups=posOrder.map(([label,pos])=>({ label, players: sq.filter(p=>p.pos===pos).map(p=>({
-        href:'#/player/'+p.id, name:p.name, pos:p.pos, posColor:DB.POSCOLOR[p.pos], metaLine:'Age '+p.age+' · '+p.caps+' caps · '+p.goals+' goals · '+p.club })) })).filter(g=>g.players.length);
+        onOpen:()=>this.openPlayer(p.id), name:p.name, pos:p.pos, posColor:DB.POSCOLOR[p.pos], metaLine:'Age '+p.age+' · '+p.caps+' caps · '+p.goals+' goals · '+p.club })) })).filter(g=>g.players.length);
       out.teamVM={ ok:true, name:t.name, grad:t.grad, c1:t.c1, c2:t.c2, heroImg:'assets/team.jpg', groupLetter:t.groupLetter, confederation:t.confederation,
         statusLabel:t.statusLabel, coach:t.coach, predictHref:'#/predict?a='+t.id+'&b=brazil',
         kpis:[ {value:String(t.strength),label:'Power score'},{value:String(t.elo),label:'Team rating'},{value:'#'+t.fifaRank,label:'World rank'},{value:t.points+' pts',label:'Group form'} ],
@@ -1483,7 +1552,7 @@ class Component extends DCLogic {
       out.onPosChange=(e)=>{ location.hash='#/players?pos='+e.target.value+'&sort='+sort; };
       out.onSortChange=(e)=>{ location.hash='#/players?pos='+pos+'&sort='+e.target.value; };
       out.playerList=pl.map(p=>{ const t=DB.byId[p.teamId];
-        return { href:'#/player/'+p.id, name:p.name, teamGrad:t.grad, posColor:DB.POSCOLOR[p.pos], metaLine:t.shortCode+' · '+this.POSNAME[p.pos]+' · '+p.club,
+        return { onOpen:()=>this.openPlayer(p.id), name:p.name, teamGrad:t.grad, posColor:DB.POSCOLOR[p.pos], metaLine:t.shortCode+' · '+this.POSNAME[p.pos]+' · '+p.club,
           statValue: sort==='caps'?String(p.caps):sort==='age'?String(p.age):String(p.goals),
           statLabel: sort==='caps'?'caps':sort==='age'?'age':'goals' }; });
       return out;
@@ -1510,7 +1579,7 @@ class Component extends DCLogic {
       const players=q?DB.allPlayers.filter(p=>p.name.toLowerCase().includes(ql)).slice(0,30):[];
       out.search={ hasTeams:teams.length>0, hasPlayers:players.length>0, empty: q&&!teams.length&&!players.length,
         teams:teams.map(t=>({ name:t.name, grad:t.grad, href:'#/team/'+t.id })),
-        players:players.map(p=>{ const t=DB.byId[p.teamId]; return { href:'#/player/'+p.id, name:p.name, teamGrad:t.grad, posColor:DB.POSCOLOR[p.pos], metaLine:t.shortCode+' · '+this.POSNAME[p.pos]+' · '+p.club }; }) };
+        players:players.map(p=>{ const t=DB.byId[p.teamId]; return { onOpen:()=>this.openPlayer(p.id), name:p.name, teamGrad:t.grad, posColor:DB.POSCOLOR[p.pos], metaLine:t.shortCode+' · '+this.POSNAME[p.pos]+' · '+p.club }; }) };
       return out;
     }
 

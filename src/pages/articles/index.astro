@@ -6,7 +6,6 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { provider } from '../../lib/provider';
-import { teamGrad } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
 
 const all = (await getCollection('articles', ({ data }) => !data.draft)).sort(
@@ -18,9 +17,9 @@ const readMins = (body: string) => Math.max(1, Math.round((body?.split(/\s+/).le
 
 // derive kind + matchup teams from tags
 const KIND = {
-  preview: { label: 'Preview', accent: '#1f3fbf' },
-  recap: { label: 'Recap', accent: '#138a5e' },
-  feature: { label: 'Feature', accent: '#b23b2e' },
+  preview: { label: 'Preview', accent: '#1f3fbf', hero: '#11643f' },
+  recap: { label: 'Recap', accent: '#138a5e', hero: '#9d2730' },
+  feature: { label: 'Feature', accent: '#b23b2e', hero: '#1f3fbf' },
 } as const;
 const teamIds = new Set(provider.getTeams().map((t) => t.id));
 
@@ -63,7 +62,7 @@ const fMeta = featured ? meta(featured) : null;
         {/* featured */}
         {featured && fMeta && (() => {
           const [ta, tb] = fMeta.teams.map((id) => provider.getTeam(id));
-          const heroColor = ta ? teamGrad(ta.id) : 'var(--color-night)';
+          const heroColor = fMeta.kind.hero; // fixed by kind, not team
           return (
             <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mb-[22px] grid min-h-[230px] overflow-hidden rounded-[20px] text-white md:grid-cols-[1.2fr_1fr]" style={`background:${heroColor}`}>
               <div class="absolute inset-0" style="background:linear-gradient(90deg,rgba(16,18,24,.82) 0%,rgba(16,18,24,.5) 60%,rgba(16,18,24,.25) 100%)"></div>
