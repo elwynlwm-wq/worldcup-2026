@@ -13,6 +13,7 @@ import h2hData from '../../data-pipeline/warehouse/export/h2h.json';
 import playersData from '../../data-pipeline/warehouse/export/players.json';
 import matchGoalsData from '../../data-pipeline/warehouse/export/match-goals.json';
 import wcMatchesData from '../../data-pipeline/warehouse/export/wc-matches.json';
+import h2hByTeamData from '../../data-pipeline/warehouse/export/h2h-by-team.json';
 
 export interface H2HRecord {
   played: number;
@@ -22,6 +23,8 @@ export interface H2HRecord {
   aGoals: number;
   bGoals: number;
   lastMeeting: string;
+  lastAScore: number | null;
+  lastBScore: number | null;
 }
 
 export type TierLabel = string; // "Elite" | "Strong" | ... (club) / "Elite" | "Established" | ... (player)
@@ -86,6 +89,15 @@ export function getPlayerTiers(
 /** All warehouse players for a team (used to enrich squad views with tiers). */
 export function getTeamPlayers(teamId: string): WarehousePlayer[] {
   return players.filter((p) => p.teamId === teamId);
+}
+
+/**
+ * Per-team H2H map (teamId → opponentId → record, from the team's POV).
+ * Passed to the predictor island so any matchup can show its all-time record
+ * client-side. H2H aggregates are public data — fine to ship in the page.
+ */
+export function getH2HByTeam(): Record<string, Record<string, H2HRecord>> {
+  return h2hByTeamData as Record<string, Record<string, H2HRecord>>;
 }
 
 /** Goalscorers for a WC match (by warehouse match id, e.g. "wc-0"), in order. */

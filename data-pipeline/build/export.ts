@@ -50,15 +50,21 @@ function main() {
   const h2hRows = db
     .prepare(
       `SELECT team_a AS a,team_b AS b,played,a_wins AS aWins,draws,b_wins AS bWins,
-              a_goals AS aGoals,b_goals AS bGoals,last_meeting AS lastMeeting FROM h2h`,
+              a_goals AS aGoals,b_goals AS bGoals,last_meeting AS lastMeeting,
+              last_a_score AS lastAScore,last_b_score AS lastBScore FROM h2h`,
     )
     .all() as Array<{ a: string; b: string; [k: string]: unknown }>;
   const h2h: Record<string, unknown> = {};
+  // Scoped per-team slice for the island: team → { opponentId → record }.
+  // Lets the Predictor look up one matchup without shipping the full flat map.
+  const h2hByTeam: Record<string, Record<string, unknown>> = {};
   for (const r of h2hRows) {
     const { a, b, ...rest } = r;
     h2h[`${a}__${b}`] = rest;
+    (h2hByTeam[a] ??= {})[b] = rest;
   }
   write('h2h.json', h2h);
+  write('h2h-by-team.json', h2hByTeam);
 
   // wc-matches.json — fixtures/results
   const matches = db

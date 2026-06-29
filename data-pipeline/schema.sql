@@ -138,6 +138,8 @@ CREATE TABLE h2h (
   a_goals       INTEGER NOT NULL,
   b_goals       INTEGER NOT NULL,
   last_meeting  TEXT,                      -- date of most recent meeting
+  last_a_score  INTEGER,                   -- score of team_a in the last meeting
+  last_b_score  INTEGER,                   -- score of team_b in the last meeting
   PRIMARY KEY (team_a, team_b)
 );
 

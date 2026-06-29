@@ -25,7 +25,7 @@ const pct = (n: number) => (rec && rec.played ? Math.round((n / rec.played) * 10
 
 {rec && (
   <section class="mt-6">
-    <h2 class="mb-1 text-lg font-bold">All-time head-to-head</h2>
+    <h2 class="mb-1 text-lg font-bold">Head-to-head (all-time)</h2>
     <p class="text-[13.5px] text-[var(--muted)]">
       {home.name} and {away.name} have met <b class="text-[var(--text)]">{rec.played}</b> times
       {rec.lastMeeting && <> · last on {fmtDate(rec.lastMeeting)}</>}.
@@ -62,6 +62,11 @@ const pct = (n: number) => (rec && rec.played ? Math.round((n / rec.played) * 10
 
     <p class="mt-2 text-[13.5px] text-[var(--muted)]">
       Goals all-time: {home.shortCode} {rec.aGoals} – {rec.bGoals} {away.shortCode}.
+      {rec.lastAScore != null && rec.lastBScore != null && (
+        <>
+          {' '}Last meeting: {home.shortCode} {rec.lastAScore}–{rec.lastBScore} {away.shortCode}.
+        </>
+      )}
     </p>
   </section>
 )}

@@ -19,7 +19,11 @@ export function deriveH2H(db: Database): number {
     .all() as { h: string; a: string; hs: number; ascore: number; date: string }[];
 
   // Accumulate per unordered pair, then emit both directions.
-  type Acc = { played: number; aWins: number; draws: number; bWins: number; aGoals: number; bGoals: number; last: string };
+  type Acc = {
+    played: number; aWins: number; draws: number; bWins: number;
+    aGoals: number; bGoals: number;
+    last: string; lastAScore: number | null; lastBScore: number | null; // scoreline of most recent meeting, x's POV
+  };
   const acc = new Map<string, Acc>(); // key: "x|y" with x<y; stats from x's POV
 
   for (const r of rows) {
@@ -27,7 +31,7 @@ export function deriveH2H(db: Database): number {
     const key = `${x}|${y}`;
     let s = acc.get(key);
     if (!s) {
-      s = { played: 0, aWins: 0, draws: 0, bWins: 0, aGoals: 0, bGoals: 0, last: '' };
+      s = { played: 0, aWins: 0, draws: 0, bWins: 0, aGoals: 0, bGoals: 0, last: '', lastAScore: null, lastBScore: null };
       acc.set(key, s);
     }
     // Express this match from x's POV.
@@ -40,21 +44,25 @@ export function deriveH2H(db: Database): number {
     if (xScore > yScore) s.aWins++;
     else if (xScore < yScore) s.bWins++;
     else s.draws++;
-    if (r.date > s.last) s.last = r.date;
+    if (r.date > s.last) {
+      s.last = r.date;
+      s.lastAScore = xScore;
+      s.lastBScore = yScore;
+    }
   }
 
   const ins = db.prepare(`INSERT OR REPLACE INTO h2h
-    (team_a,team_b,played,a_wins,draws,b_wins,a_goals,b_goals,last_meeting)
-    VALUES (@team_a,@team_b,@played,@a_wins,@draws,@b_wins,@a_goals,@b_goals,@last_meeting)`);
+    (team_a,team_b,played,a_wins,draws,b_wins,a_goals,b_goals,last_meeting,last_a_score,last_b_score)
+    VALUES (@team_a,@team_b,@played,@a_wins,@draws,@b_wins,@a_goals,@b_goals,@last_meeting,@last_a_score,@last_b_score)`);
 
   let count = 0;
   db.transaction(() => {
     for (const [key, s] of acc) {
       const [x, y] = key.split('|');
       // x's POV
-      ins.run({ team_a: x, team_b: y, played: s.played, a_wins: s.aWins, draws: s.draws, b_wins: s.bWins, a_goals: s.aGoals, b_goals: s.bGoals, last_meeting: s.last });
-      // y's POV (mirror)
-      ins.run({ team_a: y, team_b: x, played: s.played, a_wins: s.bWins, draws: s.draws, b_wins: s.aWins, a_goals: s.bGoals, b_goals: s.aGoals, last_meeting: s.last });
+      ins.run({ team_a: x, team_b: y, played: s.played, a_wins: s.aWins, draws: s.draws, b_wins: s.bWins, a_goals: s.aGoals, b_goals: s.bGoals, last_meeting: s.last, last_a_score: s.lastAScore, last_b_score: s.lastBScore });
+      // y's POV (mirror — also mirror the last scoreline)
+      ins.run({ team_a: y, team_b: x, played: s.played, a_wins: s.bWins, draws: s.draws, b_wins: s.aWins, a_goals: s.bGoals, b_goals: s.aGoals, last_meeting: s.last, last_a_score: s.lastBScore, last_b_score: s.lastAScore });
       count += 2;
     }
   })();

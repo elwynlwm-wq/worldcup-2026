@@ -2,10 +2,14 @@
 import AnalysisLayout from '../../../layouts/AnalysisLayout.astro';
 import Predictor from '../../../components/analysis/Predictor.tsx';
 import { getPredictorTeams } from '../../../lib/predictorData';
+import { getH2HByTeam } from '../../../lib/warehouse';
 
 // This page is pre-rendered static. The optional ?a=&b= matchup in deep links
 // is read client-side by the island (query params aren't known at build time).
 const teams = getPredictorTeams();
+// All-time H2H for every pairing, so the island can show any matchup's record
+// client-side. ~25KB gzipped; H2H aggregates are public data.
+const h2hByTeam = getH2HByTeam();
 ---
 
 <AnalysisLayout
@@ -19,5 +23,5 @@ const teams = getPredictorTeams();
     site uses.
   </p>
 
-  <Predictor client:load teams={teams} />
+  <Predictor client:load teams={teams} h2hByTeam={h2hByTeam} />
 </AnalysisLayout>
