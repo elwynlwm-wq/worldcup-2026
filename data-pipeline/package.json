@@ -1,0 +1,21 @@
+{
+  "name": "worldcup-2026-data-pipeline",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Data-engineering pipeline: fetch free WC2026 sources, link into a SQLite warehouse, derive H2H + tiers, export JSON. Separate from the Astro site.",
+  "scripts": {
+    "fetch": "tsx fetch/index.ts",
+    "build:warehouse": "tsx build/index.ts",
+    "export": "tsx build/export.ts",
+    "all": "npm run fetch && npm run build:warehouse && npm run export"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^26.0.1",
+    "tsx": "^4.22.4"
+  }
+}
