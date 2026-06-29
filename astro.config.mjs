@@ -11,7 +11,9 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   // IMPORTANT: set this to the production domain before launch — sitemap,
   // canonical URLs and OG tags all derive from it. See docs/seo.md.
-  site: 'https://example.com',
+  // Currently the Cloudflare Pages preview URL; switch to the real domain
+  // once it's attached.
+  site: 'https://worldcup-2026-now.pages.dev',
 
   output: 'static',
 
