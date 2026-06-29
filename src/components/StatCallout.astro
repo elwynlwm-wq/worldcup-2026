@@ -12,8 +12,13 @@ interface Props {
 const { label, value, hint } = Astro.props;
 ---
 
-<div class="not-prose my-6 rounded-xl border border-gray-200 bg-gray-50 p-5">
-  <div class="text-sm font-medium uppercase tracking-wide text-gray-500">{label}</div>
-  <div class="mt-1 text-3xl font-extrabold text-gray-900">{value}</div>
-  {hint && <div class="mt-1 text-sm text-gray-500">{hint}</div>}
+<div
+  class="not-prose my-6 rounded-xl border p-5"
+  style="border-color:var(--color-line);background:var(--color-panel)"
+>
+  <div class="text-sm font-semibold uppercase tracking-wide" style="color:var(--color-ink-muted)">
+    {label}
+  </div>
+  <div class="font-display mt-1 text-3xl font-black" style="color:var(--color-ball)">{value}</div>
+  {hint && <div class="mt-1 text-sm" style="color:var(--color-ink-dim)">{hint}</div>}
 </div>

@@ -41,9 +41,12 @@ const href = (key: string) => (key ? `/analysis/${key}/` : '/');
       class="sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur"
     >
       <div class="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
-        <a href="/" class="text-[15px] font-extrabold tracking-tight whitespace-nowrap">
-          WC<span class="text-[var(--accent)]">26</span>
-          <span class="text-[var(--muted)]">· Analysis</span>
+        <a
+          href="/"
+          class="font-display text-[17px] font-black tracking-tight whitespace-nowrap"
+        >
+          Kick<span class="text-[var(--accent2)]">about</span>
+          <span class="ml-1 text-[13px] font-semibold text-[var(--muted)]">⚽ WC26</span>
         </a>
         <nav class="flex flex-1 flex-wrap gap-1">
           {NAV.map(([key, label]) => (
@@ -52,7 +55,7 @@ const href = (key: string) => (key ? `/analysis/${key}/` : '/');
               class:list={[
                 'rounded-lg px-3 py-1.5 text-[13.5px] font-semibold',
                 active === key
-                  ? 'bg-[var(--accent)] text-[#04130b]'
+                  ? 'bg-[var(--accent)] text-[var(--bg)]'
                   : 'text-[var(--muted)] hover:bg-[var(--panel2)] hover:text-[var(--text)]',
               ]}
             >
@@ -77,16 +80,18 @@ const href = (key: string) => (key ? `/analysis/${key}/` : '/');
 
     <style>
       .analysis {
-        --bg: #0c1118;
-        --panel: #141b26;
-        --panel2: #1b2533;
-        --line: #26324a;
-        --text: #e8eef7;
-        --muted: #93a2bd;
-        --accent: #28d17c;
-        --accent2: #3da5ff;
-        --warn: #ffb020;
-        --danger: #ff5d5d;
+        /* Kickabout brand — warm cream on charcoal, yellow + orange accents.
+           Var names kept stable so all analysis components rebrand for free. */
+        --bg: #16181d;
+        --panel: #1e2128;
+        --panel2: #262a32;
+        --line: #2f3440;
+        --text: #e9e1d2;
+        --muted: #a59a85;
+        --accent: #ffd23f;       /* signature yellow (ball) */
+        --accent2: #e8482b;      /* orange flame */
+        --warn: #ffd23f;
+        --danger: #e8482b;
         background: var(--bg);
         color: var(--text);
       }

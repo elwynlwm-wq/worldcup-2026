@@ -29,13 +29,19 @@ const seoProps = Astro.props;
     <link rel="sitemap" href="/sitemap-index.xml" />
     <Seo {...seoProps} />
   </head>
-  <body class="min-h-screen bg-white text-gray-900 antialiased">
-    <header class="border-b border-gray-200">
+  <body
+    class="min-h-screen antialiased"
+    style="background:var(--color-bg);color:var(--color-ink)"
+  >
+    <header class="border-b" style="border-color:var(--color-line)">
       <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <a href="/" class="text-lg font-bold tracking-tight">World Cup 2026</a>
-        <div class="flex gap-6 text-sm font-medium text-gray-600">
-          <a href="/articles" class="hover:text-gray-900">Articles</a>
-          <a href="/" class="hover:text-gray-900">Analysis</a>
+        <a href="/" class="font-display text-[17px] font-black tracking-tight">
+          Kick<span style="color:var(--color-flame)">about</span>
+          <span class="ml-1 text-[13px] font-semibold" style="color:var(--color-ink-dim)">⚽ WC26</span>
+        </a>
+        <div class="flex gap-6 text-sm font-semibold" style="color:var(--color-ink-dim)">
+          <a href="/" class="hover:text-[var(--color-ink)]">Analysis</a>
+          <a href="/articles" class="hover:text-[var(--color-ink)]">Articles</a>
         </div>
       </nav>
     </header>
@@ -44,9 +50,9 @@ const seoProps = Astro.props;
       <slot />
     </main>
 
-    <footer class="mt-16 border-t border-gray-200">
-      <div class="mx-auto max-w-5xl px-4 py-8 text-sm text-gray-500">
-        <p>World Cup 2026 — predictions, analysis &amp; blog. A free, fan-made site.</p>
+    <footer class="mt-16 border-t" style="border-color:var(--color-line)">
+      <div class="mx-auto max-w-5xl px-4 py-8 text-sm" style="color:var(--color-ink-muted)">
+        <p>Kickabout — World Cup 2026 predictions, analysis &amp; stories. A free, fan-made site.</p>
       </div>
     </footer>
   </body>

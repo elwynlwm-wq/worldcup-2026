@@ -4,6 +4,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+
+// Load data-pipeline/.env (gitignored) so fetchers can read API keys via
+// process.env. No-op if the file is absent (free sources need no keys).
+try {
+  process.loadEnvFile(join(ROOT, '.env'));
+} catch {
+  /* no .env — fine for the free-source pipeline */
+}
+
 export const SOURCES_DIR = join(ROOT, 'sources');
 export const WAREHOUSE_DIR = join(ROOT, 'warehouse');
 export const EXPORT_DIR = join(WAREHOUSE_DIR, 'export');

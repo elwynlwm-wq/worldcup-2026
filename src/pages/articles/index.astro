@@ -14,18 +14,19 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
   description="All our World Cup 2026 articles: predictions, analysis, match previews and reviews, written for every kind of fan."
 >
   <section class="mx-auto max-w-3xl px-4 py-12">
-    <h1 class="text-4xl font-extrabold tracking-tight">Articles</h1>
-    <ul class="mt-8 divide-y divide-gray-200">
+    <h1 class="font-display text-4xl font-black tracking-tight">Stories</h1>
+    <ul class="mt-8 divide-y" style="border-color:var(--color-line)">
       {articles.map((a) => (
         <li class="py-6">
           <a href={`/articles/${a.id}/`} class="group block">
-            <h2 class="text-2xl font-bold tracking-tight group-hover:underline">
+            <h2 class="font-display text-2xl font-bold tracking-tight group-hover:text-[var(--color-ball)]">
               {a.data.title}
             </h2>
-            <p class="mt-2 text-gray-600">{a.data.description}</p>
+            <p class="mt-2" style="color:var(--color-ink-dim)">{a.data.description}</p>
             <time
               datetime={a.data.publishDate.toISOString()}
-              class="mt-2 block text-sm text-gray-400"
+              class="mt-2 block text-sm"
+              style="color:var(--color-ink-muted)"
             >
               {dateFmt.format(a.data.publishDate)}
             </time>

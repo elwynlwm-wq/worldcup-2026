@@ -1,12 +1,43 @@
 @import "tailwindcss";
-
-/* Tailwind v4 plugin loading (CSS-based config). */
 @plugin "@tailwindcss/typography";
 
-/* Theme tokens go here as we develop the design system.
-   Example (uncomment / extend as the brand takes shape):
+/* Kickabout brand fonts. Archivo = heavy display; Hanken Grotesk = body.
+   Loaded from Google Fonts (swap to self-hosted later if we want zero 3rd-party). */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap");
+
+/* ---------------------------------------------------------------------------
+   Kickabout design tokens (from the concept). Warm cream-on-charcoal, with a
+   yellow ball + orange accent. One source of truth for both layouts.
+   --------------------------------------------------------------------------- */
 @theme {
-  --color-brand: #009b3a;
-  --font-display: "Inter", system-ui, sans-serif;
+  /* surfaces */
+  --color-bg: #16181d;          /* page */
+  --color-panel: #1e2128;       /* cards */
+  --color-panel2: #262a32;      /* insets / muted chips */
+  --color-line: #2f3440;        /* borders */
+
+  /* text (warm parchment, not pure white) */
+  --color-ink: #e9e1d2;         /* primary text */
+  --color-ink-dim: #b3a890;     /* secondary */
+  --color-ink-muted: #6f6655;   /* tertiary / captions */
+
+  /* brand accents */
+  --color-ball: #ffd23f;        /* signature yellow */
+  --color-flame: #e8482b;       /* orange */
+  --color-pitch: #138a5e;       /* green (previews / positive) */
+  --color-sky: #2a6fdb;         /* blue (features / links) */
+
+  /* fonts */
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", system-ui, sans-serif;
 }
-*/
+
+/* Global base: warm charcoal everywhere, body font, display font on headings. */
+html {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
