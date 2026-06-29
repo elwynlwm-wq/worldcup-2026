@@ -9,6 +9,8 @@
     "build:warehouse": "tsx build/index.ts",
     "export": "tsx build/export.ts",
     "banners": "tsx banners/generate.ts",
+    "flags": "tsx fetch/flags.ts",
+    "flags:figma": "tsx fetch/figmaflags.ts",
     "all": "npm run fetch && npm run build:warehouse && npm run export"
   },
   "dependencies": {

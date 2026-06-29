@@ -1,0 +1,40 @@
+---
+// Real country flag (flag-icons, MIT), served from public/flags-country/ named
+// by our team slug (rect = <slug>.svg, square = <slug>-sq.svg). Use in 1–2-team
+// contexts (profiles, match/H2H headers). For very dense lists where a real flag
+// is too small, the two-tone TeamMark is the compact alternative.
+//
+// To refresh the files: `npm run flags` in data-pipeline (copies from the
+// flag-icons package, renamed to our slugs).
+import { teamIso } from '../data/teamFlags';
+
+interface Props {
+  team: string; // slug
+  w?: number;
+  h?: number;
+  shape?: 'rect' | 'circle';
+  class?: string;
+}
+const { team, w = 28, h, shape = 'rect', class: cls = '' } = Astro.props;
+const has = !!teamIso(team);
+const height = h ?? (shape === 'circle' ? w : Math.round((w * 3) / 4));
+const src = shape === 'circle' ? `/flags-country/${team}-sq.svg` : `/flags-country/${team}.svg`;
+---
+
+{has ? (
+  <img
+    src={src}
+    alt={`${team} flag`}
+    width={w}
+    height={height}
+    loading="lazy"
+    class:list={['flex-none object-cover', cls]}
+    style={`width:${w}px;height:${height}px;border-radius:${shape === 'circle' ? '50%' : '4px'};box-shadow:inset 0 0 0 1px rgba(0,0,0,.13)`}
+  />
+) : (
+  <span
+    aria-hidden="true"
+    class:list={['flex-none', cls]}
+    style={`width:${w}px;height:${height}px;border-radius:${shape === 'circle' ? '50%' : '4px'};background:var(--color-line)`}
+  ></span>
+)}
