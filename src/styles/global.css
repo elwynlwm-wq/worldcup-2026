@@ -58,3 +58,9 @@ h1, h2, h3, h4, .font-display {
 .kb-route { animation: kb-rise 0.28s ease both; }
 .kb-card-hover { transition: transform 0.12s ease, box-shadow 0.12s ease; }
 .kb-card-hover:hover { transform: translateY(-3px); }
+
+/* Bracket (horizontal scroll of fixed-width round columns) */
+.kb-bracket { display: flex; gap: 26px; overflow-x: auto; min-height: 400px; padding-bottom: 12px; }
+.kb-round { display: flex; flex-direction: column; min-width: 188px; flex: none; }
+.kb-ties { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; }
+.kb-tie { position: relative; }

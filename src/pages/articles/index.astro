@@ -1,39 +1,138 @@
 ---
+// Stories hub — ported from the design (stories section). Filter pills
+// (All / Previews / Recaps), a wide featured card, and a grid of story cards.
+// Story "kind" + matchup are derived from loose tags (pre-match/post-match +
+// team slugs) per the agreed tagging vocabulary.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { provider } from '../../lib/provider';
+import { teamGrad } from '../../data/teamColors';
 
-const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
+const all = (await getCollection('articles', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
 
 const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
+const readMins = (body: string) => Math.max(1, Math.round((body?.split(/\s+/).length ?? 200) / 200));
+
+// derive kind + matchup teams from tags
+const KIND = {
+  'pre-match': { label: 'Preview', accent: 'var(--color-pitch)' },
+  'post-match': { label: 'Recap', accent: 'var(--color-clay)' },
+  feature: { label: 'Feature', accent: 'var(--color-royal)' },
+} as const;
+const teamIds = new Set(provider.getTeams().map((t) => t.id));
+
+function meta(art: (typeof all)[number]) {
+  const tags = (art.data.tags || []).map((t) => t.toLowerCase());
+  const kindKey = (['pre-match', 'post-match', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
+  const matchTeams = tags.filter((t) => teamIds.has(t)).slice(0, 2);
+  return { kind: KIND[kindKey], teams: matchTeams };
+}
+
+const featured = all[0] ?? null;
+const rest = all.slice(featured ? 1 : 0);
+const fMeta = featured ? meta(featured) : null;
 ---
 
 <BaseLayout
   title="Stories — World Cup 2026 | Kickabout"
-  description="World Cup 2026 stories: previews, recaps and analysis, written for every kind of fan."
+  description="World Cup 2026 stories: match previews, recaps and features — the data, in plain English, for every kind of fan."
   active="stories"
   canonical="/articles/"
 >
-  <div class="kb-route mx-auto max-w-3xl">
+  <div class="kb-route">
     <h1 class="font-display text-[34px] font-black tracking-tight">Stories</h1>
-    <p class="mt-0.5 mb-2 text-[15px]" style="color:var(--color-ink-2)">
+    <p class="mt-0.5 mb-4 max-w-[560px] text-[15px]" style="color:var(--color-ink-2)">
       Previews of what's coming and verdicts on what just happened — the data, in plain English.
     </p>
-    <ul class="mt-6 divide-y" style="border-color:var(--color-line)">
-      {articles.map((a) => (
-        <li class="py-6">
-          <a href={`/articles/${a.id}/`} class="group block">
-            <h2 class="font-display text-2xl font-extrabold tracking-tight group-hover:text-[var(--color-royal)]">
-              {a.data.title}
-            </h2>
-            <p class="mt-2 text-[16px] leading-snug" style="font-family:var(--font-serif);color:var(--color-ink-2)">{a.data.description}</p>
-            <time datetime={a.data.publishDate.toISOString()} class="mt-2 block text-sm" style="color:var(--color-ink-3)">
-              {dateFmt.format(a.data.publishDate)}
-            </time>
-          </a>
-        </li>
+
+    {/* filter pills (client-side) */}
+    <div id="story-filters" class="mb-5 flex flex-wrap gap-2">
+      {[['all', 'All'], ['pre-match', 'Previews'], ['post-match', 'Recaps'], ['feature', 'Features']].map(([k, label], i) => (
+        <button data-sfilter={k} class="kb-sfilter cursor-pointer rounded-full border px-[15px] py-[7px] text-[13.5px] font-bold"
+          style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:#fff;border-color:var(--color-line)'}>{label}</button>
       ))}
-    </ul>
+    </div>
+
+    {all.length === 0 ? (
+      <p style="color:var(--color-ink-2)">No stories yet — the first ones are on the way.</p>
+    ) : (
+      <>
+        {/* featured */}
+        {featured && fMeta && (() => {
+          const [ta, tb] = fMeta.teams.map((id) => provider.getTeam(id));
+          return (
+            <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mb-[22px] grid min-h-[230px] overflow-hidden rounded-[20px] text-white md:grid-cols-[1.2fr_1fr]" style="background:var(--color-night)">
+              <div class="relative z-[2] flex flex-col justify-center p-[30px]">
+                <div class="font-display inline-flex self-start rounded border-[1.5px] px-2.5 py-[5px] text-[11px] font-extrabold uppercase tracking-[1.2px]" style="border-color:rgba(255,255,255,.5)">{fMeta.kind.label}</div>
+                <div class="font-display mt-3.5 mb-2 text-[32px] font-black leading-[1.04] tracking-tight text-balance">{featured.data.title}</div>
+                <div class="max-w-[460px] text-[16px] leading-snug" style="font-family:var(--font-serif);opacity:.93">{featured.data.description}</div>
+                <div class="mt-3.5 text-[12px] font-bold tracking-[.3px]" style="color:var(--color-gold)">{featured.data.author} · {readMins((featured.body as string) || '')} MIN READ</div>
+              </div>
+              {ta && tb && (
+                <div class="relative flex items-center justify-center gap-4 p-5">
+                  <span class="h-14 w-[78px] rounded-[7px]" style={`background:${teamGrad(ta.id)};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></span>
+                  <span class="font-display text-[18px] font-black" style="opacity:.85">vs</span>
+                  <span class="h-14 w-[78px] rounded-[7px]" style={`background:${teamGrad(tb.id)};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></span>
+                </div>
+              )}
+            </a>
+          );
+        })()}
+
+        {/* story grid */}
+        <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(290px,1fr))">
+          {rest.map((s) => {
+            const sm = meta(s);
+            const [ta, tb] = sm.teams.map((id) => provider.getTeam(id));
+            return (
+              <a href={`/articles/${s.id}/`} data-story-kinds={(s.data.tags || []).join(' ')}
+                class="kb-story kb-card-hover flex flex-col overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
+                <div class="flex flex-1 flex-col gap-2 p-4">
+                  <div class="flex items-center gap-2">
+                    <span class="font-display inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[.8px]" style={`color:${sm.kind.accent}`}>
+                      <span class="h-[9px] w-[9px] rounded-[2px]" style={`background:${sm.kind.accent}`}></span>{sm.kind.label}
+                    </span>
+                    <span class="text-[12px]" style="color:var(--color-ink-4)">· {dateFmt.format(s.data.publishDate)} · {readMins((s.body as string) || '')} min</span>
+                  </div>
+                  <div class="font-display text-[18.5px] font-extrabold leading-tight tracking-tight text-balance">{s.data.title}</div>
+                  <div class="flex-1 text-[14px] leading-snug" style="color:var(--color-ink-2)">{s.data.description}</div>
+                  {ta && tb && (
+                    <div class="mt-0.5 flex items-center gap-2 border-t pt-2.5" style="border-color:var(--color-surface-3)">
+                      <span class="flex gap-[3px]">
+                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(ta.id)}`}></span>
+                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(tb.id)}`}></span>
+                      </span>
+                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:var(--color-ink-2)">{ta.shortCode} v {tb.shortCode}</span>
+                    </div>
+                  )}
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </>
+    )}
   </div>
+
+  <script is:inline>
+    (() => {
+      const pills = document.querySelectorAll('#story-filters .kb-sfilter');
+      const stories = document.querySelectorAll('.kb-story');
+      pills.forEach((p) => p.addEventListener('click', () => {
+        const k = p.getAttribute('data-sfilter');
+        stories.forEach((s) => {
+          const kinds = s.getAttribute('data-story-kinds') || '';
+          s.style.display = k === 'all' || kinds.includes(k) ? '' : 'none';
+        });
+        pills.forEach((x) => {
+          const on = x === p;
+          x.style.color = on ? '#fff' : 'var(--color-ink-2)';
+          x.style.background = on ? 'var(--color-night)' : '#fff';
+          x.style.borderColor = on ? 'var(--color-night)' : 'var(--color-line)';
+        });
+      }));
+    })();
+  </script>
 </BaseLayout>
