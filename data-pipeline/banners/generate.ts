@@ -94,6 +94,23 @@ function teamPrompt(t: TeamHook, _style: Style): string {
   ].join(' ');
 }
 
+// Neutral, color-tintable matchup FRAME — a single decorative line-art that the
+// site reuses for ANY A-vs-B pairing. CSS tints the two halves with the real
+// team colours and draws all data (flags, names, VS, kickoff, vote) on top, so
+// the art itself must be monochrome and carry NO baked colour blocks, VS mark,
+// progress bar, flags or text.
+function framePrompt(): string {
+  return [
+    'Ultrawide (21:9) minimal, elegant line-art graphic of a football pitch seen from above, drawn as thin geometric outlines.',
+    'Monochrome: a single dark ink colour (deep charcoal) on a flat warm cream background (#e7e2d4). No other colours, no fills, no gradients, no shaded blocks.',
+    'Symmetric left/right composition with a clear vertical halfway line down the centre, so the two halves can later be tinted independently — but leave both halves the SAME plain cream here.',
+    'Decorative geometric accents only: faint dotted halftone fields, thin triangles and parallelograms as line outlines, the pitch markings (centre circle, penalty boxes, corner arcs).',
+    'Leave generous EMPTY cream space in the upper-centre, the left third, the right third and the lower-centre — these zones will hold overlaid graphics later, so keep them uncluttered.',
+    'Flat 2D, no perspective, no players, no stadium, no 3D, no photographic elements.',
+    'ABSOLUTELY NO text, letters, words, numbers, "VS", captions, watermarks or typography. No flags, no crests, no logos, no progress bars or meter shapes, no colour-filled team zones.',
+  ].join(' ');
+}
+
 function matchPrompt(a: TeamHook, b: TeamHook, _style: Style): string {
   return [
     `Ultrawide (21:9) vibrant, exciting football matchup banner: ${a.name} versus ${b.name} at the FIFA World Cup 2026.`,
@@ -136,6 +153,8 @@ async function main() {
     style = args[si + 1] as Style;
     args.splice(si, 2);
   }
+  const isFrame = args[0] === '--frame';
+  if (isFrame) args.shift();
   const isMatch = args[0] === '--match';
   if (isMatch) args.shift();
 
@@ -143,7 +162,10 @@ async function main() {
   const outDir = join(ROOT, 'banners', 'out', style);
   ensureDir(outDir);
 
-  if (isMatch) {
+  if (isFrame) {
+    console.log('Generating neutral matchup frame (tintable line-art)…');
+    await callFal(framePrompt(), join(outDir, 'matchup-frame.png'), force);
+  } else if (isMatch) {
     const [aId, bId] = args;
     const a = getHook(db, aId);
     const b = getHook(db, bId);

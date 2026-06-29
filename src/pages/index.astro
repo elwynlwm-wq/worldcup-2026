@@ -6,8 +6,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
-import { getUpcomingFixtures } from '../lib/warehouse';
-import { teamGrad, teamColors } from '../data/teamColors';
+import { getUpcomingFixtures, getSsPair } from '../lib/warehouse';
+import { teamGrad } from '../data/teamColors';
+import MatchupGraphic from '../components/MatchupGraphic.astro';
 import { getCollection } from 'astro:content';
 
 const teamName = (id: string) => provider.getTeam(id)?.name ?? id;
@@ -35,6 +36,18 @@ const pct = (homeId: string, awayId: string) => {
   if (!h || !a) return { win: 33, draw: 34, lose: 33 };
   const pr = predict(h, a);
   return { win: Math.round(pr.win * 100), draw: Math.round(pr.draw * 100), lose: Math.round(pr.lose * 100) };
+};
+
+// who-wins split for the matchup graphic: prefer real fan votes, else the model.
+const voteSplit = (homeId: string, awayId: string) => {
+  const ss = getSsPair(homeId, awayId);
+  if (ss?.votes) {
+    const v = ss.votes;
+    const [home, away] = v.homeId === homeId ? [v.home, v.away] : [v.away, v.home];
+    return { vote: { home, draw: v.draw, away }, source: 'Fan vote' };
+  }
+  const p = pct(homeId, awayId);
+  return { vote: p, source: 'Our forecast' };
 };
 
 const dateLabel = (iso: string) =>
@@ -76,30 +89,11 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
       <div class="my-3.5 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         {todayMatch && (() => {
           const h = getTeam(todayMatch.homeTeamId), a = getTeam(todayMatch.awayTeamId);
-          const hc = teamColors(h.id), ac = teamColors(a.id);
+          const { vote, source } = voteSplit(h.id, a.id);
+          const label = [stageLabel[todayMatch.stage], dateLabel(todayMatch.date), todayMatch.venue]
+            .filter(Boolean).join(' · ');
           return (
-            <div class="relative overflow-hidden rounded-[20px] p-7 text-white" style="background:var(--color-night)">
-              <div class="font-display text-xs font-extrabold uppercase tracking-[1.2px]" style="color:var(--color-gold)">Next up · {dateLabel(todayMatch.date)}</div>
-              <div class="my-5 flex items-center justify-between gap-3.5">
-                <div class="flex-1 text-center">
-                  <div class="mx-auto mb-2 h-11 w-[62px] rounded-[9px]" style={`background:${teamGrad(h.id)}`}></div>
-                  <div class="font-display text-[17px] font-extrabold">{h.name}</div>
-                </div>
-                <div class="font-display text-[22px] font-black" style="color:var(--color-ink-2)">VS</div>
-                <div class="flex-1 text-center">
-                  <div class="mx-auto mb-2 h-11 w-[62px] rounded-[9px]" style={`background:${teamGrad(a.id)}`}></div>
-                  <div class="font-display text-[17px] font-extrabold">{a.name}</div>
-                </div>
-              </div>
-              <div class="mb-4 text-center text-[13px]" style="color:var(--color-ink-3)">{stageLabel[todayMatch.stage]} · {todayMatch.venue ?? ''}</div>
-              <div class="font-display mb-2.5 text-center text-sm font-extrabold tracking-wide">WHO DO YOU THINK WINS?</div>
-              <div class="flex gap-2.5">
-                <a href={`/h2h/${h.id}-vs-${a.id}`} class="flex-1 rounded-[11px] py-3 text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${hc.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{h.shortCode}</a>
-                <a href={`/h2h/${h.id}-vs-${a.id}`} class="flex-none self-center px-1.5 text-xs font-bold" style="color:var(--color-ink-3)">draw</a>
-                <a href={`/h2h/${h.id}-vs-${a.id}`} class="flex-1 rounded-[11px] py-3 text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${ac.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{a.shortCode}</a>
-              </div>
-              <div class="mt-3 text-center"><a href={`/h2h/${h.id}-vs-${a.id}`} class="text-[13px] font-bold" style="color:var(--color-gold)">Vote &amp; see our prediction →</a></div>
-            </div>
+            <MatchupGraphic home={h} away={a} vote={vote} voteSource={source} label={label} href={`/h2h/${h.id}-vs-${a.id}`} />
           );
         })()}
         {featured && (

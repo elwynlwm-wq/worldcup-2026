@@ -1,0 +1,87 @@
+---
+// Upcoming-match graphic — a reusable A-vs-B hero.
+//
+// One neutral line-art frame (public/banners/matchup-frame.png, monochrome ink
+// on cream, no text/colour/bar) is reused for EVERY pairing; this component
+// tints the two halves with each team's real colours and draws all the precise,
+// data-driven bits on top in CSS: flags, short codes, names, VS, the kickoff
+// label and the who-wins vote bar. So the art is generic but the result is
+// specific to the matchup. See _matchmock.astro for the original concept.
+//
+// Used on the home "Today" hero and the /h2h/<a>-vs-<b> hero.
+import Flag from './Flag.astro';
+import { teamColors } from '../data/teamColors';
+import type { Team } from '../lib/model';
+
+interface Props {
+  home: Team;
+  away: Team;
+  /** who-wins split (0–100, should sum ~100). Fan votes if we have them, else model. */
+  vote: { home: number; draw: number; away: number };
+  /** small line above: e.g. "Round of 32 · 30 Jun · NRG Stadium" */
+  label?: string;
+  /** source caption under the bar: "Fan vote" | "Our forecast" */
+  voteSource?: string;
+  href?: string;
+  class?: string;
+}
+const { home, away, vote: rawVote, label, voteSource = 'Our forecast', href, class: cls = '' } = Astro.props;
+const hc = teamColors(home.id);
+const ac = teamColors(away.id);
+const Tag = href ? 'a' : 'div';
+
+// Normalize to percentages — callers may pass raw vote COUNTS (SofaScore) or
+// already-percentages (the model). Either way we display a clean 0–100 split.
+const total = rawVote.home + rawVote.draw + rawVote.away || 1;
+const homePct = Math.round((rawVote.home / total) * 100);
+const awayPct = Math.round((rawVote.away / total) * 100);
+const drawPct = Math.max(0, 100 - homePct - awayPct);
+const vote = { home: homePct, draw: drawPct, away: awayPct };
+---
+
+<Tag
+  {...(href ? { href } : {})}
+  class:list={['relative block overflow-hidden rounded-[18px]', href && 'kb-card-hover', cls]}
+  style="aspect-ratio:21/9;background:var(--color-bg)"
+>
+  {/* two-zone team-colour tint (low opacity so the line-art reads through) */}
+  <div class="absolute inset-0" style={`background:linear-gradient(105deg, ${hc.c1} 0%, ${hc.c1}00 46%)`}></div>
+  <div class="absolute inset-0" style={`background:linear-gradient(255deg, ${ac.c1} 0%, ${ac.c1}00 46%)`}></div>
+
+  {/* neutral line-art frame */}
+  <img src="/banners/matchup-frame.png" alt="" class="absolute inset-0 h-full w-full object-cover" style="mix-blend-mode:multiply;opacity:.9" onerror="this.style.display='none'" />
+
+  {/* top: kickoff / stage label */}
+  {label && (
+    <div class="font-display absolute left-1/2 top-[7%] -translate-x-1/2 whitespace-nowrap text-[clamp(8px,1.25vw,12px)] font-extrabold uppercase tracking-[2px]" style="color:var(--color-ink)">{label}</div>
+  )}
+
+  {/* center: flags + short codes + names + single VS */}
+  <div class="absolute inset-0 flex items-center justify-between px-[6%] pt-[3%]">
+    <div class="flex w-[30%] flex-col items-center gap-1.5">
+      <Flag team={home.id} w={58} />
+      <div class="font-display text-[clamp(15px,3vw,30px)] font-black leading-none" style="text-shadow:0 1px 6px rgba(255,255,255,.55)">{home.shortCode}</div>
+      <div class="text-[clamp(8px,1.2vw,12.5px)] font-bold leading-tight" style="color:var(--color-ink-2)">{home.name}</div>
+    </div>
+    <div class="font-display text-[clamp(18px,3.4vw,36px)] font-black italic" style="color:var(--color-ink)">VS</div>
+    <div class="flex w-[30%] flex-col items-center gap-1.5">
+      <Flag team={away.id} w={58} />
+      <div class="font-display text-[clamp(15px,3vw,30px)] font-black leading-none" style="text-shadow:0 1px 6px rgba(255,255,255,.55)">{away.shortCode}</div>
+      <div class="text-[clamp(8px,1.2vw,12.5px)] font-bold leading-tight" style="color:var(--color-ink-2)">{away.name}</div>
+    </div>
+  </div>
+
+  {/* bottom: who-wins vote bar */}
+  <div class="absolute bottom-[7%] left-1/2 w-[62%] -translate-x-1/2">
+    <div class="mb-1 flex items-end justify-between text-[clamp(8px,1.1vw,12px)] font-extrabold" style="color:var(--color-ink)">
+      <span>{home.shortCode} {vote.home}%</span>
+      <span class="text-[clamp(7px,.95vw,10px)] uppercase tracking-[1.5px]" style="color:var(--color-ink-3)">{voteSource}</span>
+      <span>{vote.away}% {away.shortCode}</span>
+    </div>
+    <div class="flex h-[8px] overflow-hidden rounded-full" style="box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)">
+      <span style={`width:${vote.home}%;background:${hc.c1}`}></span>
+      <span style={`width:${vote.draw}%;background:rgba(0,0,0,.14)`}></span>
+      <span style={`width:${vote.away}%;background:${ac.c1}`}></span>
+    </div>
+  </div>
+</Tag>
