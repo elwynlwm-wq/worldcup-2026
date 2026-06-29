@@ -1,43 +1,60 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Kickabout brand fonts. Archivo = heavy display; Hanken Grotesk = body.
-   Loaded from Google Fonts (swap to self-hosted later if we want zero 3rd-party). */
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap");
+/* Kickabout fonts: Archivo (display 800/900), Hanken Grotesk (body),
+   Newsreader (serif — editorial/story deks). From the design source. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap");
 
 /* ---------------------------------------------------------------------------
-   Kickabout design tokens (from the concept). Warm cream-on-charcoal, with a
-   yellow ball + orange accent. One source of truth for both layouts.
+   Kickabout design tokens — LIGHT warm-cream theme (from the final design).
+   Supersedes the earlier dark Phase B reskin.
    --------------------------------------------------------------------------- */
 @theme {
   /* surfaces */
-  --color-bg: #16181d;          /* page */
-  --color-panel: #1e2128;       /* cards */
-  --color-panel2: #262a32;      /* insets / muted chips */
-  --color-line: #2f3440;        /* borders */
+  --color-bg: #e7e2d4;          /* page (warm cream) */
+  --color-surface: #ffffff;     /* cards */
+  --color-surface-2: #faf6ee;   /* inset cards */
+  --color-surface-3: #f1ebdf;   /* dividers / subtle fills */
+  --color-line: #e4dccd;        /* borders */
+  --color-line-2: #e9e1d2;      /* card borders */
 
-  /* text (warm parchment, not pure white) */
-  --color-ink: #e9e1d2;         /* primary text */
-  --color-ink-dim: #b3a890;     /* secondary */
-  --color-ink-muted: #6f6655;   /* tertiary / captions */
+  /* ink */
+  --color-ink: #16181d;         /* primary text (near-black) */
+  --color-ink-2: #6f6655;       /* secondary */
+  --color-ink-3: #a59a85;       /* muted / captions */
+  --color-ink-4: #b3a890;       /* faint */
 
-  /* brand accents */
-  --color-ball: #ffd23f;        /* signature yellow */
-  --color-flame: #e8482b;       /* orange */
-  --color-pitch: #138a5e;       /* green (previews / positive) */
-  --color-sky: #2a6fdb;         /* blue (features / links) */
+  /* accents */
+  --color-gold: #f3b50a;        /* highlights, "read the story", selection */
+  --color-royal: #1f3fbf;       /* links, labels, logo "about" */
+  --color-pitch: #138a5e;       /* green — positive / pre-match */
+  --color-clay: #9d2730;        /* red — post-match / alert */
+
+  /* dark panels used inside the light theme (hero match card, etc.) */
+  --color-night: #16181d;
 
   /* fonts */
   --font-display: "Archivo", system-ui, sans-serif;
   --font-body: "Hanken Grotesk", system-ui, sans-serif;
+  --font-serif: "Newsreader", Georgia, serif;
 }
 
-/* Global base: warm charcoal everywhere, body font, display font on headings. */
+/* Base */
 html {
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
 }
+::selection {
+  background: var(--color-gold);
+}
+
+/* Design micro-interactions (from the source) */
+@keyframes kb-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.kb-route { animation: kb-rise 0.28s ease both; }
+.kb-card-hover { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.kb-card-hover:hover { transform: translateY(-3px); }

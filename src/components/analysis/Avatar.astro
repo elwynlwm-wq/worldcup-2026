@@ -1,14 +1,13 @@
 ---
-// Player avatar: real photo (API-Football) when available, else a generated
-// initials circle tinted by position. The fallback means 100% coverage even
-// though ~92% of players have photos. See data-pipeline (photo matching).
+// Player avatar: real photo (API-Football) when available, else position-tinted
+// initials. Position colours align to the Kickabout palette. Light theme.
 interface Props {
   name: string;
   position?: string;
   photo?: string | null;
   size?: number;
 }
-const { name, position = '', photo = null, size = 38 } = Astro.props;
+const { name, position = '', photo = null, size = 46 } = Astro.props;
 
 const initials = name
   .split(' ')
@@ -18,14 +17,17 @@ const initials = name
   .join('')
   .toUpperCase();
 
-// Position tints (concept palette).
+// Accept both GK/DF/MF/FW and SofaScore's G/D/M/F.
+const posKey = (position || '').toUpperCase().replace(/^(G|D|M|F)$/, (m) =>
+  ({ G: 'GK', D: 'DF', M: 'MF', F: 'FW' })[m]!,
+);
 const tint: Record<string, string> = {
-  GK: 'var(--warn)',
-  DF: 'var(--accent2)',
-  MF: 'var(--accent)',
-  FW: 'var(--danger)',
+  GK: 'var(--color-gold)',
+  DF: 'var(--color-royal)',
+  MF: 'var(--color-pitch)',
+  FW: 'var(--color-clay)',
 };
-const ring = tint[position] ?? 'var(--muted)';
+const ring = tint[posKey] ?? 'var(--color-ink-3)';
 const px = `${size}px`;
 ---
 
@@ -36,14 +38,14 @@ const px = `${size}px`;
     loading="lazy"
     width={size}
     height={size}
-    class="flex-none rounded-full object-cover"
-    style={`width:${px};height:${px};border:2px solid ${ring};background:var(--panel2)`}
+    class="flex-none rounded-full object-cover object-top"
+    style={`width:${px};height:${px};border:2px solid ${ring};background:var(--color-bg)`}
   />
 ) : (
   <span
     aria-hidden="true"
     class="flex flex-none items-center justify-center rounded-full font-bold"
-    style={`width:${px};height:${px};font-size:${Math.round(size * 0.34)}px;background:var(--panel2);color:${ring};border:2px solid ${ring}`}
+    style={`width:${px};height:${px};font-size:${Math.round(size * 0.34)}px;background:var(--color-bg);color:${ring};border:2px solid ${ring}`}
   >
     {initials}
   </span>

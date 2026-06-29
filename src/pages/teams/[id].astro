@@ -1,0 +1,140 @@
+---
+// Team detail page — ported from the Kickabout design (team-detail section).
+// Hero = team-colour panel with our generated banner as the texture layer (the
+// `assets/team.jpg` slot in the design), name/group/coach overlaid + two-tone
+// colour swatches. Then KPI cards, star players, full squad by position.
+// Wired to the warehouse (provider + tiers/photos). This is the first ported
+// page — built to validate the hero banner in the real design.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Avatar from '../../components/analysis/Avatar.astro';
+import { provider } from '../../lib/provider';
+import { getPlayerTiers } from '../../lib/warehouse';
+import { teamColors } from '../../data/teamColors';
+
+export function getStaticPaths() {
+  return provider.getTeams().map((t) => ({ params: { id: t.id }, props: { teamId: t.id } }));
+}
+
+const { teamId } = Astro.props;
+const t = provider.getTeam(teamId)!;
+const squad = provider.getSquad(teamId);
+const { c1, c2 } = teamColors(teamId);
+
+// Our generated banner (dev copies in public/banners; falls back to colour only).
+const bannerSrc = `/banners/${teamId}.png`;
+
+const statusLabel: Record<string, string> = {
+  winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (best 3rd)',
+  contention: 'Still alive', eliminated: 'Eliminated',
+};
+
+const kpis = [
+  { value: String(t.strength), label: 'Power score' },
+  { value: String(t.adjRating), label: 'Team rating' },
+  { value: '#' + t.fifaRank, label: 'World rank' },
+  { value: t.points + ' pts', label: 'Group form' },
+];
+
+const tiersById = new Map(squad.map((p) => [p.id, getPlayerTiers(p.id)]));
+const stars = squad.slice().sort((a, b) => b.goals - a.goals).slice(0, 3);
+
+const POS: [string, string][] = [['GK', 'Goalkeepers'], ['DF', 'Defenders'], ['MF', 'Midfielders'], ['FW', 'Forwards']];
+const posName: Record<string, string> = { GK: 'Goalkeeper', DF: 'Defender', MF: 'Midfielder', FW: 'Forward' };
+const byPos = (pos: string) => squad.filter((p) => p.pos === pos);
+
+const jsonLd = {
+  '@context': 'https://schema.org', '@type': 'SportsTeam', name: t.name, sport: 'Football',
+  ...(t.coachName ? { coach: { '@type': 'Person', name: t.coachName } } : {}),
+};
+---
+
+<BaseLayout
+  title={`${t.name} — World Cup 2026 | Kickabout`}
+  description={`${t.name} at the 2026 World Cup: squad, coach ${t.coachName ?? ''}, Group ${t.groupLetter} standing, power ranking and the players to watch.`}
+  active="teams"
+  canonical={`/teams/${t.id}/`}
+  jsonLd={jsonLd}
+>
+  <div class="kb-route">
+    <a href="/teams" class="text-[13.5px] font-bold" style="color:var(--color-ink-3)">← All teams</a>
+
+    {/* HERO — banner texture + team-colour gradient + name */}
+    <div
+      class="relative mt-3.5 overflow-hidden rounded-[20px] p-7 text-white"
+      style={`background:${c1};min-height:150px`}
+    >
+      <img
+        src={bannerSrc}
+        alt=""
+        class="absolute inset-0 h-full w-full object-cover"
+        style="opacity:.45"
+        onerror="this.style.display='none'"
+      />
+      <div class="absolute inset-0" style={`background:linear-gradient(90deg, ${c1} 0%, rgba(0,0,0,.12) 100%);mix-blend-mode:multiply`}></div>
+      {/* two-tone swatches */}
+      <div class="absolute right-6 top-1/2 hidden -translate-y-1/2 gap-1.5 sm:flex">
+        <span style={`width:54px;height:38px;border-radius:6px;background:${c1};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)`}></span>
+        <span style={`width:54px;height:38px;border-radius:6px;background:${c2};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)`}></span>
+      </div>
+      <div class="relative z-[2]">
+        <div class="font-display text-[40px] font-black tracking-tight" style="text-shadow:0 2px 12px rgba(0,0,0,.35)">{t.name}</div>
+        <div class="mt-1 text-sm font-bold" style="opacity:.95;text-shadow:0 1px 6px rgba(0,0,0,.4)">
+          Group {t.groupLetter} · {t.confederation} · {statusLabel[t.status] ?? t.status}
+        </div>
+        <div class="mt-1.5 text-sm" style="opacity:.9;text-shadow:0 1px 6px rgba(0,0,0,.4)">Coach: {t.coachName ?? '—'}</div>
+      </div>
+    </div>
+
+    {/* KPIs */}
+    <div class="mt-4 grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+      {kpis.map((k) => (
+        <div class="rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <div class="font-display text-[26px] font-black tracking-tight" style="color:var(--color-ink)">{k.value}</div>
+          <div class="mt-0.5 text-[12.5px] font-semibold" style="color:var(--color-ink-2)">{k.label}</div>
+        </div>
+      ))}
+    </div>
+
+    <a
+      href={`/h2h/${t.id}-vs-brazil`}
+      class="kb-card-hover mt-4 inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-sm font-bold text-white"
+      style="background:var(--color-night)"
+    >⚡ Predict a match for {t.name}</a>
+
+    {/* Star players */}
+    <h2 class="font-display mt-7 mb-3 text-[20px] font-extrabold">Star players</h2>
+    <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+      {stars.map((p) => (
+        <div class="kb-card-hover flex items-center gap-3 rounded-[14px] border p-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={46} />
+          <div class="min-w-0 flex-1">
+            <b class="block truncate text-[15px]">{p.name}</b>
+            <div class="text-xs" style="color:var(--color-ink-3)">{posName[p.pos]} · {p.club}</div>
+          </div>
+          <div class="flex-none text-right">
+            <div class="font-display text-[16px] font-black" style="color:var(--color-royal)">{p.goals}</div>
+            <div class="text-[11px]" style="color:var(--color-ink-3)">goals</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Squad by position */}
+    {POS.map(([pos, label]) => (
+      <div>
+        <h3 class="font-display mt-[18px] mb-2 text-[15px] font-extrabold" style="color:var(--color-ink-2)">{label}</h3>
+        <div class="grid gap-2.5" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
+          {byPos(pos).map((p) => (
+            <div class="flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-surface-3)">
+              <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={34} />
+              <span class="min-w-0 flex-1">
+                <b class="block truncate text-[13.5px]">{p.name}</b>
+                <span class="text-[11.5px]" style="color:var(--color-ink-3)">{p.age}y · {p.club} · {p.goals}g</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</BaseLayout>

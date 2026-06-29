@@ -1,6 +1,8 @@
 ---
-// The site shell every page renders inside. Owns <html>, <head>, and the
-// global chrome. Passes SEO props straight through to <Seo/>.
+// The single site shell (light Kickabout). Owns <html>, <head>, header/nav/footer.
+// Ported from the design source (concepts/.../Kickabout.dc.html) — max-width 1080,
+// sticky translucent header, logo + nav + search. One unified layout for the whole
+// site (the old Base/Analysis split is retired now the theme is unified).
 import '../styles/global.css';
 import Seo from '../components/Seo.astro';
 
@@ -15,9 +17,21 @@ interface Props {
   publishDate?: Date;
   updatedDate?: Date;
   author?: string;
+  /** active top-nav key for highlight */
+  active?: string;
 }
 
-const seoProps = Astro.props;
+const { active = '', ...seoProps } = Astro.props;
+
+const NAV: [string, string][] = [
+  ['', 'Today'],
+  ['matches', 'Matches'],
+  ['stories', 'Stories'],
+  ['teams', 'Teams'],
+  ['bracket', 'Bracket'],
+];
+const href = (key: string) =>
+  key === '' ? '/' : key === 'stories' ? '/articles' : `/${key}`;
 ---
 
 <!doctype html>
@@ -29,30 +43,57 @@ const seoProps = Astro.props;
     <link rel="sitemap" href="/sitemap-index.xml" />
     <Seo {...seoProps} />
   </head>
-  <body
-    class="min-h-screen antialiased"
-    style="background:var(--color-bg);color:var(--color-ink)"
-  >
-    <header class="border-b" style="border-color:var(--color-line)">
-      <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <a href="/" class="font-display text-[17px] font-black tracking-tight">
-          Kick<span style="color:var(--color-flame)">about</span>
-          <span class="ml-1 text-[13px] font-semibold" style="color:var(--color-ink-dim)">⚽ WC26</span>
+  <body class="min-h-screen" style="display:flex;flex-direction:column">
+    <header
+      class="sticky top-0 z-40 border-b backdrop-blur"
+      style="background:rgba(231,226,212,.86);border-color:var(--color-line-2)"
+    >
+      <div class="mx-auto flex max-w-[1080px] flex-wrap items-center gap-4 px-5 py-3">
+        <a href="/" class="font-display flex flex-none items-center gap-2 text-[20px] font-black tracking-tight">
+          <span
+            class="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] text-[16px]"
+            style="background:var(--color-night);color:var(--color-gold);transform:rotate(-6deg)"
+            >⚽</span
+          >
+          Kick<span style="color:var(--color-royal)">about</span>
         </a>
-        <div class="flex gap-6 text-sm font-semibold" style="color:var(--color-ink-dim)">
-          <a href="/" class="hover:text-[var(--color-ink)]">Analysis</a>
-          <a href="/articles" class="hover:text-[var(--color-ink)]">Articles</a>
-        </div>
-      </nav>
+        <nav class="flex flex-1 flex-wrap gap-1">
+          {NAV.map(([key, label]) => (
+            <a
+              href={href(key)}
+              class:list={['rounded-[10px] px-3 py-2 text-sm font-bold transition']}
+              style={
+                active === key
+                  ? 'color:#fff;background:var(--color-night)'
+                  : 'color:var(--color-ink-2)'
+              }
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <form class="flex items-center gap-2 rounded-[11px] border px-3 py-2"
+          style="background:#fff;border-color:var(--color-line)">
+          <span style="color:var(--color-ink-3)">⌕</span>
+          <input
+            placeholder="Search teams, players…"
+            class="w-[150px] border-none bg-transparent text-sm outline-none"
+            style="font-family:inherit;color:var(--color-ink)"
+          />
+        </form>
+      </div>
     </header>
 
-    <main>
+    <main class="mx-auto w-full max-w-[1080px] flex-1 px-5 pt-6 pb-[70px]">
       <slot />
     </main>
 
-    <footer class="mt-16 border-t" style="border-color:var(--color-line)">
-      <div class="mx-auto max-w-5xl px-4 py-8 text-sm" style="color:var(--color-ink-muted)">
-        <p>Kickabout — World Cup 2026 predictions, analysis &amp; stories. A free, fan-made site.</p>
+    <footer class="border-t" style="border-color:var(--color-line)">
+      <div class="mx-auto max-w-[1080px] px-5 py-8 text-sm" style="color:var(--color-ink-3)">
+        <p>
+          Kickabout — World Cup 2026 predictions, analysis &amp; stories. A free, fan-made site.
+          Forecasts are a transparent model, not betting advice.
+        </p>
       </div>
     </footer>
   </body>

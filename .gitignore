@@ -24,3 +24,6 @@ npm-debug.log*
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# Dev banner copies (binaries; real serving via R2 later)
+public/banners/
