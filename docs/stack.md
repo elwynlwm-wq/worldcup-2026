@@ -52,15 +52,32 @@ Layout and design freedom live in **layouts + a component library**, not in the 
 - Tailwind: fast to build with, excellent for AI editing, zero runtime cost.
 - `@tailwindcss/typography`'s `prose` classes give articles polished, readable typography with no per-post effort — ideal for content velocity.
 
-## Host & backend — Cloudflare
+## Host & backend — Cloudflare (settled 29 Jun)
 
-- **Cloudflare Pages** for hosting: collaboration is free (Vercel is per-seat, which we don't want for a small team), and it puts hosting on the same platform as our backend compute.
-- **Cloudflare Workers** (with KV and/or D1 as the data shape demands) for the **data plane** — fetching/normalising football data, caching, the model, and the internal API the live islands and rebuild pipeline read from. Generous free tier, one ecosystem.
+- **Cloudflare Pages** for hosting. Confirmed over Vercel for concrete reasons:
+  - **Collaboration is free.** Vercel's free Hobby tier is effectively single-account for Git
+    deploys and is non-commercial-use only; going multi-person means Pro at ~$20/seat/mo. Cloudflare
+    Pages has no per-seat build/deploy cost and permits commercial use — decisive for a 2-person
+    free content site.
+  - **No egress/bandwidth charges.** For an SEO-first site whose whole goal is traffic, with no
+    revenue, a host that doesn't bill bandwidth is exactly right (Vercel free has caps a successful
+    content site can blow through).
+  - **One ecosystem.** Storage (R2), the future data-plane backend (Workers), and hosting (Pages)
+    all on one platform, one dashboard, zero cross-provider egress.
+  - Astro support is first-class on both, so nothing is lost technically.
+  - Minor caveat: CF free build minutes/concurrency are tighter than Vercel's — a non-issue for a
+    static content site with periodic rebuilds.
+- **Cloudflare Workers** (with KV and/or D1 as the data shape demands) for the **data plane** —
+  serving the live/mutating tier later. Generous free tier, one ecosystem.
+- **Cloudflare R2** for object storage — media (`docs/media-and-assets.md`) and the rebuildable
+  SQLite warehouse artifact (`data-pipeline/V1-PLAN.md`).
 
 Deploy model: push to the repo → Cloudflare builds and deploys. (Exact branch/preview conventions documented when we wire up the project.)
 
 ## Things we've deliberately not decided yet
 
-- The football data provider for the data plane (the prior spec proposes API-Football; that still stands as the leading candidate — see [product-spec.md](./product-spec.md)).
-- KV vs. D1 vs. both for data-plane storage — decided when we build it.
+- Live football data provider for the data plane's **tournament-only paid tier** — Sportmonks WC
+  API and The Odds API are the candidates (see `data-pipeline/SOURCING.md`). **API-Football is
+  ruled out** — its ToS grants no publication license, unfit for a republishing site.
+- KV vs. D1 vs. Neon for the data-plane serving store — decided when live data arrives (v2).
 - Whether the ported Elo analysis page runs entirely client-side as an island or gets pre-computed by the data plane. Likely the latter as it matures.
