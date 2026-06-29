@@ -5,7 +5,6 @@
 // table. Pick state is client-side (localStorage), the rest is static.
 import type { Team } from '../lib/model';
 import { predict } from '../lib/model';
-import { teamColors } from '../data/teamColors';
 import { getTeamPlayers } from '../lib/warehouse';
 import { provider } from '../lib/provider';
 import Flag from './Flag.astro';
@@ -48,7 +47,6 @@ const photoFor = (() => {
   return (name: string) => byName.get(name) ?? null;
 })();
 
-const hc = teamColors(home.id), ac = teamColors(away.id);
 const fanTotal = fans ? fans.home + fans.away : 0;
 const fanHomePct = fanTotal ? Math.round((fans!.home / fanTotal) * 100) : null;
 // Read-only fans view: which side the crowd backs (no voting). 'home'|'away'|null.
@@ -80,13 +78,12 @@ const matchKey = [home.id, away.id].sort().join('|');
     <div class="flex items-stretch gap-3">
       {(['home', 'away'] as const).map((side) => {
         const t = side === 'home' ? home : away;
-        const c = side === 'home' ? hc : ac;
         const pctSide = fanHomePct == null ? null : side === 'home' ? fanHomePct : 100 - fanHomePct;
         const isPick = fansPick === side;
         return (
           <div
             class="flex flex-1 items-center justify-center gap-2.5 rounded-[12px] px-4 py-3 text-center text-white"
-            style={`border:2.5px solid ${isPick ? 'var(--color-gold)' : 'rgba(255,255,255,.15)'};background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), ${c.c1}`}
+            style={`border:2.5px solid ${isPick ? 'var(--color-gold)' : 'rgba(255,255,255,.12)'};background:#22252e`}
           >
             <Flag team={t.id} w={34} class="flex-none border-2 border-white/70 shadow-[0_3px_8px_-2px_rgba(0,0,0,.5)]" />
             <span class="min-w-0">
