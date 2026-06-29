@@ -11,11 +11,13 @@
     "banners": "tsx banners/generate.ts",
     "banners:blog": "tsx banners/blog.ts",
     "banners:thumbs": "tsx banners/thumbs.ts",
+    "preview": "tsx articles/preview.ts",
     "flags": "tsx fetch/flags.ts",
     "flags:figma": "tsx fetch/figmaflags.ts",
     "all": "npm run fetch && npm run build:warehouse && npm run export"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.106.0",
     "better-sqlite3": "^12.11.1"
   },
   "devDependencies": {

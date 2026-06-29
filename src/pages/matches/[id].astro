@@ -1,17 +1,32 @@
 ---
-// Match record page (PLAYED) — /matches/<a>-vs-<b>-<stage>.
-// Archival record of a finished match: final score, goalscorers, post-match
-// articles. (Full xG/stats/events export is a follow-up; data is in the
-// warehouse.) One page per finished fixture. See docs/port-plan.md.
+// Unified match page — /matches/<a>-vs-<b>-<stage>. ONE page per real fixture,
+// the canonical URL for every game. It branches on the fixture's lifecycle:
+//   upcoming (NS) → Prediction / Lineups / Stats / Insights, all forward-looking.
+//   live (1H/HT/…) → same tabs, but odds/poll read from the frozen snapshot.
+//   ended (FT/AET/PEN) → final score + goals + real stats, plus the kept
+//                        pre-match prediction as an accountability record.
+// We retired the separate /h2h evergreen page; this replaces both it and the
+// old result-only page. Pipeline writes status (+ snapshot/result) → static rebuild.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ShowdownPanel from '../../components/ShowdownPanel.astro';
+import MatchPitch from '../../components/MatchPitch.astro';
 import { provider } from '../../lib/provider';
-import { getRecentResults, getMatchDetail, getH2H } from '../../lib/warehouse';
+import { predict } from '../../lib/model';
+import { getAfFixtures, getSsPair, getH2H, getMatchDetail } from '../../lib/warehouse';
 import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
 
+const FINISHED = new Set(['FT', 'AET', 'PEN']);
+const LIVE = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE']);
+function lifecycle(status: string): 'upcoming' | 'live' | 'ended' {
+  if (FINISHED.has(status)) return 'ended';
+  if (LIVE.has(status)) return 'live';
+  return 'upcoming';
+}
+
 export function getStaticPaths() {
-  // One page per finished AF fixture with both teams mapped.
-  return getRecentResults(200)
+  // One page per AF fixture with both teams mapped — every game, any status.
+  return getAfFixtures()
     .filter((m) => provider.getTeam(m.homeTeamId) && provider.getTeam(m.awayTeamId))
     .map((m) => ({
       params: { id: `${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}` },
@@ -22,15 +37,30 @@ export function getStaticPaths() {
 const { m } = Astro.props;
 const h = provider.getTeam(m.homeTeamId)!;
 const a = provider.getTeam(m.awayTeamId)!;
+const phase = lifecycle(m.status);
+const ended = phase === 'ended';
+const live = phase === 'live';
+
+const pr = predict(h, a);
+const pct = (x: number) => Math.round(x * 100);
+
+// SofaScore predicted signals (votes + lineups), oriented to home/away.
+const ss = getSsPair(h.id, a.id);
+let fans: { home: number; away: number } | null = null;
+if (ss?.votes) {
+  fans = ss.votes.homeId === h.id ? { home: ss.votes.home, away: ss.votes.away } : { home: ss.votes.away, away: ss.votes.home };
+}
+const luHome = ss?.lineups?.[h.id] ?? null;
+const luAway = ss?.lineups?.[a.id] ?? null;
+const hasLineups = !!(luHome?.starters?.length && luAway?.starters?.length);
+
 const h2h = getH2H(h.id, a.id);
 
-// real played-match detail: goals + key stats (xG/possession/shots…)
-const md = getMatchDetail(m.id);
-const goals = (md?.goals ?? []).sort((x, y) => x.minute - y.minute);
+// ended-match detail: real goals + stats
+const md = ended ? getMatchDetail(m.id) : null;
+const goals = (md?.goals ?? []).slice().sort((x, y) => x.minute - y.minute);
 const homeGoals = goals.filter((g) => g.teamId === h.id);
 const awayGoals = goals.filter((g) => g.teamId === a.id);
-
-// stat-comparison rows (parse "61%" → 61 for the bars)
 const STAT_DISPLAY: [string, string][] = [
   ['Ball Possession', 'Possession'],
   ['expected_goals', 'Expected goals (xG)'],
@@ -43,14 +73,31 @@ const num = (v: string | undefined) => (v == null ? 0 : parseFloat(v.replace('%'
 const statRows = STAT_DISPLAY.map(([key, label]) => {
   const s = md?.stats?.[key];
   if (!s || (s[h.id] == null && s[a.id] == null)) return null;
-  const hv = s[h.id] ?? '–', av = s[a.id] ?? '–';
   const hn = num(s[h.id]), an = num(s[a.id]);
   const tot = hn + an || 1;
-  return { label, hv, av, homePct: Math.round((hn / tot) * 100), awayPct: Math.round((an / tot) * 100) };
+  return { label, hv: s[h.id] ?? '–', av: s[a.id] ?? '–', homePct: Math.round((hn / tot) * 100), awayPct: Math.round((an / tot) * 100) };
 }).filter(Boolean) as { label: string; hv: string; av: string; homePct: number; awayPct: number }[];
+
+// Derived Last-5 form per team from finished AF fixtures (real data only).
+function lastFive(teamId: string): ('W' | 'D' | 'L')[] {
+  return getAfFixtures()
+    .filter((f) => FINISHED.has(f.status) && (f.homeTeamId === teamId || f.awayTeamId === teamId))
+    .filter((f) => f.homeScore != null && f.awayScore != null)
+    .sort((x, y) => (x.date < y.date ? 1 : -1))
+    .slice(0, 5)
+    .map((f) => {
+      const isHome = f.homeTeamId === teamId;
+      const gf = isHome ? f.homeScore! : f.awayScore!;
+      const ga = isHome ? f.awayScore! : f.homeScore!;
+      return gf > ga ? 'W' : gf < ga ? 'L' : 'D';
+    });
+}
+const formHome = lastFive(h.id);
+const formAway = lastFive(a.id);
 
 const stageLabel: Record<string, string> = { group: 'Group stage', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: 'Third place' };
 const fmtDate = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(iso)) : '');
+const fmtShort = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(iso)) : '');
 
 const articles = await getCollection('articles', ({ data }) => !data.draft);
 const related = articles.filter((art) => {
@@ -58,21 +105,24 @@ const related = articles.filter((art) => {
   return tags.includes(h.id) && tags.includes(a.id);
 });
 
+const titleScore = ended ? ` ${m.homeScore}–${m.awayScore} ` : ' vs ';
 const jsonLd = {
   '@context': 'https://schema.org', '@type': 'SportsEvent',
   name: `${h.name} vs ${a.name}`, sport: 'Football',
   ...(m.date ? { startDate: m.date } : {}),
   ...(m.venue ? { location: { '@type': 'Place', name: m.venue } } : {}),
-  competitor: [
-    { '@type': 'SportsTeam', name: h.name },
-    { '@type': 'SportsTeam', name: a.name },
-  ],
+  competitor: [{ '@type': 'SportsTeam', name: h.name }, { '@type': 'SportsTeam', name: a.name }],
 };
+
+// Form pill colours
+const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '#9b9384');
 ---
 
 <BaseLayout
-  title={`${h.name} ${m.homeScore}–${m.awayScore} ${a.name} — World Cup 2026 | Kickabout`}
-  description={`${h.name} ${m.homeScore}–${m.awayScore} ${a.name}, ${stageLabel[m.stage]} at the 2026 World Cup. Result, head-to-head and post-match reads.`}
+  title={`${h.name}${titleScore}${a.name} — ${stageLabel[m.stage]}, World Cup 2026 | Kickabout`}
+  description={ended
+    ? `${h.name} ${m.homeScore}–${m.awayScore} ${a.name}, ${stageLabel[m.stage]} at the 2026 World Cup. Result, stats, head-to-head and how our prediction held up.`
+    : `Who wins ${h.name} vs ${a.name}? Our forecast, fans' who-will-win vote, predicted lineups, season form and the all-time head-to-head.`}
   active="matches"
   canonical={`/matches/${h.id}-vs-${a.id}-${m.stage}/`}
   jsonLd={jsonLd}
@@ -82,68 +132,148 @@ const jsonLd = {
       {stageLabel[m.stage]}{m.venue ? ` · ${m.venue}` : ''}{m.date ? ` · ${fmtDate(m.date)}` : ''}
     </div>
 
-    {/* scoreline */}
-    <div class="mt-2 flex items-center gap-4 rounded-[14px] border p-5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+    {/* scoreline / matchup header */}
+    <div class="mt-2 flex items-center gap-4 rounded-[16px] border p-5" style="background:var(--color-surface);border-color:var(--color-line-2)">
       <div class="flex min-w-0 flex-1 items-center gap-3">
-        <Flag team={h.id} w={40} />
+        <Flag team={h.id} w={42} />
         <b class="font-display text-[18px] tracking-tight">{h.name}</b>
       </div>
-      <div class="font-display flex-none px-2 text-[28px] font-black">{m.homeScore}–{m.awayScore}</div>
+      <div class="flex-none px-2 text-center">
+        {ended || live ? (
+          <div class="font-display text-[28px] font-black leading-none">{m.homeScore ?? 0}–{m.awayScore ?? 0}</div>
+        ) : (
+          <div class="font-display text-[20px] font-black" style="color:var(--color-ink-3)">vs</div>
+        )}
+        {live && <div class="font-display mt-1 text-[10.5px] font-extrabold uppercase tracking-wide" style="color:var(--color-clay)">● Live{m.elapsed ? ` · ${m.elapsed}'` : ''}</div>}
+        {ended && <div class="font-display mt-1 text-[10.5px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-4)">Full time</div>}
+      </div>
       <div class="flex min-w-0 flex-1 items-center justify-end gap-3">
         <b class="font-display text-right text-[18px] tracking-tight">{a.name}</b>
-        <Flag team={a.id} w={40} />
+        <Flag team={a.id} w={42} />
       </div>
     </div>
 
-    {goals.length > 0 && (
-      <div class="mx-auto mt-4 max-w-[600px] rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-        <div class="font-display mb-3 text-center text-[11px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-3)">⚽ Goals</div>
-        <div class="grid grid-cols-2 gap-5">
-          <div class="flex flex-col gap-1.5">
-            {homeGoals.map((g) => (<div class="text-sm"><b>{g.scorer}</b> <span class="font-semibold" style="color:var(--color-ink-3)">{g.minute}'{g.pen ? ' (P)' : ''}</span></div>))}
-          </div>
-          <div class="flex flex-col gap-1.5 text-right">
-            {awayGoals.map((g) => (<div class="text-sm"><span class="font-semibold" style="color:var(--color-ink-3)">{g.minute}'{g.pen ? ' (P)' : ''}</span> <b>{g.scorer}</b></div>))}
+    <div class="mt-2 flex gap-4 text-[13px] font-bold">
+      <a href={`/teams/${h.id}/`} style="color:var(--color-royal)">{h.name} squad</a>
+      <a href={`/teams/${a.id}/`} style="color:var(--color-royal)">{a.name} squad</a>
+    </div>
+
+    {/* tabs — Prediction / Lineups / Stats / Insights */}
+    <div class="mt-4 flex w-fit flex-wrap gap-1 rounded-[12px] border p-1" id="match-tabs" style="background:var(--color-surface);border-color:var(--color-line-2)">
+      <button data-mtab="prediction" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:#fff;background:var(--color-night)">Prediction</button>
+      {hasLineups && <button data-mtab="lineups" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:var(--color-ink-2);background:transparent">Lineups</button>}
+      <button data-mtab="stats" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:var(--color-ink-2);background:transparent">Stats</button>
+      <button data-mtab="insights" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:var(--color-ink-2);background:transparent">Insights</button>
+    </div>
+
+    {/* ============ PREDICTION ============ */}
+    <section data-mpanel="prediction">
+      {ended && (
+        <div class="mt-4 flex items-start gap-3 rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <span class="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-white" style="background:var(--color-royal)">📌</span>
+          <div class="text-[13.5px]" style="color:var(--color-ink-2)">
+            <b>What we said before kick-off.</b> Our pre-match forecast is kept below for transparency — final score was
+            <b> {h.shortCode} {m.homeScore}–{m.awayScore} {a.shortCode}</b>.
           </div>
         </div>
-      </div>
+      )}
+      <ShowdownPanel home={h} away={a} fans={fans} mode="prediction" frozen={ended || live} />
+    </section>
+
+    {/* ============ LINEUPS ============ */}
+    {hasLineups && (
+      <section data-mpanel="lineups" style="display:none">
+        <p class="mt-4 mb-3 text-[13.5px]" style="color:var(--color-ink-2)">
+          {ended ? 'Predicted XIs (confirmed lineups land here once exported).' : 'No confirmed XI yet — most likely teams based on recent selection.'}
+        </p>
+        <MatchPitch home={h} away={a} homeLineup={luHome!} awayLineup={luAway!} snapshotLabel="Most likely XI" />
+      </section>
     )}
 
-    {/* stat comparison */}
-    {statRows.length > 0 && (
-      <div class="mx-auto mt-4 max-w-[600px] rounded-[14px] border px-[18px] pt-1.5 pb-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
-        <div class="flex items-center justify-center gap-3 border-b py-3" style="border-color:var(--color-surface-3)">
-          <Flag team={h.id} w={26} />
-          <b class="font-display text-[14px]">{h.shortCode}</b>
-          <span class="font-display px-1 text-[16px] font-black">{m.homeScore}–{m.awayScore}</span>
-          <b class="font-display text-[14px]">{a.shortCode}</b>
-          <Flag team={a.id} w={26} />
-        </div>
-        {statRows.map((s) => (
-          <div class="border-b py-2" style="border-color:var(--color-surface-3)">
-            <div class="mb-1 flex items-center justify-between">
-              <b class="font-display w-[52px] text-[14px]">{s.hv}</b>
-              <span class="text-[12.5px] font-semibold" style="color:var(--color-ink-2)">{s.label}</span>
-              <b class="font-display w-[52px] text-right text-[14px]">{s.av}</b>
+    {/* ============ STATS ============ */}
+    <section data-mpanel="stats" style="display:none">
+      {ended && goals.length > 0 && (
+        <div class="mt-4 rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <div class="font-display mb-3 text-center text-[11px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-3)">⚽ Goals</div>
+          <div class="grid grid-cols-2 gap-5">
+            <div class="flex flex-col gap-1.5">
+              {homeGoals.map((g) => (<div class="text-sm"><b>{g.scorer}</b> <span class="font-semibold" style="color:var(--color-ink-3)">{g.minute}'{g.pen ? ' (P)' : ''}</span></div>))}
             </div>
-            <div class="flex h-[5px] gap-[5px]">
-              <span class="flex flex-1 justify-end overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="rounded-[3px]" style={`width:${s.homePct}%;background:var(--color-royal)`}></span></span>
-              <span class="flex-1 overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="block h-full rounded-[3px]" style={`width:${s.awayPct}%;background:#2b2e36`}></span></span>
+            <div class="flex flex-col gap-1.5 text-right">
+              {awayGoals.map((g) => (<div class="text-sm"><span class="font-semibold" style="color:var(--color-ink-3)">{g.minute}'{g.pen ? ' (P)' : ''}</span> <b>{g.scorer}</b></div>))}
             </div>
           </div>
-        ))}
-      </div>
-    )}
+        </div>
+      )}
 
-    {h2h && (
-      <p class="mt-4 text-center text-sm" style="color:var(--color-ink-2)">
-        All-time: {h.shortCode} {h2h.aWins}W · {h2h.draws}D · {a.shortCode} {h2h.bWins}W (over {h2h.played} meetings).
-      </p>
-    )}
+      {/* real stat comparison (ended games only) */}
+      {ended && statRows.length > 0 && (
+        <div class="mt-4 rounded-[16px] border px-[18px] pt-1.5 pb-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <div class="flex items-center justify-center gap-3 border-b py-3" style="border-color:var(--color-surface-3)">
+            <Flag team={h.id} w={26} /><b class="font-display text-[14px]">{h.shortCode}</b>
+            <span class="font-display px-1 text-[16px] font-black">{m.homeScore}–{m.awayScore}</span>
+            <b class="font-display text-[14px]">{a.shortCode}</b><Flag team={a.id} w={26} />
+          </div>
+          {statRows.map((s) => (
+            <div class="border-b py-2" style="border-color:var(--color-surface-3)">
+              <div class="mb-1 flex items-center justify-between">
+                <b class="font-display w-[52px] text-[14px]">{s.hv}</b>
+                <span class="text-[12.5px] font-semibold" style="color:var(--color-ink-2)">{s.label}</span>
+                <b class="font-display w-[52px] text-right text-[14px]">{s.av}</b>
+              </div>
+              <div class="flex h-[5px] gap-[5px]">
+                <span class="flex flex-1 justify-end overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="rounded-[3px]" style={`width:${s.homePct}%;background:var(--color-royal)`}></span></span>
+                <span class="flex-1 overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="block h-full rounded-[3px]" style={`width:${s.awayPct}%;background:#2b2e36`}></span></span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
+      {/* form cards (Last 5) — shown when we have any derived form */}
+      {(formHome.length > 0 || formAway.length > 0) && (
+        <div class="mt-4 grid gap-3.5" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+          {[{ t: h, form: formHome }, { t: a, form: formAway }].map(({ t, form }) => (
+            <div class="rounded-[16px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+              <div class="mb-2.5 flex items-center gap-2.5"><Flag team={t.id} w={30} /><b class="text-[15px]">{t.name}</b></div>
+              <div class="text-[11px] font-bold uppercase tracking-wide" style="color:var(--color-ink-3)">Form · last {form.length}</div>
+              {form.length > 0 ? (
+                <div class="mt-2 flex gap-1.5">
+                  {form.map((r) => (<span class="font-display flex h-7 w-7 items-center justify-center rounded-[7px] text-[12.5px] font-extrabold text-white" style={`background:${pillBg(r)}`}>{r}</span>))}
+                </div>
+              ) : (<div class="mt-2 text-[13px]" style="color:var(--color-ink-3)">No recent results yet.</div>)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* HEAD TO HEAD banner */}
+      {h2h ? (
+        <div class="mt-4 overflow-hidden rounded-[16px] p-6 text-center text-white" style="background:var(--color-night)">
+          <div class="font-display text-[11px] font-extrabold uppercase tracking-[1.5px]" style="color:var(--color-gold)">Head to head</div>
+          <div class="font-display mt-1.5 text-[28px] font-black tracking-tight">{h.shortCode} {h2h.aWins} · {h2h.draws} draw{h2h.draws === 1 ? '' : 's'} · {h2h.bWins} {a.shortCode}</div>
+          <div class="mt-1 text-[13px]" style="color:var(--color-ink-3)">
+            {h2h.played} all-time meeting{h2h.played === 1 ? '' : 's'}{h2h.lastMeeting ? ` · last ${fmtShort(h2h.lastMeeting)}` : ''}
+          </div>
+        </div>
+      ) : (
+        <p class="mt-4 text-[14.5px]" style="color:var(--color-ink-2)">{h.name} and {a.name} have no recorded all-time meetings.</p>
+      )}
+
+      {!ended && statRows.length === 0 && formHome.length === 0 && formAway.length === 0 && !h2h && (
+        <p class="mt-4 text-[14px]" style="color:var(--color-ink-3)">Match stats will appear here once the game is under way.</p>
+      )}
+    </section>
+
+    {/* ============ INSIGHTS ============ */}
+    <section data-mpanel="insights" style="display:none">
+      <ShowdownPanel home={h} away={a} fans={fans} mode="insights" frozen={ended || live} />
+    </section>
+
+    {/* post-match reads */}
     {related.length > 0 && (
-      <div class="mt-6">
-        <h2 class="font-display mb-3 text-[19px] font-extrabold">Post-match reads</h2>
+      <div class="mt-7">
+        <h2 class="font-display mb-3 text-[19px] font-extrabold">{ended ? 'Post-match reads' : 'Match preview & reads'}</h2>
         <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
           {related.map((art) => (
             <a href={`/articles/${art.id}/`} class="kb-card-hover rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
@@ -155,4 +285,16 @@ const jsonLd = {
       </div>
     )}
   </div>
+
+  <script is:inline>
+    (() => {
+      const tabs = document.querySelectorAll('#match-tabs .kb-mtab');
+      const panels = document.querySelectorAll('[data-mpanel]');
+      tabs.forEach((t) => t.addEventListener('click', () => {
+        const name = t.getAttribute('data-mtab');
+        panels.forEach((p) => (p.style.display = p.getAttribute('data-mpanel') === name ? '' : 'none'));
+        tabs.forEach((x) => { const on = x === t; x.style.color = on ? '#fff' : 'var(--color-ink-2)'; x.style.background = on ? 'var(--color-night)' : 'transparent'; });
+      }));
+    })();
+  </script>
 </BaseLayout>

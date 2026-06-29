@@ -1,0 +1,136 @@
+---
+// Horizontal both-teams pitch (match Lineups tab) — ported from the Claude design.
+// Home XI on the LEFT half (attacking right), away XI on the RIGHT half
+// (attacking left). Jersey markers with numbers, formation labels per side,
+// and both benches listed below. Single "Most likely XI" for now — the design's
+// snapshot pager is hidden until we have multiple XIs per team.
+import type { Team } from '../lib/model';
+import type { SsLineup } from '../lib/warehouse';
+import { teamColors } from '../data/teamColors';
+import Flag from './Flag.astro';
+
+interface Props {
+  home: Team;
+  away: Team;
+  homeLineup: SsLineup;
+  awayLineup: SsLineup;
+  /** label shown in the centre header, e.g. "Most likely XI" */
+  snapshotLabel?: string;
+  /** sub-label, e.g. "Confirmed ~1h before kick-off" */
+  snapshotSub?: string;
+}
+const { home, away, homeLineup, awayLineup, snapshotLabel = 'Most likely XI', snapshotSub } = Astro.props;
+
+const lastName = (n: string) => n.split(' ').slice(-1)[0];
+
+interface Marker { name: string; number: string; x: number; y: number; fill: string; numColor: string }
+
+// Place one team's XI into one half of the pitch.
+//  side 'home' → occupies x in [4, 46], GK at far left, forwards toward centre.
+//  side 'away' → occupies x in [54, 96], GK at far right, forwards toward centre.
+function buildMarkers(lineup: SsLineup, side: 'home' | 'away', fill: string): Marker[] {
+  const starters = lineup.starters.slice(0, 11);
+  const gk = starters.find((p) => p.pos === 'G') ?? starters[0];
+  const outfield = starters.filter((p) => p !== gk);
+
+  const formationRows = (lineup.formation || '4-3-3')
+    .split('-').map((n) => parseInt(n, 10)).filter((n) => n > 0);
+  const rows: typeof outfield[] = [];
+  let idx = 0;
+  for (const count of formationRows) {
+    rows.push(outfield.slice(idx, idx + count));
+    idx += count;
+  }
+  if (idx < outfield.length) rows.push(outfield.slice(idx));
+
+  const nRows = rows.length;
+  // x band per side; home GK near left edge, rows march toward halfway line.
+  const band = side === 'home' ? { gk: 6, near: 12, far: 46 } : { gk: 94, near: 88, far: 54 };
+  const colX = (rowIdx: number) => band.near + ((rowIdx + 1) / (nRows + 1)) * (band.far - band.near);
+  const rowY = (count: number, ci: number) => ((ci + 1) / (count + 1)) * 100;
+
+  const markers: Marker[] = [];
+  markers.push({ name: lastName(gk.name), number: gk.jersey ?? '1', x: band.gk, y: 50, fill: '#ffffff', numColor: '#16181d' });
+  rows.forEach((row, ri) => {
+    const x = colX(ri);
+    row.forEach((p, ci) => {
+      markers.push({ name: lastName(p.name), number: p.jersey ?? '', x, y: rowY(row.length, ci), fill, numColor: '#ffffff' });
+    });
+  });
+  return markers;
+}
+
+const hc = teamColors(home.id), ac = teamColors(away.id);
+const homeMarkers = buildMarkers(homeLineup, 'home', hc.c1);
+const awayMarkers = buildMarkers(awayLineup, 'away', ac.c1);
+const allMarkers = [...homeMarkers, ...awayMarkers];
+
+const benchRow = (lineup: SsLineup) => lineup.subs.slice(0, 12);
+const hasBench = (homeLineup.subs?.length ?? 0) > 0 || (awayLineup.subs?.length ?? 0) > 0;
+---
+
+<div class="overflow-hidden rounded-[18px]" style="background:var(--color-night)">
+  {/* header: team + formation each side, snapshot label centred */}
+  <div class="flex items-start justify-between gap-3 px-5 pt-5 pb-3 text-white">
+    <div class="flex items-center gap-2.5">
+      <Flag team={home.id} w={34} />
+      <div>
+        <div class="font-display text-[15px] font-extrabold leading-tight">{home.name}</div>
+        <div class="text-[12px] font-bold" style="color:var(--color-ink-3)">{homeLineup.formation ?? '—'}</div>
+      </div>
+    </div>
+    <div class="px-2 text-center">
+      <div class="font-display text-[14px] font-extrabold text-white">{snapshotLabel}</div>
+      {snapshotSub && <div class="mt-0.5 text-[11.5px]" style="color:var(--color-ink-3)">{snapshotSub}</div>}
+    </div>
+    <div class="flex items-center gap-2.5 text-right">
+      <div>
+        <div class="font-display text-[15px] font-extrabold leading-tight">{away.name}</div>
+        <div class="text-[12px] font-bold" style="color:var(--color-ink-3)">{awayLineup.formation ?? '—'}</div>
+      </div>
+      <Flag team={away.id} w={34} />
+    </div>
+  </div>
+
+  {/* pitch */}
+  <div class="relative mx-3 mb-3" style="aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#1d212b 0%,#14171e 100%);border:1px solid #2a2e38">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 7%,transparent 7% 14%)"></div>
+    <div style="position:absolute;left:12px;right:12px;top:12px;bottom:12px;border:1.5px solid rgba(255,255,255,.18);border-radius:8px"></div>
+    {/* halfway line + centre circle */}
+    <div style="position:absolute;top:12px;bottom:12px;left:50%;width:1.5px;background:rgba(255,255,255,.18)"></div>
+    <div style="position:absolute;left:50%;top:50%;width:92px;height:92px;border:1.5px solid rgba(255,255,255,.18);border-radius:50%;transform:translate(-50%,-50%)"></div>
+    <div style="position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.32);transform:translate(-50%,-50%)"></div>
+    {/* penalty boxes */}
+    <div style="position:absolute;top:50%;left:12px;transform:translateY(-50%);width:13%;height:54%;border:1.5px solid rgba(255,255,255,.16);border-left:none;border-radius:0 6px 6px 0"></div>
+    <div style="position:absolute;top:50%;right:12px;transform:translateY(-50%);width:13%;height:54%;border:1.5px solid rgba(255,255,255,.16);border-right:none;border-radius:6px 0 0 6px"></div>
+
+    {allMarkers.map((m) => (
+      <span style={`position:absolute;left:${m.x}%;top:${m.y}%;transform:translate(-50%,-50%);width:64px;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center`}>
+        <span style="position:relative;width:36px;height:32px;filter:drop-shadow(0 4px 5px rgba(0,0,0,.6))">
+          <svg viewBox="0 0 64 56" style="width:100%;height:100%;display:block"><path d="M20 6 L6 13 L11 25 L19 22 L19 50 L45 50 L45 22 L53 25 L58 13 L44 6 C44 12 38 15 32 15 C26 15 20 12 20 6 Z" fill={m.fill} stroke="rgba(255,255,255,.92)" stroke-width="2.5" stroke-linejoin="round"></path></svg>
+          <span style={`position:absolute;left:0;right:0;top:48%;transform:translateY(-50%);font-family:var(--font-display);font-weight:900;font-size:12px;color:${m.numColor};text-shadow:0 1px 2px rgba(0,0,0,.45)`}>{m.number}</span>
+        </span>
+        <span style="font-size:9.5px;font-weight:800;font-family:var(--font-display);color:#fff;background:rgba(0,0,0,.62);padding:1.5px 5px;border-radius:4px;line-height:1.1;white-space:nowrap">{m.name}</span>
+      </span>
+    ))}
+  </div>
+</div>
+
+{/* benches, side by side below the pitch — only when we have sub data */}
+{hasBench && (
+<div class="mt-3.5 grid gap-4" style="grid-template-columns:1fr 1fr">
+  {[{ t: home, lu: homeLineup, c: hc.c1 }, { t: away, lu: awayLineup, c: ac.c1 }].map(({ t, lu, c }) => (
+    <div>
+      <div class="font-display mb-2 text-[13px] font-extrabold" style={`color:${c}`}>{t.name} bench</div>
+      <div class="grid gap-1.5" style="grid-template-columns:1fr 1fr">
+        {benchRow(lu).map((p) => (
+          <div class="flex items-center gap-1.5 rounded-[9px] border px-2.5 py-1.5 text-[12.5px]" style="background:var(--color-surface);border-color:var(--color-line-2)">
+            <b class="font-display flex-none" style="color:var(--color-ink-3)">{p.jersey ?? ''}</b>
+            <span class="min-w-0 flex-1 truncate font-semibold">{p.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  ))}
+</div>
+)}

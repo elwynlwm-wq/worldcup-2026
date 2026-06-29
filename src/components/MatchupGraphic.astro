@@ -8,7 +8,7 @@
 // label and the who-wins vote bar. So the art is generic but the result is
 // specific to the matchup. See _matchmock.astro for the original concept.
 //
-// Used on the home "Today" hero and the /h2h/<a>-vs-<b> hero.
+// Used on the home "Today" hero and the /matches/<a>-vs-<b>-<stage> header.
 import Flag from './Flag.astro';
 import VsMark from './VsMark.astro';
 import { teamColors } from '../data/teamColors';
@@ -25,17 +25,21 @@ interface Props {
   voteSource?: string;
   /** compact header band: slim, no label/vote bar, single row of name · VS · name */
   compact?: boolean;
+  /** which close-cropped art tier to use. Defaults by size (compact→thumbs,
+   *  full→heroes); pass 'heroes' on a compact band that's rendered large. */
+  art?: 'thumbs' | 'heroes';
   href?: string;
   class?: string;
 }
-const { home, away, vote: rawVote, label, voteSource = 'Our forecast', compact = false, href, class: cls = '' } = Astro.props;
+const { home, away, vote: rawVote, label, voteSource = 'Our forecast', compact = false, art, href, class: cls = '' } = Astro.props;
 const hc = teamColors(home.id);
 const ac = teamColors(away.id);
 const Tag = href ? 'a' : 'div';
 
-// Compact band uses the zoomed-out/cropped thumb art (pops at small size); the
-// full hero uses the full-bleed banner.
-const bannerSrc = (id: string) => (compact ? `/banners/thumbs/${id}.webp` : `/banners/${id}.png`);
+// Both sizes use the close-cropped art (punchier than the full-bleed banner when
+// only a diagonal half is shown). Tier defaults by size but can be forced via `art`.
+const tier = art ?? (compact ? 'thumbs' : 'heroes');
+const bannerSrc = (id: string) => `/banners/${tier}/${id}.webp`;
 
 // Normalize to percentages — callers may pass raw vote COUNTS (SofaScore) or
 // already-percentages (the model). Either way we display a clean 0–100 split.

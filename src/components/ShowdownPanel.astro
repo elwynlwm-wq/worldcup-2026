@@ -21,8 +21,11 @@ interface Props {
    *  insights   = forecast + "what's behind it" factors + star men;
    *  full       = everything (default, e.g. the standalone predictor). */
   mode?: 'prediction' | 'insights' | 'full';
+  /** true once the match has kicked off — the poll/fan bar is the frozen
+   *  pre-match snapshot, so we label it rather than invite voting. */
+  frozen?: boolean;
 }
-const { home, away, fans = null, mode = 'full' } = Astro.props;
+const { home, away, fans = null, mode = 'full', frozen = false } = Astro.props;
 
 const showPoll = mode !== 'insights';
 const showFactors = mode !== 'prediction';
@@ -48,13 +51,16 @@ const hc = teamColors(home.id), ac = teamColors(away.id);
 const fanTotal = fans ? fans.home + fans.away : 0;
 const fanHomePct = fanTotal ? Math.round((fans!.home / fanTotal) * 100) : null;
 
-// factor table — green for the better value (hWin)
-const factors: { label: string; sub: string; h: string | number; a: string | number; hWin: boolean }[] = [
+// factor table — the model breakdown, row by row. Green = the better value.
+// The last row ("Our rating") is the adjusted rating the forecast runs on:
+// Elo + form + squad + home boost.
+const factors: { label: string; sub: string; h: string | number; a: string | number; hWin: boolean; total?: boolean }[] = [
   { label: 'Team rating', sub: 'Elo — rises by beating strong teams', h: home.elo, a: away.elo, hWin: home.elo >= away.elo },
   { label: 'World ranking', sub: 'Official FIFA rank', h: '#' + home.fifaRank, a: '#' + away.fifaRank, hWin: home.fifaRank <= away.fifaRank },
   { label: 'Form so far', sub: "How they've played this tournament", h: sign(home.formAdj), a: sign(away.formAdj), hWin: home.formAdj >= away.formAdj },
-  { label: 'Squad attack', sub: 'Goal threat across the squad', h: sign(home.squadAdj), a: sign(away.squadAdj), hWin: home.squadAdj >= away.squadAdj },
-  { label: 'Adjusted rating', sub: 'What the forecast runs on', h: home.adjRating, a: away.adjRating, hWin: home.adjRating >= away.adjRating },
+  { label: 'Squad firepower', sub: 'Goals in the squad vs the field', h: sign(home.squadAdj), a: sign(away.squadAdj), hWin: home.squadAdj >= away.squadAdj },
+  { label: 'Home boost', sub: 'Edge for the three host nations', h: sign(home.hostAdj), a: sign(away.hostAdj), hWin: home.hostAdj >= away.hostAdj },
+  { label: 'Our rating', sub: 'Everything above, combined', h: home.adjRating, a: away.adjRating, hWin: home.adjRating >= away.adjRating, total: true },
 ];
 const matchKey = [home.id, away.id].sort().join('|');
 ---
@@ -64,8 +70,8 @@ const matchKey = [home.id, away.id].sort().join('|');
   <>
   {/* WHO DO YOU THINK WINS */}
   <div class="rounded-[18px] p-6 text-white" style="background:var(--color-night)">
-    <div class="font-display text-center text-[15px] font-black tracking-wide">WHO DO YOU THINK WINS?</div>
-    <div class="mb-4 text-center text-[13px]" style="color:var(--color-ink-3)">Tap your pick — see how you compare.</div>
+    <div class="font-display text-center text-[15px] font-black tracking-wide">{frozen ? 'WHO FANS BACKED' : 'WHO DO YOU THINK WINS?'}</div>
+    <div class="mb-4 text-center text-[13px]" style="color:var(--color-ink-3)">{frozen ? 'Poll frozen at kick-off — here’s how it stood.' : 'Tap your pick — see how you compare.'}</div>
     <div class="flex items-stretch gap-3">
       {(['home', 'away'] as const).map((side) => {
         const t = side === 'home' ? home : away;

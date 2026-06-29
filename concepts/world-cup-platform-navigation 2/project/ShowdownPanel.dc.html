@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="margin-top:20px">
+
+  <sc-if value="{{ showPoll }}" hint-placeholder-val="{{ true }}">
+  <!-- WHO DO YOU THINK WINS? -->
+  <div style="background:#16181d;border-radius:18px;padding:24px;color:#fff">
+    <div style="font-family:'Archivo',sans-serif;font-weight:900;font-size:15px;letter-spacing:.5px;text-align:center;margin-bottom:4px">WHO DO YOU THINK WINS?</div>
+    <div style="text-align:center;color:#a59a85;font-size:13px;margin-bottom:16px">Tap your pick — then we'll show ours.</div>
+    <div style="display:flex;gap:12px;align-items:stretch">
+      <button onClick="{{ sd.onVoteHome }}" style="flex:1;cursor:pointer;font-family:inherit;border:3px solid {{ homeBorder }};background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), {{ sd.home.c1 }};border-radius:14px;padding:16px 10px;color:#fff;text-align:center">
+        <div style="width:48px;height:34px;border-radius:6px;background:{{ sd.home.grad }};margin:0 auto 9px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5),0 3px 8px -2px rgba(0,0,0,.5)"></div>
+        <div style="font-family:'Archivo',sans-serif;font-weight:800;font-size:16px;text-shadow:0 1px 4px rgba(0,0,0,.55)">{{ sd.home.name }}</div>
+        <div style="font-size:12px;margin-top:3px;font-weight:700;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,.5)">{{ homeVoteLabel }}</div>
+      </button>
+      <button onClick="{{ sd.onVoteAway }}" style="flex:1;cursor:pointer;font-family:inherit;border:3px solid {{ awayBorder }};background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), {{ sd.away.c1 }};border-radius:14px;padding:16px 10px;color:#fff;text-align:center">
+        <div style="width:48px;height:34px;border-radius:6px;background:{{ sd.away.grad }};margin:0 auto 9px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5),0 3px 8px -2px rgba(0,0,0,.5)"></div>
+        <div style="font-family:'Archivo',sans-serif;font-weight:800;font-size:16px;text-shadow:0 1px 4px rgba(0,0,0,.55)">{{ sd.away.name }}</div>
+        <div style="font-size:12px;margin-top:3px;font-weight:700;opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,.5)">{{ awayVoteLabel }}</div>
+      </button>
+    </div>
+
+    <sc-if value="{{ sd.voted }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:18px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px"><span>Fans: {{ sd.home.code }} {{ sd.fanHomePct }}%</span><span>{{ sd.away.code }} {{ sd.fanAwayPct }}%</span></div>
+        <div style="height:12px;border-radius:7px;overflow:hidden;display:flex;background:#2a2d36">
+          <span style="width:{{ sd.fanHomePct }}%;background:#f3b50a"></span><span style="flex:1;background:#5b6472"></span>
+        </div>
+        <div style="margin-top:16px;background:#22252e;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:10px;background:#1f3fbf;display:flex;align-items:center;justify-content:center;flex:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/><circle cx="12" cy="12" r="3.2"/><path d="M6 8.5l3 3.5-3 3.5" stroke="#f3b50a"/></svg></div>
+          <div style="flex:1">
+            <div style="font-family:'Archivo',sans-serif;font-weight:800;font-size:14px">Our model backs <span style="color:#f3b50a">{{ sd.modelPickName }}</span></div>
+            <div style="font-size:12.5px;color:#a59a85;margin-top:2px">{{ agreeLine }}</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ notVoted }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;color:#6f6655;font-size:12.5px;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6f6655" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/><circle cx="12" cy="12" r="3.2"/></svg>Our model has a pick locked in — vote to reveal it.</div>
+    </sc-if>
+  </div>
+
+  <!-- THE FORECAST -->
+  <h2 style="font-family:'Archivo',sans-serif;font-weight:800;font-size:21px;margin:26px 0 4px">{{ sd.favName }} are favoured</h2>
+  <p style="color:#6f6655;font-size:14.5px;margin:0 0 12px">{{ favSentence }}</p>
+  <div style="height:34px;border-radius:10px;overflow:hidden;display:flex;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px">
+    <div style="width:{{ sd.homePct }}%;min-width:30px;background:#1f3fbf;color:#fff;display:flex;align-items:center;justify-content:center">{{ sd.homePct }}</div>
+    <div style="width:{{ sd.drawPct }}%;min-width:30px;background:#e7dfce;color:#6f6655;display:flex;align-items:center;justify-content:center">{{ sd.drawPct }}</div>
+    <div style="width:{{ sd.awayPct }}%;min-width:30px;background:#2b2e36;color:#fff;display:flex;align-items:center;justify-content:center">{{ sd.awayPct }}</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#a59a85;font-weight:700;margin-top:6px">
+    <span>{{ sd.home.code }} win</span><span>draw</span><span>{{ sd.away.code }} win</span>
+  </div>
+
+  <sc-if value="{{ showOdds }}" hint-placeholder-val="{{ false }}">
+    <h2 style="font-family:'Archivo',sans-serif;font-weight:800;font-size:21px;margin:26px 0 4px">Bookmaker odds</h2>
+    <p style="color:#6f6655;font-size:14.5px;margin:0 0 12px">Compare the books — best price for each result is highlighted.</p>
+    <div style="background:#fff;border:1px solid #e9e1d2;border-radius:16px;overflow:hidden">
+      <div style="display:flex;align-items:center;padding:11px 16px;background:#faf6ee;border-bottom:1px solid #f1ebdf;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#a59a85">
+        <span style="flex:1">Bookmaker</span>
+        <span style="width:56px;text-align:center">{{ sd.home.code }}</span>
+        <span style="width:56px;text-align:center">Draw</span>
+        <span style="width:56px;text-align:center">{{ sd.away.code }}</span>
+      </div>
+      <sc-for list="{{ odds }}" as="o" hint-placeholder-count="3">
+        <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #f4eee1">
+          <span style="flex:1;font-weight:700;font-size:13.5px">{{ o.book }}</span>
+          <span style="width:56px;text-align:center;font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;color:{{ o.homeColor }}">{{ o.home }}</span>
+          <span style="width:56px;text-align:center;font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;color:{{ o.drawColor }}">{{ o.draw }}</span>
+          <span style="width:56px;text-align:center;font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;color:{{ o.awayColor }}">{{ o.away }}</span>
+        </div>
+      </sc-for>
+      <div style="padding:11px 16px;color:#a59a85;font-size:12px">Sample prices derived from our model — live odds from multiple books slot in here.</div>
+    </div>
+  </sc-if>
+  </sc-if>
+
+  <sc-if value="{{ showInsights }}" hint-placeholder-val="{{ true }}">
+  <h2 style="font-family:'Archivo',sans-serif;font-weight:800;font-size:21px;margin:26px 0 12px">What's behind it</h2>
+  <div style="background:#fff;border:1px solid #e9e1d2;border-radius:16px;overflow:hidden">
+    <div style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid #f1ebdf;background:#faf6ee">
+      <span style="flex:none;width:54px;text-align:center;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px">{{ sd.home.code }}</span>
+      <span style="flex:1;text-align:center;font-size:11px;font-weight:700;color:#a59a85;text-transform:uppercase;letter-spacing:.5px">Factor</span>
+      <span style="flex:none;width:54px;text-align:center;font-family:'Archivo',sans-serif;font-weight:800;font-size:13px">{{ sd.away.code }}</span>
+    </div>
+    <sc-for list="{{ sd.factors }}" as="f" hint-placeholder-count="6">
+      <div style="display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid #f4eee1">
+        <span style="flex:none;width:54px;text-align:center;font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:{{ f.hColor }}">{{ f.h }}</span>
+        <span style="flex:1;text-align:center"><b style="font-size:13.5px">{{ f.label }}</b><div style="font-size:11.5px;color:#a59a85;margin-top:1px">{{ f.sub }}</div></span>
+        <span style="flex:none;width:54px;text-align:center;font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:{{ f.aColor }}">{{ f.a }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <p style="color:#a59a85;font-size:13px;line-height:1.5;margin:12px 0 0">{{ sd.explain }}</p>
+
+  <h2 style="font-family:'Archivo',sans-serif;font-weight:800;font-size:21px;margin:26px 0 12px">Star men to watch</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start" class="sp-stars">
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:26px;height:19px;border-radius:4px;background:{{ sd.home.grad }}"></span><b style="font-size:14px">{{ sd.home.name }}</b></div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <sc-for list="{{ homeStars }}" as="p" hint-placeholder-count="3">
+          <a href="{{ p.href }}" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
+            <img src="assets/avatar.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:1.5px solid {{ p.posColor }};background:#e7e2d4" />
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:10px;color:#fff;background:{{ p.posColor }};padding:3px 6px;border-radius:6px;flex:none">{{ p.pos }}</span>
+            <span style="flex:1;min-width:0"><b style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><span style="font-size:11px;color:#a59a85">{{ p.club }}</span></span>
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;color:#1f3fbf;flex:none">{{ p.goals }}G</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="width:26px;height:19px;border-radius:4px;background:{{ sd.away.grad }}"></span><b style="font-size:14px">{{ sd.away.name }}</b></div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <sc-for list="{{ awayStars }}" as="p" hint-placeholder-count="3">
+          <a href="{{ p.href }}" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #eee6d8;border-radius:11px;padding:9px 12px">
+            <img src="assets/avatar.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:center top;flex:none;border:1.5px solid {{ p.posColor }};background:#e7e2d4" />
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:10px;color:#fff;background:{{ p.posColor }};padding:3px 6px;border-radius:6px;flex:none">{{ p.pos }}</span>
+            <span style="flex:1;min-width:0"><b style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</b><span style="font-size:11px;color:#a59a85">{{ p.club }}</span></span>
+            <span style="font-family:'Archivo',sans-serif;font-weight:800;font-size:13px;color:#1f3fbf;flex:none">{{ p.goals }}G</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:640,&quot;height&quot;:560},&quot;sd&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;mode&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals(){
+    const sd = this.props.sd || {};
+    const mode = this.props.mode || 'full';
+    if(!sd.ok) return { sd:{home:{},away:{},factors:[]}, notVoted:true, showPoll:mode!=='insights', showInsights:mode!=='prediction', showOdds:false, odds:[] };
+    const POSCOLOR={GK:'#e0a200',DF:'#5b6470',MF:'#1f7a4d',FW:'#b23b2e'};
+    const factors = (sd.factors||[]).map(f=>({ ...f,
+      hColor: f.hWin?'#0d6b46':'#b3a890', aColor: f.hWin?'#b3a890':'#0d6b46' }));
+    const star = (arr)=> (arr||[]).map(p=>({ href:'#/player/'+p.id, name:p.name, pos:p.pos, posColor:POSCOLOR[p.pos], club:p.club, goals:p.goals }));
+    // best (lowest) price per column highlighted
+    const ods = sd.odds||[];
+    const best = (key)=> ods.reduce((m,o)=>Math.min(m, parseFloat(o[key])), 99);
+    const col = (o,key)=> parseFloat(o[key])<=best(key)+0.001 ? '#1f7a4d' : '#16181d';
+    const odds = ods.map(o=>({ ...o, homeColor:col(o,'home'), drawColor: parseFloat(o.draw)<=best('draw')+0.001?'#1f7a4d':'#a59a85', awayColor:col(o,'away') }));
+    return {
+      sd:{ ...sd, factors },
+      odds,
+      showPoll: mode!=='insights',
+      showInsights: mode!=='prediction',
+      showOdds: mode==='prediction',
+      notVoted: !sd.voted,
+      homeBorder: sd.vote==='home' ? '#f3b50a' : 'rgba(255,255,255,.15)',
+      awayBorder: sd.vote==='away' ? '#f3b50a' : 'rgba(255,255,255,.15)',
+      homeVoteLabel: sd.vote==='home' ? '✓ your pick' : 'tap to pick',
+      awayVoteLabel: sd.vote==='away' ? '✓ your pick' : 'tap to pick',
+      favSentence: sd.favName+' have about a '+sd.favPct+'% chance of winning in 90 minutes.',
+      agreeLine: sd.voted ? (sd.agree ? 'Nice — you and the model agree.' : 'You went the other way. Bold!') : '',
+      homeStars: star(sd.homeStars),
+      awayStars: star(sd.awayStars)
+    };
+  }
+}
+</script>
+</body>
+</html>

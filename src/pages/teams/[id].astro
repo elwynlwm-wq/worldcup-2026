@@ -21,8 +21,9 @@ const t = provider.getTeam(teamId)!;
 const squad = provider.getSquad(teamId);
 const { c1 } = teamColors(teamId);
 
-// Our generated banner (dev copies in public/banners; falls back to colour only).
-const bannerSrc = `/banners/${teamId}.png`;
+// Our generated banner — full-res WebP (1:1 of the PNG, ~8× lighter). Falls back
+// to the colour panel if missing.
+const bannerSrc = `/banners/heroes/${teamId}.webp`;
 
 const statusLabel: Record<string, string> = {
   winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (best 3rd)',
@@ -40,13 +41,15 @@ const tiersById = new Map(squad.map((p) => [p.id, getPlayerTiers(p.id)]));
 const stars = squad.slice().sort((a, b) => b.goals - a.goals).slice(0, 3);
 
 // All of this team's matches (played + upcoming), chronological. Played → match
-// record page; upcoming → H2H evergreen.
+// One unified match page per fixture — same URL whether upcoming or played.
 const matches = getAfFixtures()
   .filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId)
   .filter((m) => provider.getTeam(m.homeTeamId) && provider.getTeam(m.awayTeamId))
   .sort((x, y) => (x.date < y.date ? -1 : 1));
-const matchHref = (m: { homeTeamId: string; awayTeamId: string; stage: string; status: string }) =>
-  m.status === 'FT' ? `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}` : `/h2h/${m.homeTeamId}-vs-${m.awayTeamId}`;
+const matchHref = (m: { homeTeamId: string; awayTeamId: string; stage: string }) =>
+  `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}`;
+// Next upcoming fixture (for the "predict a match" CTA) — falls back to any.
+const nextMatch = matches.find((m) => m.status !== 'FT') ?? matches[0] ?? null;
 
 const POS: [string, string][] = [['GK', 'Goalkeepers'], ['DF', 'Defenders'], ['MF', 'Midfielders'], ['FW', 'Forwards']];
 const posName: Record<string, string> = { GK: 'Goalkeeper', DF: 'Defender', MF: 'Midfielder', FW: 'Forward' };
@@ -104,11 +107,13 @@ const jsonLd = {
       ))}
     </div>
 
-    <a
-      href={`/h2h/${t.id}-vs-brazil`}
-      class="kb-card-hover mt-4 inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-sm font-bold text-white"
-      style="background:var(--color-night)"
-    >⚡ Predict a match for {t.name}</a>
+    {nextMatch && (
+      <a
+        href={matchHref(nextMatch)}
+        class="kb-card-hover mt-4 inline-flex items-center gap-2 rounded-[12px] px-4 py-2.5 text-sm font-bold text-white"
+        style="background:var(--color-night)"
+      >⚡ {nextMatch.status === 'FT' ? 'See' : 'Predict'} {t.name}’s {nextMatch.status === 'FT' ? 'last match' : 'next match'}</a>
+    )}
 
     {/* Matches — all of this team's fixtures (played + upcoming) */}
     {matches.length > 0 && (

@@ -93,7 +93,7 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
           const label = [stageLabel[todayMatch.stage], dateLabel(todayMatch.date), todayMatch.venue]
             .filter(Boolean).join(' · ');
           return (
-            <MatchupGraphic home={h} away={a} vote={vote} voteSource={source} label={label} href={`/h2h/${h.id}-vs-${a.id}`} />
+            <MatchupGraphic home={h} away={a} vote={vote} voteSource={source} label={label} href={`/matches/${h.id}-vs-${a.id}-${todayMatch.stage}`} />
           );
         })()}
         {featured && (
@@ -117,7 +117,7 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
           if (!h || !a) return null;
           const p = pct(h.id, a.id);
           return (
-            <a href={`/h2h/${h.id}-vs-${a.id}`} class="kb-card-hover block rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+            <a href={`/matches/${h.id}-vs-${a.id}-${m.stage}`} class="kb-card-hover block rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
               <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:var(--color-ink-3)">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
               <div class="mt-2.5 flex items-center justify-between">
                 <div class="flex items-center gap-1.5"><Flag team={h.id} w={26} /><b>{h.shortCode}</b></div>

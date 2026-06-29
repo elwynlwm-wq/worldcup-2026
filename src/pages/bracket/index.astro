@@ -26,7 +26,7 @@ const slotsFor = (stage: string, n: number) => {
   return Array.from({ length: n }, (_, i) => ties[i] ?? null);
 };
 const dateLabel = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '');
-const matchHref = (m: any) => (m.status === 'FT' ? `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}` : `/h2h/${m.homeTeamId}-vs-${m.awayTeamId}`);
+const matchHref = (m: any) => `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}`;
 
 const standings = standingsData as Record<string, Array<{ rank: number; teamId: string; played: number; points: number; goalsFor: number; goalsAgainst: number; form: string }>>;
 // Only the 12 real groups ("Group A".."Group L") — drop any stray aggregate key.

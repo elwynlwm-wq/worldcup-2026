@@ -40,7 +40,7 @@ const fc = (hId: string, aId: string) => {
             const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
             const f = fc(h.id, a.id);
             return (
-              <a href={`/h2h/${h.id}-vs-${a.id}`} class="kb-card-hover block rounded-[16px] border p-[17px]" style="background:var(--color-surface);border-color:var(--color-line-2)">
+              <a href={`/matches/${matchSlug(m)}`} class="kb-card-hover block rounded-[16px] border p-[17px]" style="background:var(--color-surface);border-color:var(--color-line-2)">
                 <div class="flex items-center justify-between">
                   <span class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:var(--color-ink-3)">{dateLabel(m.date)} · {stageLabel[m.stage]}</span>
                   <span class="text-[11px]" style="color:var(--color-ink-4)">{m.venue ?? ''}</span>
