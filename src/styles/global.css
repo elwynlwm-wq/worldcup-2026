@@ -59,8 +59,28 @@ h1, h2, h3, h4, .font-display {
 .kb-card-hover { transition: transform 0.12s ease, box-shadow 0.12s ease; }
 .kb-card-hover:hover { transform: translateY(-3px); }
 
-/* Bracket (horizontal scroll of fixed-width round columns) */
-.kb-bracket { display: flex; gap: 26px; overflow-x: auto; min-height: 400px; padding-bottom: 12px; }
-.kb-round { display: flex; flex-direction: column; min-width: 188px; flex: none; }
-.kb-ties { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; }
-.kb-tie { position: relative; }
+/* Bracket — a real knockout TREE. Every round renders its full slot count
+   (16 → 8 → 4 → 2 → 1); rounds share one height so flex `space-around` centres
+   each tie between its two feeders. Elbow connectors are drawn with borders. */
+.kb-bracket { display: flex; gap: 0; overflow-x: auto; padding-bottom: 12px; height: 1240px; --kb-conn: color-mix(in srgb, var(--color-ink) 22%, transparent); }
+.kb-round { display: flex; flex-direction: column; width: 210px; flex: none; }
+.kb-round-head { margin-bottom: 10px; height: 18px; }
+.kb-ties { flex: 1; display: flex; flex-direction: column; justify-content: space-around; }
+/* each tie + the connector stub to its right */
+.kb-tie { position: relative; flex: 1; display: flex; align-items: center; padding-right: 22px; }
+.kb-tie > * { width: 100%; }
+
+/* horizontal stub out of every tie (except the final round) */
+.kb-round:not(:last-child) .kb-tie::after {
+  content: ''; position: absolute; right: 0; top: 50%;
+  width: 22px; height: 2px; background: var(--kb-conn);
+}
+/* vertical connector joining each pair: drawn on odd ties, reaching down to the
+   even sibling. Half the round's slot height, centred between the pair. */
+.kb-round:not(:last-child) .kb-tie:nth-child(odd)::before {
+  content: ''; position: absolute; right: 0; top: 50%; height: 100%;
+  width: 2px; background: var(--kb-conn);
+}
+/* incoming stub on the left of every round after the first, meeting the vertical */
+.kb-round:not(:first-child) .kb-ties { margin-left: 0; }
+.kb-tie-card { display: block; }
