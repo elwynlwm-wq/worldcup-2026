@@ -69,9 +69,9 @@ const matchKey = [home.id, away.id].sort().join('|');
   {showPoll && (
   <>
   {/* WHO DO YOU THINK WINS */}
-  <div class="rounded-[18px] p-6 text-white" style="background:var(--color-night)">
+  <div class="rounded-[18px] p-5 text-white" style="background:var(--color-night)">
     <div class="font-display text-center text-[15px] font-black tracking-wide">{frozen ? 'WHO FANS BACKED' : 'WHO DO YOU THINK WINS?'}</div>
-    <div class="mb-4 text-center text-[13px]" style="color:var(--color-ink-3)">{frozen ? 'Poll frozen at kick-off — here’s how it stood.' : 'Tap your pick — see how you compare.'}</div>
+    <div class="mb-3.5 text-center text-[13px]" style="color:var(--color-ink-3)">{frozen ? 'Poll frozen at kick-off — here’s how it stood.' : 'Tap your pick — see how you compare.'}</div>
     <div class="flex items-stretch gap-3">
       {(['home', 'away'] as const).map((side) => {
         const t = side === 'home' ? home : away;
@@ -79,12 +79,14 @@ const matchKey = [home.id, away.id].sort().join('|');
         return (
           <button
             data-pick={side}
-            class="kb-pick flex-1 cursor-pointer rounded-[14px] p-4 text-center text-white"
-            style={`border:3px solid rgba(255,255,255,.15);background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), ${c.c1}`}
+            class="kb-pick flex flex-1 cursor-pointer items-center justify-center gap-2.5 rounded-[12px] px-4 py-3 text-center text-white"
+            style={`border:2.5px solid rgba(255,255,255,.15);background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.3)), ${c.c1}`}
           >
-            <div class="mx-auto mb-2.5 w-fit"><Flag team={t.id} w={48} class="shadow-[0_3px_8px_-2px_rgba(0,0,0,.5)]" /></div>
-            <div class="font-display text-[16px] font-extrabold" style="text-shadow:0 1px 4px rgba(0,0,0,.55)">{t.name}</div>
-            <div class="kb-pick-label mt-0.5 text-[12px] font-bold" style="opacity:.9;text-shadow:0 1px 3px rgba(0,0,0,.5)">tap to pick</div>
+            <Flag team={t.id} w={30} class="flex-none shadow-[0_3px_8px_-2px_rgba(0,0,0,.5)]" />
+            <span class="min-w-0">
+              <span class="font-display block text-[15px] font-extrabold leading-tight" style="text-shadow:0 1px 4px rgba(0,0,0,.55)">{t.name}</span>
+              <span class="kb-pick-label block text-[11.5px] font-bold" style="opacity:.85;text-shadow:0 1px 3px rgba(0,0,0,.5)">tap to pick</span>
+            </span>
           </button>
         );
       })}
