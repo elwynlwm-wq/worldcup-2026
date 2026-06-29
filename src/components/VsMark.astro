@@ -1,7 +1,8 @@
 ---
-// Fierce "VS" mark — a bold italic V / S split by a glowing diagonal slash, with
-// a metallic gold gradient and a warm glow halo. Inline SVG so it stays crisp at
-// any size and needs no extra asset. Used in the centre of MatchupGraphic.
+// Fierce "VS" mark — bold italic V / S with a metallic gold gradient and a warm
+// glow halo. Inline SVG so it stays crisp at any size and needs no extra asset.
+// (No internal slash — the glowing seam between the two hero halves IS the
+// slash.) Used in the centre of MatchupGraphic.
 interface Props {
   /** rendered width in px (height scales) */
   w?: number;
@@ -30,13 +31,6 @@ const id = (n: string) => `${n}-${uid}`;
       <stop offset="55%" stop-color="#f3b50a" />
       <stop offset="100%" stop-color="#b97c08" />
     </linearGradient>
-    {/* the slash streak: transparent → white-hot → gold → transparent */}
-    <linearGradient id={id('slash')} x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fff" stop-opacity="0" />
-      <stop offset="42%" stop-color="#fff" stop-opacity=".95" />
-      <stop offset="55%" stop-color="#ffe6a3" stop-opacity="1" />
-      <stop offset="100%" stop-color="#f3b50a" stop-opacity="0" />
-    </linearGradient>
     {/* warm outer glow */}
     <filter id={id('glow')} x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation="3.2" result="b" />
@@ -55,11 +49,5 @@ const id = (n: string) => `${n}-${uid}`;
     <text x="142" y="128" text-anchor="middle" font-size="100" fill="none" stroke="rgba(40,22,4,.55)" stroke-width="9" stroke-linejoin="round">S</text>
     <text x="58" y="108" text-anchor="middle" font-size="118" fill={`url(#${id('metal')})`} stroke="#fff7e0" stroke-width="1.2">V</text>
     <text x="142" y="128" text-anchor="middle" font-size="100" fill={`url(#${id('metal')})`} stroke="#fff7e0" stroke-width="1.2">S</text>
-
-    {/* diagonal light slash through the middle (matches the seam lean) */}
-    <g transform="rotate(13 100 75)">
-      <rect x="96" y="-30" width="9" height="210" fill={`url(#${id('slash')})`} />
-      <rect x="99" y="-30" width="2.4" height="210" fill="#fff" opacity=".95" />
-    </g>
   </g>
 </svg>
