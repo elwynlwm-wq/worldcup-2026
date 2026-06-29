@@ -4,7 +4,7 @@
 // strength bar, and the score. No generated art.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
-import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 
 const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
 const statusLabel: Record<string, string> = {
@@ -31,7 +31,7 @@ const statusLabel: Record<string, string> = {
       {teams.map((t, i) => (
         <a href={`/teams/${t.id}/`} class="flex items-center gap-[13px] border-b px-4 py-[11px]" style="border-color:#f1ebdf">
           <span class="font-display w-[26px] text-center text-[16px] font-black" style="color:#b3a890">{i + 1}</span>
-          <span class="h-[24px] w-[34px] flex-none rounded-[5px]" style={`background:${teamGrad(t.id)}`}></span>
+          <Flag team={t.id} w={34} />
           <span class="min-w-0 flex-1"><b class="text-[15px]">{t.name}</b><span class="ml-2 text-[12px]" style="color:#a59a85">{statusLabel[t.status] ?? ''}</span></span>
           <span class="hidden flex-none sm:block" style="width:120px">
             <span class="block h-[8px] overflow-hidden rounded-[5px]" style="background:#f0e9db"><span class="block h-full rounded-[5px]" style={`width:${t.strength}%;background:linear-gradient(90deg,#1f3fbf,#f3b50a)`}></span></span>

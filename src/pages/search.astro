@@ -4,18 +4,21 @@
 // Results render as Teams + Players cards with 2-tone swatches.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { provider } from '../lib/provider';
-import { teamGrad } from '../data/teamColors';
+import { teamIso } from '../data/teamFlags';
+
+// Real country flag URL (matches Flag.astro), or '' when we have no flag.
+const flagUrl = (slug: string) => (teamIso(slug) ? `/flags-country/${slug}.svg` : '');
 
 const teams = provider.getTeams();
 // Compact index shipped to the client. Players capped to keep it light.
-const teamIndex = teams.map((t) => ({ n: t.name, c: t.shortCode, g: teamGrad(t.id), h: `/teams/${t.id}/` }));
+const teamIndex = teams.map((t) => ({ n: t.name, c: t.shortCode, f: flagUrl(t.id), h: `/teams/${t.id}/` }));
 const playerIndex = provider.getAllPlayers()
   .slice()
   .sort((a, b) => b.goals - a.goals)
   .slice(0, 400)
   .map((p) => {
     const t = provider.getTeam(p.teamId)!;
-    return { n: p.name, m: `${p.pos} · ${t.shortCode} · ${p.club}`, g: teamGrad(p.teamId), h: `/teams/${p.teamId}/` };
+    return { n: p.name, m: `${p.pos} · ${t.shortCode} · ${p.club}`, f: flagUrl(p.teamId), h: `/teams/${p.teamId}/` };
   });
 ---
 
@@ -55,16 +58,22 @@ const playerIndex = provider.getAllPlayers()
       const teams = teamIndex.filter((t) => t.n.toLowerCase().includes(q) || t.c.toLowerCase().includes(q)).slice(0, 12);
       const players = playerIndex.filter((p) => p.n.toLowerCase().includes(q)).slice(0, 24);
 
-      const sw = (g) => `<span style="width:30px;height:21px;border-radius:4px;background:${g};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);flex:none"></span>`;
+      // flag image (real country flag) sized w×(w*3/4), grey box fallback.
+      const flag = (url, w) => {
+        const h = Math.round((w * 3) / 4);
+        return url
+          ? `<img src="${url}" alt="" width="${w}" height="${h}" style="width:${w}px;height:${h}px;border-radius:4px;object-fit:cover;box-shadow:inset 0 0 0 1px rgba(0,0,0,.13);flex:none" />`
+          : `<span style="width:${w}px;height:${h}px;border-radius:4px;background:#e4dccd;flex:none"></span>`;
+      };
       if (teams.length) {
         document.getElementById('teams-block').style.display = '';
         document.getElementById('teams-results').innerHTML = teams.map((t) =>
-          `<a href="${t.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:12px 14px">${sw(t.g)}<b>${t.n}</b></a>`).join('');
+          `<a href="${t.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:12px 14px">${flag(t.f, 30)}<b>${t.n}</b></a>`).join('');
       }
       if (players.length) {
         document.getElementById('players-block').style.display = '';
         document.getElementById('players-results').innerHTML = players.map((p) =>
-          `<a href="${p.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px"><span style="width:26px;height:18px;border-radius:3px;background:${p.g};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);flex:none"></span><span style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</b><span style="color:#a59a85;font-size:12px">${p.m}</span></span></a>`).join('');
+          `<a href="${p.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">${flag(p.f, 26)}<span style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</b><span style="color:#a59a85;font-size:12px">${p.m}</span></span></a>`).join('');
       }
       if (!teams.length && !players.length) empty.style.display = '';
     })();

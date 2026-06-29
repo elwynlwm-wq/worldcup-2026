@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
 import { getUpcomingFixtures, getRecentResults } from '../../lib/warehouse';
-import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 
 const getTeam = (id: string) => provider.getTeam(id)!;
 const upcoming = getUpcomingFixtures(12).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
@@ -51,8 +51,8 @@ const nextStage = upcoming[0] ? stageLabel[upcoming[0].stage] : 'Knockouts';
                   <span class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</span>
                   <span class="text-[11px]" style="color:#b3a890">{m.venue ?? ''}</span>
                 </div>
-                <div class="mb-1 mt-[13px] flex items-center gap-[9px]"><span class="h-[24px] w-[34px] rounded-[5px]" style={`background:${teamGrad(h.id)}`}></span><b class="text-[16px]">{h.name}</b></div>
-                <div class="flex items-center gap-[9px]"><span class="h-[24px] w-[34px] rounded-[5px]" style={`background:${teamGrad(a.id)}`}></span><b class="text-[16px]">{a.name}</b></div>
+                <div class="mb-1 mt-[13px] flex items-center gap-[9px]"><Flag team={h.id} w={34} /><b class="text-[16px]">{h.name}</b></div>
+                <div class="flex items-center gap-[9px]"><Flag team={a.id} w={34} /><b class="text-[16px]">{a.name}</b></div>
                 <div class="mt-[13px] flex h-[10px] overflow-hidden rounded-[6px]">
                   <span style={`width:${f.win}%;background:var(--color-royal)`}></span><span style={`width:${f.draw}%;background:#d8cfbf`}></span><span style={`width:${f.lose}%;background:#2b2e36`}></span>
                 </div>
@@ -70,9 +70,9 @@ const nextStage = upcoming[0] ? stageLabel[upcoming[0].stage] : 'Knockouts';
         const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
         return (
           <a href={`/matches/${matchSlug(m)}`} class="kb-card-hover flex items-center justify-between rounded-[13px] border px-4 py-[13px]" style="background:#fff;border-color:#e9e1d2">
-            <div class="flex flex-1 items-center gap-[9px]"><span class="h-[21px] w-[30px] rounded-[4px]" style={`background:${teamGrad(h.id)}`}></span><b class="text-[15px]">{h.name}</b></div>
+            <div class="flex flex-1 items-center gap-[9px]"><Flag team={h.id} w={30} /><b class="text-[15px]">{h.name}</b></div>
             <div class="font-display flex-none px-[14px] text-[18px] font-black">{m.homeScore}–{m.awayScore}</div>
-            <div class="flex flex-1 items-center justify-end gap-[9px]"><b class="text-[15px]">{a.name}</b><span class="h-[21px] w-[30px] rounded-[4px]" style={`background:${teamGrad(a.id)}`}></span></div>
+            <div class="flex flex-1 items-center justify-end gap-[9px]"><b class="text-[15px]">{a.name}</b><Flag team={a.id} w={30} /></div>
           </a>
         );
       })}

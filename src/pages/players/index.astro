@@ -5,8 +5,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
 import { getPlayerTiers } from '../../lib/warehouse';
-import { teamGrad } from '../../data/teamColors';
 import Avatar from '../../components/analysis/Avatar.astro';
+import Flag from '../../components/Flag.astro';
 
 const teams = provider.getTeams();
 const teamById = new Map(teams.map((t) => [t.id, t]));
@@ -43,7 +43,7 @@ const posColor: Record<string, string> = { GK: '#e0a200', DF: '#1f3fbf', MF: '#1
         return (
           <a href={`/teams/${p.teamId}/`} data-pos={p.pos} class="kb-prow kb-card-hover flex items-center gap-3 rounded-[13px] border px-[14px] py-[11px]" style="background:#fff;border-color:#e9e1d2">
             <Avatar name={p.name} position={p.pos} photo={p.photo} size={40} />
-            <span class="h-[18px] w-[26px] flex-none rounded-[3px]" style={`background:${teamGrad(p.teamId)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+            <Flag team={p.teamId} w={26} />
             <div class="min-w-0 flex-1"><b class="block truncate text-[14.5px]">{p.name}</b><div class="text-[12px]" style="color:#a59a85">{posName[p.pos] ?? p.pos} · {t?.shortCode ?? ''} · {p.club}</div></div>
             <div class="flex-none text-right"><div class="font-display text-[15px] font-black" style="color:var(--color-royal)">{p.goals}</div><div class="text-[10.5px]" style="color:#a59a85">goals</div></div>
           </a>

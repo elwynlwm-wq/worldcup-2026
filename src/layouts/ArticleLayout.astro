@@ -5,6 +5,7 @@ import BaseLayout from './BaseLayout.astro';
 import type { CollectionEntry } from 'astro:content';
 import { provider } from '../lib/provider';
 import { teamGrad } from '../data/teamColors';
+import Flag from '../components/Flag.astro';
 
 interface Props {
   entry: CollectionEntry<'articles'>;
@@ -68,9 +69,9 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
       <div class="relative mb-2 flex min-h-[150px] items-center justify-center gap-[22px] overflow-hidden rounded-[16px] px-[22px] py-[26px] text-white" style={`background:${heroColor}`}>
         <div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(0,0,0,.4))"></div>
         <div class="absolute inset-0 opacity-40" style="background:url('/assets/pitch.svg') no-repeat center/cover"></div>
-        <div class="relative text-center"><div class="mx-auto mb-[9px] h-[52px] w-[74px] rounded-[8px]" style={`background:${teamGrad(ta.id)};box-shadow:0 6px 16px -6px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></div><b class="font-display text-[15px]">{ta.name}</b></div>
+        <div class="relative text-center"><div class="mx-auto mb-[9px] w-fit"><Flag team={ta.id} w={74} class="shadow-[0_6px_16px_-6px_rgba(0,0,0,.6)] !ring-1 !ring-white/25" /></div><b class="font-display text-[15px]">{ta.name}</b></div>
         <div class="relative text-center"><div class="font-display text-[24px] font-black tracking-[.5px]" style="color:var(--color-gold)">VS</div></div>
-        <div class="relative text-center"><div class="mx-auto mb-[9px] h-[52px] w-[74px] rounded-[8px]" style={`background:${teamGrad(tb.id)};box-shadow:0 6px 16px -6px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></div><b class="font-display text-[15px]">{tb.name}</b></div>
+        <div class="relative text-center"><div class="mx-auto mb-[9px] w-fit"><Flag team={tb.id} w={74} class="shadow-[0_6px_16px_-6px_rgba(0,0,0,.6)] !ring-1 !ring-white/25" /></div><b class="font-display text-[15px]">{tb.name}</b></div>
       </div>
     )}
 
