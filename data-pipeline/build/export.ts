@@ -31,10 +31,10 @@ function main() {
     .all();
   write('teams.json', teams);
 
-  // players.json — player + club + both tiers (the signals backbone for UI)
+  // players.json — player + club + both tiers + photo (the signals backbone for UI)
   const players = db
     .prepare(
-      `SELECT p.id,p.team_id AS teamId,p.name,p.position,p.age,p.caps,p.goals,
+      `SELECT p.id,p.team_id AS teamId,p.name,p.position,p.age,p.caps,p.goals,p.photo,
               c.name AS club, ct.tier_label AS clubTier,
               pt.tier_label AS playerTier
        FROM player p
@@ -76,6 +76,20 @@ function main() {
     )
     .all();
   write('wc-matches.json', matches);
+
+  // af-fixtures.json — fresh fixtures/results/statuses from API-Football (live source).
+  // Only rows we mapped to our team slugs (drops TBD knockout placeholders cleanly).
+  const afFixtures = db
+    .prepare(
+      `SELECT id,date,status_short AS status,elapsed,stage,round,venue,city,
+              home_team_id AS homeTeamId,away_team_id AS awayTeamId,
+              home_score AS homeScore,away_score AS awayScore
+       FROM af_fixture
+       WHERE home_team_id IS NOT NULL AND away_team_id IS NOT NULL
+       ORDER BY date`,
+    )
+    .all();
+  write('af-fixtures.json', afFixtures);
 
   // match-goals.json — goalscorers keyed by match id
   const goalRows = db

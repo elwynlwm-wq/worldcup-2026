@@ -117,6 +117,8 @@ export const COUNTRY_ALIASES: Record<string, string> = {
   'türkiye': 'turkiye',
   'bosnia & herzegovina': 'bosnia-and-herzegovina',
   'bosnia and herzegovina': 'bosnia-and-herzegovina',
+  'congo dr': 'dr-congo',
+  'cape verde islands': 'cape-verde',
 };
 
 /** Map a results-CSV country name to a WC team slug, or null if not a WC nation. */
@@ -126,4 +128,18 @@ export function countryToTeamSlug(name: string, validTeamIds: Set<string>): stri
   if (aliased && validTeamIds.has(aliased)) return aliased;
   const s = slug(name);
   return validTeamIds.has(s) ? s : null;
+}
+
+// --- Player photo matching (API-Football → our players) ----------------------
+// AF names are like "G. Ochoa"; ours are "Guillermo Ochoa". Match within a team
+// by SURNAME (last token), accent-insensitive. Returns a normalized surname key.
+export function surnameKey(name: string): string {
+  const norm = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[.]/g, '')
+    .trim();
+  const parts = norm.split(/\s+/).filter(Boolean);
+  return parts.length ? parts[parts.length - 1] : norm;
 }

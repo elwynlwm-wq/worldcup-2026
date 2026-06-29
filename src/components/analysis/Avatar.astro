@@ -1,0 +1,50 @@
+---
+// Player avatar: real photo (API-Football) when available, else a generated
+// initials circle tinted by position. The fallback means 100% coverage even
+// though ~92% of players have photos. See data-pipeline (photo matching).
+interface Props {
+  name: string;
+  position?: string;
+  photo?: string | null;
+  size?: number;
+}
+const { name, position = '', photo = null, size = 38 } = Astro.props;
+
+const initials = name
+  .split(' ')
+  .filter(Boolean)
+  .map((w) => w[0])
+  .slice(0, 2)
+  .join('')
+  .toUpperCase();
+
+// Position tints (concept palette).
+const tint: Record<string, string> = {
+  GK: 'var(--warn)',
+  DF: 'var(--accent2)',
+  MF: 'var(--accent)',
+  FW: 'var(--danger)',
+};
+const ring = tint[position] ?? 'var(--muted)';
+const px = `${size}px`;
+---
+
+{photo ? (
+  <img
+    src={photo}
+    alt={name}
+    loading="lazy"
+    width={size}
+    height={size}
+    class="flex-none rounded-full object-cover"
+    style={`width:${px};height:${px};border:2px solid ${ring};background:var(--panel2)`}
+  />
+) : (
+  <span
+    aria-hidden="true"
+    class="flex flex-none items-center justify-center rounded-full font-bold"
+    style={`width:${px};height:${px};font-size:${Math.round(size * 0.34)}px;background:var(--panel2);color:${ring};border:2px solid ${ring}`}
+  >
+    {initials}
+  </span>
+)}

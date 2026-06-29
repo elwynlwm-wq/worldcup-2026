@@ -11,6 +11,8 @@
 PRAGMA foreign_keys = ON;
 
 -- Drop in dependency order so the build is idempotent (rebuild from scratch).
+DROP TABLE IF EXISTS af_fixture;
+DROP TABLE IF EXISTS af_player;
 DROP TABLE IF EXISTS player_tier;
 DROP TABLE IF EXISTS club_tier;
 DROP TABLE IF EXISTS h2h;
@@ -69,7 +71,8 @@ CREATE TABLE player (
   position      TEXT NOT NULL,             -- GK | DF | MF | FW
   age           INTEGER,
   caps          INTEGER,                   -- international caps (career)
-  goals         INTEGER                     -- international goals (career)
+  goals         INTEGER,                    -- international goals (career)
+  photo         TEXT                        -- avatar URL (API-Football), matched by name; null if unmatched
 );
 
 -- ---------------------------------------------------------------------------
@@ -157,4 +160,36 @@ CREATE TABLE player_tier (
   tier          INTEGER NOT NULL,          -- 1 Elite .. 4 Prospect
   tier_label    TEXT NOT NULL,             -- "Elite" | "Established" | "Squad" | "Prospect"
   basis         TEXT
+);
+
+-- ---------------------------------------------------------------------------
+-- API-Football (paid) — kept in its OWN namespace for cross-checking against
+-- the free stack, and as the fresh live-fixtures source. team_id maps to our
+-- slug where reconciled. See SOURCING.md (publish-rights caveat).
+-- ---------------------------------------------------------------------------
+CREATE TABLE af_fixture (
+  id            INTEGER PRIMARY KEY,       -- API-Football fixture id
+  date          TEXT,
+  status_short  TEXT,                      -- FT | NS | 1H | HT | ...
+  status_long   TEXT,
+  elapsed       INTEGER,
+  round         TEXT,
+  stage         TEXT,                      -- mapped: group|r32|r16|qf|sf|final
+  venue         TEXT,
+  city          TEXT,
+  home_team_id  TEXT,                      -- our slug if mapped, else null
+  away_team_id  TEXT,
+  home_name_raw TEXT,                      -- API-Football's name (for audit)
+  away_name_raw TEXT,
+  home_score    INTEGER,
+  away_score    INTEGER
+);
+
+CREATE TABLE af_player (
+  id            INTEGER PRIMARY KEY,       -- API-Football player id
+  team_id       TEXT,                      -- our slug if mapped
+  name          TEXT,
+  number        INTEGER,
+  position      TEXT,
+  photo         TEXT
 );

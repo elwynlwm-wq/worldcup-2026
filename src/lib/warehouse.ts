@@ -14,6 +14,7 @@ import playersData from '../../data-pipeline/warehouse/export/players.json';
 import matchGoalsData from '../../data-pipeline/warehouse/export/match-goals.json';
 import wcMatchesData from '../../data-pipeline/warehouse/export/wc-matches.json';
 import h2hByTeamData from '../../data-pipeline/warehouse/export/h2h-by-team.json';
+import afFixturesData from '../../data-pipeline/warehouse/export/af-fixtures.json';
 
 export interface H2HRecord {
   played: number;
@@ -37,6 +38,22 @@ interface WarehousePlayer {
   club: string | null;
   clubTier: TierLabel | null;
   playerTier: TierLabel | null;
+  photo: string | null;
+}
+
+export interface AfFixture {
+  id: number;
+  date: string;
+  status: string; // FT | NS | 1H | HT | ...
+  elapsed: number | null;
+  stage: string;
+  round: string;
+  venue: string | null;
+  city: string | null;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number | null;
+  awayScore: number | null;
 }
 
 export interface MatchGoal {
@@ -77,13 +94,18 @@ export function getH2H(teamA: string, teamB: string): H2HRecord | null {
   return h2h[`${teamA}__${teamB}`] ?? null;
 }
 
-/** Club + player strength tiers for a player, by warehouse player id. */
+/** Club + player strength tiers + photo for a player, by warehouse player id. */
 export function getPlayerTiers(
   playerId: string,
-): { clubTier: TierLabel | null; playerTier: TierLabel | null; club: string | null } | null {
+): {
+  clubTier: TierLabel | null;
+  playerTier: TierLabel | null;
+  club: string | null;
+  photo: string | null;
+} | null {
   const p = playerById.get(playerId);
   if (!p) return null;
-  return { clubTier: p.clubTier, playerTier: p.playerTier, club: p.club };
+  return { clubTier: p.clubTier, playerTier: p.playerTier, club: p.club, photo: p.photo };
 }
 
 /** All warehouse players for a team (used to enrich squad views with tiers). */
@@ -110,10 +132,25 @@ export function getWarehouseMatches(): WarehouseMatch[] {
   return wcMatches;
 }
 
-/** Most recent finished matches, newest first. */
-export function getRecentResults(limit = 6): WarehouseMatch[] {
-  return wcMatches
-    .filter((m) => m.status === 'finished')
-    .sort((a, b) => (a.kickoff < b.kickoff ? 1 : -1))
+const afFixtures = afFixturesData as AfFixture[];
+
+/** Fresh AF fixtures (the live source). */
+export function getAfFixtures(): AfFixture[] {
+  return afFixtures;
+}
+
+/** Most recent FINISHED matches from the fresh API-Football feed, newest first. */
+export function getRecentResults(limit = 6): AfFixture[] {
+  return afFixtures
+    .filter((m) => m.status === 'FT')
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
+    .slice(0, limit);
+}
+
+/** Upcoming (not-started) AF fixtures, soonest first. */
+export function getUpcomingFixtures(limit = 8): AfFixture[] {
+  return afFixtures
+    .filter((m) => m.status === 'NS')
+    .sort((a, b) => (a.date < b.date ? -1 : 1))
     .slice(0, limit);
 }

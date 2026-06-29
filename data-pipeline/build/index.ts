@@ -10,11 +10,13 @@ import { loadSnapshot } from '../fetch/snapshot';
 import { fetchClubElo } from '../fetch/clubelo';
 import { fetchIntlResults } from '../fetch/intlresults';
 import { fetchOpenfootball } from '../fetch/openfootball';
+import { fetchAfFixtures, fetchAfTeams, fetchAfSquad } from '../fetch/apifootball';
 import {
   clubLookupSlug,
   countryToTeamSlug,
   leagueTierHintForCountry,
   inferCountryForUnmatchedClub,
+  surnameKey,
 } from './reconcile';
 import { deriveH2H, deriveTiers } from './derive';
 
@@ -29,6 +31,19 @@ function stageForRound(round: string): string {
   if (r.includes('quarter')) return 'qf';
   if (r.includes('semi')) return 'sf';
   if (r.includes('third')) return 'third_place';
+  if (r.includes('final')) return 'final';
+  return 'group';
+}
+
+// API-Football round labels → our stage codes ("Group Stage - 1", "Round of 16"…).
+function stageForAfRound(round: string): string {
+  const r = round.toLowerCase();
+  if (r.includes('group')) return 'group';
+  if (r.includes('round of 32')) return 'r32';
+  if (r.includes('round of 16')) return 'r16';
+  if (r.includes('quarter')) return 'qf';
+  if (r.includes('semi')) return 'sf';
+  if (r.includes('3rd place') || r.includes('third')) return 'third_place';
   if (r.includes('final')) return 'final';
   return 'group';
 }
@@ -120,6 +135,81 @@ async function main() {
     ),
   )();
   console.log(`  ${snap.players.length} players`);
+
+  // ---- API-Football (paid): fresh fixtures + player photos -----------------
+  // Lands in af_* tables (cross-check namespace) and attaches photos to our
+  // players by surname. See SOURCING.md for the publish-rights caveat.
+  console.log('Loading API-Football (paid)…');
+  const afTeams = await fetchAfTeams();
+  const afTeamSlug = new Map<number, string | null>();
+  for (const t of afTeams) afTeamSlug.set(t.id, countryToTeamSlug(t.name, validTeamIds));
+
+  // Fixtures
+  const afFixtures = await fetchAfFixtures();
+  const insAfFixture = db.prepare(`INSERT OR REPLACE INTO af_fixture
+    (id,date,status_short,status_long,elapsed,round,stage,venue,city,
+     home_team_id,away_team_id,home_name_raw,away_name_raw,home_score,away_score)
+    VALUES (@id,@date,@statusShort,@statusLong,@elapsed,@round,@stage,@venue,@city,
+     @homeTeamId,@awayTeamId,@homeNameRaw,@awayNameRaw,@homeScore,@awayScore)`);
+  db.transaction(() => {
+    for (const f of afFixtures) {
+      insAfFixture.run({
+        id: f.id,
+        date: f.date,
+        statusShort: f.statusShort,
+        statusLong: f.statusLong,
+        elapsed: f.elapsed,
+        round: f.round,
+        stage: stageForAfRound(f.round),
+        venue: f.venue,
+        city: f.city,
+        homeTeamId: countryToTeamSlug(f.homeName, validTeamIds),
+        awayTeamId: countryToTeamSlug(f.awayName, validTeamIds),
+        homeNameRaw: f.homeName,
+        awayNameRaw: f.awayName,
+        homeScore: f.homeScore,
+        awayScore: f.awayScore,
+      });
+    }
+  })();
+  const afFinished = afFixtures.filter((f) => f.statusShort === 'FT').length;
+  console.log(`  ${afFixtures.length} AF fixtures (${afFinished} finished)`);
+
+  // Squads (one call per team) → af_player + attach photo to our players by surname.
+  const insAfPlayer = db.prepare(`INSERT OR REPLACE INTO af_player
+    (id,team_id,name,number,position,photo) VALUES (@id,@teamId,@name,@number,@position,@photo)`);
+  const updPhoto = db.prepare(`UPDATE player SET photo=@photo WHERE id=@id`);
+  // index our players by (teamSlug, surname) for matching
+  const ourBySurname = new Map<string, string>(); // `${slug}|${surname}` → player.id
+  for (const p of snap.players) ourBySurname.set(`${p.teamId}|${surnameKey(p.name)}`, p.id);
+
+  let photoMatched = 0;
+  let afPlayerCount = 0;
+  for (const t of afTeams) {
+    const ourSlug = afTeamSlug.get(t.id) ?? null;
+    const squad = await fetchAfSquad(t.id);
+    db.transaction(() => {
+      for (const ap of squad) {
+        insAfPlayer.run({
+          id: ap.id,
+          teamId: ourSlug,
+          name: ap.name,
+          number: ap.number,
+          position: ap.position,
+          photo: ap.photo,
+        });
+        afPlayerCount++;
+        if (ourSlug && ap.photo) {
+          const ourId = ourBySurname.get(`${ourSlug}|${surnameKey(ap.name)}`);
+          if (ourId) {
+            updPhoto.run({ photo: ap.photo, id: ourId });
+            photoMatched++;
+          }
+        }
+      }
+    })();
+  }
+  console.log(`  ${afPlayerCount} AF players; ${photoMatched}/${snap.players.length} photos matched to our players`);
 
   // ---- WC matches (openfootball: all 104, with venues + goalscorers) ----
   const of = await fetchOpenfootball();

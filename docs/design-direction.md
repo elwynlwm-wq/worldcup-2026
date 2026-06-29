@@ -47,3 +47,15 @@ light `prose` — design it.
 
 This order means the reskin restyles components already backed by real data, instead of doing both
 at once.
+
+## Live data source (decided 29 Jun)
+
+The site now serves **API-Football (paid Pro)** data live: fresh fixtures/results/statuses and
+player photos. This is the tech lead's explicit call to use the best data while building toward
+launch.
+
+**Accepted risk:** API-Football's ToS grants no publication license (tier-independent). We're
+publishing its data pre-launch knowingly. Before public launch we must EITHER verify publish rights
+OR swap to a license-clean source — the provider seam + the `af_*` warehouse namespace make that a
+data-layer change, not a UI rewrite. The dev API key in `data-pipeline/.env` is to be rotated
+before deploy. See `data-pipeline/SOURCING.md`.
