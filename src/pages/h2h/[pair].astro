@@ -1,11 +1,14 @@
 ---
-// H2H evergreen page (UPCOMING-flavoured) — /h2h/<a>-vs-<b>.
-// The forward-looking view of a pairing: our forecast, who-will-win fan votes
-// (SofaScore), predicted XIs, all-time head-to-head, and pre-match articles.
-// One page per pairing that has predicted data. See docs/port-plan.md.
+// H2H evergreen page (UPCOMING) — /h2h/<a>-vs-<b>. Rebuilt to match the design:
+// teams header, optional match-preview banner, Prediction / Lineups tabs.
+//  - Prediction: ShowdownPanel (tap-to-pick + model reveal + forecast + factors)
+//    and the all-time head-to-head.
+//  - Lineups: pitch view with jersey markers, team toggle (predicted XIs).
+// Data: Elo model + SofaScore votes + predicted XIs + derived H2H.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ShowdownPanel from '../../components/ShowdownPanel.astro';
+import PitchLineup from '../../components/PitchLineup.astro';
 import { provider } from '../../lib/provider';
-import { predict } from '../../lib/model';
 import { getSsPair, getSsPairKeys, getH2H } from '../../lib/warehouse';
 import { teamGrad } from '../../data/teamColors';
 import { getCollection } from 'astro:content';
@@ -22,30 +25,25 @@ const ta = provider.getTeam(a);
 const tb = provider.getTeam(b);
 if (!ta || !tb) return Astro.redirect('/teams/');
 
-const pr = predict(ta, tb);
-const pct = (x: number) => Math.round(x * 100);
-const fav = pr.win >= pr.lose ? ta : tb;
-
 const ss = getSsPair(a, b);
-const votes = ss?.votes ?? null;
-const totalVotes = votes ? votes.home + votes.draw + votes.away : 0;
-const vpct = (n: number) => (totalVotes ? Math.round((n / totalVotes) * 100) : 0);
+// orient fan votes to a/b
+let fans: { home: number; away: number } | null = null;
+if (ss?.votes) {
+  fans = ss.votes.homeId === a ? { home: ss.votes.home, away: ss.votes.away } : { home: ss.votes.away, away: ss.votes.home };
+}
 
-const h2h = getH2H(a, b); // a's POV
+const h2h = getH2H(a, b);
 const fmtDate = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(iso)) : '');
 
-// pre-match articles tagged with both teams
 const articles = await getCollection('articles', ({ data }) => !data.draft);
-const related = articles.filter((art) => {
+const preMatch = articles.find((art) => {
   const tags = (art.data.tags || []).map((t) => t.toLowerCase());
   return tags.includes(a) && tags.includes(b);
 });
 
-const lineup = (id: string) => ss?.lineups?.[id] ?? null;
-const POS_ORDER = ['G', 'D', 'M', 'F'];
-type XIPlayer = { name: string; pos: string | null; jersey: string | null };
-const sortXI = (players: XIPlayer[]) =>
-  players.slice().sort((x, y) => POS_ORDER.indexOf(x.pos ?? 'F') - POS_ORDER.indexOf(y.pos ?? 'F'));
+const luA = ss?.lineups?.[a] ?? null;
+const luB = ss?.lineups?.[b] ?? null;
+const hasLineups = !!(luA?.starters?.length || luB?.starters?.length);
 ---
 
 <BaseLayout
@@ -70,89 +68,79 @@ const sortXI = (players: XIPlayer[]) =>
       </a>
     </div>
 
-    {/* our forecast */}
-    <h2 class="font-display mt-6 mb-2 text-[19px] font-extrabold">Our forecast</h2>
-    <p class="text-sm" style="color:var(--color-ink-2)">
-      <b style="color:var(--color-ink)">{fav.name} favoured</b> · {pct(Math.max(pr.win, pr.lose))}% to win in 90 minutes
-    </p>
-    <div class="my-3 flex h-[34px] overflow-hidden rounded-[10px] text-xs font-extrabold text-white">
-      <div class="flex items-center justify-center" style={`width:${pct(pr.win)}%;background:var(--color-royal)`}>{pct(pr.win)}</div>
-      <div class="flex items-center justify-center" style={`width:${pct(pr.draw)}%;background:#d8cfbf;color:var(--color-ink-2)`}>{pct(pr.draw)}</div>
-      <div class="flex items-center justify-center" style={`width:${pct(pr.lose)}%;background:#2b2e36`}>{pct(pr.lose)}</div>
+    {/* match-preview banner */}
+    {preMatch && (
+      <a href={`/articles/${preMatch.id}/`} class="kb-card-hover mt-3 flex items-center gap-3.5 rounded-[14px] p-4 text-white" style="background:var(--color-pitch)">
+        <span class="min-w-0 flex-1">
+          <span class="font-display block text-[10.5px] font-extrabold uppercase tracking-wide" style="opacity:.85">Match preview</span>
+          <span class="font-display mt-0.5 block text-[17.5px] font-extrabold leading-tight text-balance">{preMatch.data.title}</span>
+        </span>
+        <span class="flex-none text-[13px] font-bold" style="color:var(--color-gold)">Read the preview →</span>
+      </a>
+    )}
+
+    {/* tabs */}
+    <div class="mt-3.5 flex w-fit gap-1 rounded-[12px] border p-1" id="match-tabs" style="background:var(--color-surface);border-color:var(--color-line-2)">
+      <button data-mtab="prediction" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:#fff;background:var(--color-night)">Prediction</button>
+      {hasLineups && <button data-mtab="lineups" class="kb-mtab cursor-pointer rounded-[9px] px-4 py-2 text-[13.5px] font-bold" style="color:var(--color-ink-2);background:transparent">Lineups</button>}
     </div>
-    <div class="flex justify-between text-[11px]" style="color:var(--color-ink-3)">
-      <span>{ta.shortCode} win</span><span>draw</span><span>{tb.shortCode} win</span>
+
+    {/* PREDICTION */}
+    <section data-mpanel="prediction">
+      <ShowdownPanel home={ta} away={tb} fans={fans} />
+
+      {h2h && (
+        <div class="mt-7">
+          <h2 class="font-display mb-2 text-[21px] font-extrabold">Head-to-head (all-time)</h2>
+          <p class="text-[14.5px]" style="color:var(--color-ink-2)">
+            Met <b style="color:var(--color-ink)">{h2h.played}</b> times — {ta.shortCode} {h2h.aWins}W, {h2h.draws}D, {tb.shortCode} {h2h.bWins}W.
+            {h2h.lastMeeting && ` Last: ${ta.shortCode} ${h2h.lastAScore}–${h2h.lastBScore} ${tb.shortCode}, ${fmtDate(h2h.lastMeeting)}.`}
+          </p>
+        </div>
+      )}
+    </section>
+
+    {/* LINEUPS */}
+    {hasLineups && (
+      <section data-mpanel="lineups" style="display:none">
+        <p class="mt-4 mb-3 text-[13.5px]" style="color:var(--color-ink-2)">No confirmed XI yet — these are the most likely teams based on recent selection.</p>
+        <div class="mb-3.5 flex justify-center gap-2" id="lineup-toggle">
+          {luA && <button data-lteam={a} class="kb-lteam cursor-pointer rounded-full px-[18px] py-2 text-[13.5px] font-extrabold" style={`border:1.5px solid ${'var(--color-pitch)'};color:#fff;background:var(--color-pitch)`}>{ta.name}</button>}
+          {luB && <button data-lteam={b} class="kb-lteam cursor-pointer rounded-full px-[18px] py-2 text-[13.5px] font-extrabold" style="border:1.5px solid var(--color-line);color:var(--color-ink-2);background:#fff">{tb.name}</button>}
+        </div>
+        {luA && <div data-lpitch={a}><PitchLineup team={ta} lineup={luA} /></div>}
+        {luB && <div data-lpitch={b} style="display:none"><PitchLineup team={tb} lineup={luB} /></div>}
+      </section>
+    )}
+
+    <div class="mt-5 flex gap-5">
+      <a href={`/teams/${a}/`} class="text-sm font-bold" style="color:var(--color-royal)">{ta.name} squad →</a>
+      <a href={`/teams/${b}/`} class="text-sm font-bold" style="color:var(--color-royal)">{tb.name} squad →</a>
     </div>
-
-    {/* fan vote */}
-    {votes && (
-      <div class="mt-5 rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-        <div class="font-display mb-2 text-center text-[13px] font-extrabold uppercase tracking-wide">Who do fans think wins?</div>
-        <div class="flex justify-between text-sm font-bold">
-          <span>{ta.shortCode} {vpct(votes.homeId === a ? votes.home : votes.away)}%</span>
-          <span style="color:var(--color-ink-3)">Draw {vpct(votes.draw)}%</span>
-          <span>{vpct(votes.homeId === a ? votes.away : votes.home)}% {tb.shortCode}</span>
-        </div>
-        <div class="mt-1 text-center text-[11px]" style="color:var(--color-ink-3)">{totalVotes.toLocaleString()} fan votes</div>
-      </div>
-    )}
-
-    {/* all-time H2H */}
-    {h2h && (
-      <div class="mt-5">
-        <h2 class="font-display mb-2 text-[19px] font-extrabold">Head-to-head (all-time)</h2>
-        <p class="text-sm" style="color:var(--color-ink-2)">
-          Met <b style="color:var(--color-ink)">{h2h.played}</b> times — {ta.shortCode} {h2h.aWins}W, {h2h.draws}D, {tb.shortCode} {h2h.bWins}W.
-          {h2h.lastMeeting && ` Last: ${ta.shortCode} ${h2h.lastAScore}–${h2h.lastBScore} ${tb.shortCode}, ${fmtDate(h2h.lastMeeting)}.`}
-        </p>
-      </div>
-    )}
-
-    {/* predicted lineups */}
-    {ss && (lineup(a) || lineup(b)) && (
-      <div class="mt-6">
-        <h2 class="font-display mb-1 text-[19px] font-extrabold">Predicted lineups</h2>
-        <p class="mb-3 text-[13px]" style="color:var(--color-ink-3)">Probable XIs based on recent selection — not confirmed.</p>
-        <div class="grid gap-4 sm:grid-cols-2">
-          {[a, b].map((id) => {
-            const lu = lineup(id);
-            const t = provider.getTeam(id)!;
-            if (!lu) return null;
-            return (
-              <div class="rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-                <div class="mb-2 flex items-center gap-2">
-                  <span class="h-[18px] w-[26px] rounded" style={`background:${teamGrad(id)}`}></span>
-                  <b>{t.name}</b>
-                  {lu.formation && <span class="font-display ml-auto text-[13px] font-extrabold" style="color:var(--color-royal)">{lu.formation}</span>}
-                </div>
-                <ol class="text-[13.5px]">
-                  {sortXI(lu.starters).map((p) => (
-                    <li class="flex items-center gap-2 border-b py-1.5" style="border-color:var(--color-surface-3)">
-                      <span class="w-5 text-center text-[11px] font-bold" style="color:var(--color-ink-3)">{p.jersey}</span>
-                      <span>{p.name}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    {/* pre-match reads */}
-    {related.length > 0 && (
-      <div class="mt-6">
-        <h2 class="font-display mb-3 text-[19px] font-extrabold">Read before kickoff</h2>
-        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
-          {related.map((art) => (
-            <a href={`/articles/${art.id}/`} class="kb-card-hover rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-              <div class="font-display text-[17px] font-extrabold leading-tight text-balance">{art.data.title}</div>
-              <div class="mt-1.5 text-[13.5px]" style="color:var(--color-ink-2)">{art.data.description}</div>
-            </a>
-          ))}
-        </div>
-      </div>
-    )}
   </div>
+
+  <script is:inline>
+    (() => {
+      // match tabs
+      const tabs = document.querySelectorAll('#match-tabs .kb-mtab');
+      const panels = document.querySelectorAll('[data-mpanel]');
+      tabs.forEach((t) => t.addEventListener('click', () => {
+        const name = t.getAttribute('data-mtab');
+        panels.forEach((p) => (p.style.display = p.getAttribute('data-mpanel') === name ? '' : 'none'));
+        tabs.forEach((x) => { const on = x === t; x.style.color = on ? '#fff' : 'var(--color-ink-2)'; x.style.background = on ? 'var(--color-night)' : 'transparent'; });
+      }));
+      // lineup team toggle
+      const lt = document.querySelectorAll('#lineup-toggle .kb-lteam');
+      lt.forEach((btn) => btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-lteam');
+        document.querySelectorAll('[data-lpitch]').forEach((p) => (p.style.display = p.getAttribute('data-lpitch') === id ? '' : 'none'));
+        lt.forEach((x) => {
+          const on = x === btn;
+          x.style.color = on ? '#fff' : 'var(--color-ink-2)';
+          x.style.background = on ? 'var(--color-pitch)' : '#fff';
+          x.style.borderColor = on ? 'var(--color-pitch)' : 'var(--color-line)';
+        });
+      }));
+    })();
+  </script>
 </BaseLayout>
