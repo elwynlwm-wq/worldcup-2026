@@ -67,8 +67,9 @@ export function teamColors(slug: string): TeamColor {
   return TEAM_COLORS[slug] ?? FALLBACK;
 }
 
-/** CSS diagonal two-tone gradient for a team mark. */
+/** CSS diagonal two-tone team mark. Hard 50/50 split — touching colour stops so
+ *  the seam is crisp (a transition band reads as blur, esp. on a diagonal). */
 export function teamGrad(slug: string): string {
   const { c1, c2 } = teamColors(slug);
-  return `linear-gradient(135deg, ${c1} 0%, ${c1} 48%, ${c2} 52%, ${c2} 100%)`;
+  return `linear-gradient(135deg, ${c1} 0%, ${c1} 50%, ${c2} 50%, ${c2} 100%)`;
 }
