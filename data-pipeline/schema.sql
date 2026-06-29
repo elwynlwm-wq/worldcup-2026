@@ -11,6 +11,9 @@
 PRAGMA foreign_keys = ON;
 
 -- Drop in dependency order so the build is idempotent (rebuild from scratch).
+DROP TABLE IF EXISTS ss_predicted_lineup_player;
+DROP TABLE IF EXISTS ss_vote;
+DROP TABLE IF EXISTS ss_match;
 DROP TABLE IF EXISTS af_player_stat;
 DROP TABLE IF EXISTS af_lineup_player;
 DROP TABLE IF EXISTS af_lineup;
@@ -267,3 +270,40 @@ CREATE TABLE af_player_stat (
 );
 CREATE INDEX idx_pstat_fixture ON af_player_stat(fixture_id);
 CREATE INDEX idx_pstat_player ON af_player_stat(player_id);
+
+-- ---------------------------------------------------------------------------
+-- SofaScore (scraped via RapidAPI) — DEV SOURCE ONLY, own namespace.
+-- The predicted signals nothing else gives: who-will-win fan votes + PREDICTED
+-- lineups. NOT for publishing (see SOURCING.md). ss_match maps SS match ids to
+-- our team slugs + (where matched) our wc_match / af_fixture by team+date.
+-- ---------------------------------------------------------------------------
+CREATE TABLE ss_match (
+  id             INTEGER PRIMARY KEY,      -- SofaScore match id
+  home_team_id   TEXT,                     -- our slug if mapped
+  away_team_id   TEXT,
+  home_name_raw  TEXT,
+  away_name_raw  TEXT,
+  start_ts       INTEGER,
+  status         TEXT
+);
+
+CREATE TABLE ss_vote (
+  match_id       INTEGER PRIMARY KEY REFERENCES ss_match(id),
+  vote_home      INTEGER,                  -- who-will-win: home
+  vote_draw      INTEGER,
+  vote_away      INTEGER
+);
+
+CREATE TABLE ss_predicted_lineup_player (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  match_id       INTEGER REFERENCES ss_match(id),
+  side           TEXT,                     -- home | away
+  team_id        TEXT,                     -- our slug if mapped
+  confirmed      INTEGER,                  -- 0 = predicted XI, 1 = official
+  formation      TEXT,
+  player_name    TEXT,
+  position       TEXT,
+  jersey         TEXT,
+  substitute     INTEGER
+);
+CREATE INDEX idx_sspred_match ON ss_predicted_lineup_player(match_id);

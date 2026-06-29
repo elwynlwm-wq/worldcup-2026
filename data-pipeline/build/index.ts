@@ -20,6 +20,7 @@ import {
   fetchAfFixtureLineups,
   fetchAfFixturePlayers,
 } from '../fetch/apifootball';
+import { fetchSsMatches, fetchSsVotes, fetchSsLineup } from '../fetch/sofascore';
 import {
   clubLookupSlug,
   countryToTeamSlug,
@@ -287,6 +288,63 @@ async function main() {
     })();
   }
   console.log(`  rich data: ${nStats} team-stat rows, ${nEvents} events, ${nLineups} lineups, ${nPStats} player-match rows`);
+
+  // ---- SofaScore (DEV source): who-will-win votes + PREDICTED lineups -------
+  // Scraped/resold — not for publishing. Reconcile SS matches → our team slugs
+  // by name; fetch votes + predicted XI only for mapped matches (saves calls).
+  console.log('Loading SofaScore (dev source: votes + predicted lineups)…');
+  const ssMatches = await fetchSsMatches();
+  const insSsMatch = db.prepare(`INSERT OR REPLACE INTO ss_match
+    (id,home_team_id,away_team_id,home_name_raw,away_name_raw,start_ts,status)
+    VALUES (@id,@home_team_id,@away_team_id,@home_name_raw,@away_name_raw,@start_ts,@status)`);
+  const insSsVote = db.prepare(`INSERT OR REPLACE INTO ss_vote
+    (match_id,vote_home,vote_draw,vote_away) VALUES (@match_id,@vote_home,@vote_draw,@vote_away)`);
+  const insSsPred = db.prepare(`INSERT INTO ss_predicted_lineup_player
+    (match_id,side,team_id,confirmed,formation,player_name,position,jersey,substitute)
+    VALUES (@match_id,@side,@team_id,@confirmed,@formation,@player_name,@position,@jersey,@substitute)`);
+
+  const mappedSs = ssMatches
+    .map((m) => ({
+      ...m,
+      homeId: countryToTeamSlug(m.homeName, validTeamIds),
+      awayId: countryToTeamSlug(m.awayName, validTeamIds),
+    }))
+    .filter((m) => m.homeId || m.awayId);
+
+  db.transaction(() => {
+    for (const m of mappedSs)
+      insSsMatch.run({
+        id: m.id, home_team_id: m.homeId, away_team_id: m.awayId,
+        home_name_raw: m.homeName, away_name_raw: m.awayName, start_ts: m.startTimestamp, status: m.status,
+      });
+  })();
+
+  let nVotes = 0, nPred = 0;
+  for (const m of mappedSs) {
+    const [votes, lineup] = await Promise.all([fetchSsVotes(m.id), fetchSsLineup(m.id)]);
+    db.transaction(() => {
+      if (votes) {
+        insSsVote.run({ match_id: m.id, vote_home: votes.vote1, vote_draw: votes.voteX, vote_away: votes.vote2 });
+        nVotes++;
+      }
+      if (lineup) {
+        for (const [side, players, teamId, formation] of [
+          ['home', lineup.home, m.homeId, lineup.homeFormation],
+          ['away', lineup.away, m.awayId, lineup.awayFormation],
+        ] as const) {
+          for (const p of players) {
+            insSsPred.run({
+              match_id: m.id, side, team_id: teamId, confirmed: lineup.confirmed ? 1 : 0,
+              formation, player_name: p.name, position: p.position, jersey: p.jersey,
+              substitute: p.substitute ? 1 : 0,
+            });
+          }
+        }
+        if (lineup.home.length || lineup.away.length) nPred++;
+      }
+    })();
+  }
+  console.log(`  ${mappedSs.length} SS matches mapped; ${nVotes} with votes, ${nPred} with (predicted) lineups`);
 
   // ---- WC matches (openfootball: all 104, with venues + goalscorers) ----
   const of = await fetchOpenfootball();
