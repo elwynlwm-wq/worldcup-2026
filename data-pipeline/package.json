@@ -8,6 +8,7 @@
     "fetch": "tsx fetch/index.ts",
     "build:warehouse": "tsx build/index.ts",
     "export": "tsx build/export.ts",
+    "banners": "tsx banners/generate.ts",
     "all": "npm run fetch && npm run build:warehouse && npm run export"
   },
   "dependencies": {

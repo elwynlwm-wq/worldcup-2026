@@ -18,5 +18,8 @@ warehouse/*.db-shm
 # Raw fetched source data — large/refetchable; snapshot to R2 for reproducibility.
 sources/
 
+# Generated banners — binary output; push to R2 when wiring to the site.
+banners/out/
+
 # The exported JSON slices ARE committed (text, diffs cleanly) — see warehouse/export/.
 !warehouse/export/

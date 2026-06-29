@@ -75,3 +75,16 @@ When the updated prototype files land in `concepts/`:
 4. Fidelity: pixel-faithful to the updated prototype; our architecture is the only deviation.
 
 Until the files are updated: **no styling work.** Keep building features/data against current brand.
+
+## Team marks: two-tone vs flags (decided 29 Jun — wire after new design lands)
+
+Use BOTH, by context density:
+- **Two-tone diagonal color marks** (team's two primary colors) in DENSE/LIST contexts — power
+  ranking, standings, fixtures, anywhere many teams appear. Clean, branded, trademark-free, tiny
+  (CSS/SVG, zero image load → good for perf/SEO).
+- **Real flags** where it narrows to ONE or TWO teams — team profile, Team A vs Team B matchup
+  pages. Maximises recognizability (our newbie audience) where there's room.
+
+Needs a curated **team-colors dataset** (48 teams, home/away primary+secondary). API-Football does
+NOT expose national-team colors — build it ourselves / from Wikipedia. This same dataset powers the
+AI banner generation, so it's a reusable asset, not a one-off. Build after the Kickabout design lands.
