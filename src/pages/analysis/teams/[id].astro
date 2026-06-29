@@ -1,6 +1,8 @@
 ---
 import AnalysisLayout from '../../../layouts/AnalysisLayout.astro';
 import { provider } from '../../../lib/provider';
+import { getPlayerTiers } from '../../../lib/warehouse';
+import TierBadge from '../../../components/analysis/TierBadge.astro';
 
 export function getStaticPaths() {
   return provider.getTeams().map((t) => ({ params: { id: t.id }, props: { teamId: t.id } }));
@@ -9,6 +11,15 @@ export function getStaticPaths() {
 const { teamId } = Astro.props;
 const t = provider.getTeam(teamId)!;
 const squad = provider.getSquad(teamId);
+
+// Warehouse tiers per player (build-time). Map by id for cheap lookup.
+const tiersById = new Map(squad.map((p) => [p.id, getPlayerTiers(p.id)]));
+
+// Squad-strength summary: count Elite/Established players (newbie-friendly).
+const eliteCount = squad.filter((p) => tiersById.get(p.id)?.playerTier === 'Elite').length;
+const establishedCount = squad.filter(
+  (p) => tiersById.get(p.id)?.playerTier === 'Established',
+).length;
 
 const byPos = (pos: string) => squad.filter((p) => p.pos === pos);
 const POS: [string, string][] = [
@@ -75,19 +86,31 @@ const jsonLd = {
     </tbody>
   </table>
 
-  <h2 class="mt-6 mb-2 text-lg font-bold">Squad</h2>
+  <h2 class="mt-6 mb-1 text-lg font-bold">Squad</h2>
+  <p class="mb-3 text-[13.5px] text-[var(--muted)]">
+    Strength of this squad: <b class="text-[var(--accent)]">{eliteCount} elite</b> ·
+    {establishedCount} established players. Tier badges blend each player's club, caps and goals —
+    our own coarse signal, not an official rating.
+  </p>
   {POS.map(([pos, label]) => (
     <div class="mb-4">
       <h3 class="mb-1 text-[12px] uppercase tracking-wide text-[var(--muted)]">{label}</h3>
       <div class="grid gap-1.5 sm:grid-cols-2">
-        {byPos(pos).map((p) => (
-          <div class="flex items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-1.5">
-            <span class="font-medium">{p.name}</span>
-            <span class="text-[11px] text-[var(--muted)]">
-              {p.age}y · {p.club} · {p.goals}g
-            </span>
-          </div>
-        ))}
+        {byPos(pos).map((p) => {
+          const tiers = tiersById.get(p.id);
+          return (
+            <div class="flex items-center justify-between gap-2 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-1.5">
+              <span class="flex items-center gap-2">
+                <span class="font-medium">{p.name}</span>
+                <TierBadge label={tiers?.playerTier ?? null} kind="player" />
+              </span>
+              <span class="flex items-center gap-2 text-[11px] text-[var(--muted)]">
+                <span>{p.age}y · {p.club} · {p.goals}g</span>
+                <TierBadge label={tiers?.clubTier ?? null} kind="club" />
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   ))}

@@ -5,6 +5,9 @@ import type { Team } from '../../lib/model';
 import { predict } from '../../lib/model';
 import { provider } from '../../lib/provider';
 import ProbBar from './ProbBar.astro';
+import H2HPanel from './H2HPanel.astro';
+import TierBadge from './TierBadge.astro';
+import { getPlayerTiers } from '../../lib/warehouse';
 
 interface Props {
   home: Team;
@@ -31,7 +34,8 @@ const keyPlayers = (t: Team) =>
     .getSquad(t.id)
     .slice()
     .sort((x, y) => y.goals - x.goals)
-    .slice(0, 3);
+    .slice(0, 3)
+    .map((p) => ({ ...p, tiers: getPlayerTiers(p.id) }));
 ---
 
 <h2 class="mt-6 mb-2 text-lg font-bold">Forecast</h2>
@@ -76,8 +80,11 @@ const keyPlayers = (t: Team) =>
     <div class="grid gap-2">
       {keyPlayers(t).map((p) => (
         <div class="rounded-xl border border-[var(--line)] bg-[var(--panel)] px-3 py-2">
-          <div class="font-semibold">{p.name}</div>
-          <div class="text-[11px] text-[var(--muted)]">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-semibold">{p.name}</span>
+            <TierBadge label={p.tiers?.playerTier ?? null} kind="player" />
+          </div>
+          <div class="mt-0.5 text-[11px] text-[var(--muted)]">
             {p.pos} · {p.club} · {p.goals} intl goals
           </div>
         </div>
@@ -85,3 +92,5 @@ const keyPlayers = (t: Team) =>
     </div>
   ))}
 </div>
+
+<H2HPanel home={home} away={away} />

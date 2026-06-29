@@ -1,0 +1,40 @@
+---
+// A small strength-tier badge ("Elite", "Solid", etc.) — our own coarse signal
+// from the warehouse, not a copied rating. Color-coded by strength so a newbie
+// can read it at a glance. Used for both club and player tiers.
+interface Props {
+  label: string | null;
+  kind?: 'club' | 'player';
+  title?: string;
+}
+const { label, kind = 'player', title } = Astro.props;
+
+// Map tier labels → a strength rank (1 best) for coloring, across both scales.
+const RANK: Record<string, number> = {
+  Elite: 1,
+  Strong: 2,
+  Established: 2,
+  Solid: 3,
+  Squad: 3,
+  Modest: 4,
+  Prospect: 4,
+  Lower: 5,
+};
+const rank = label ? RANK[label] ?? 3 : 3;
+const COLOR: Record<number, string> = {
+  1: 'bg-[rgba(40,209,124,.16)] text-[var(--accent)]',
+  2: 'bg-[rgba(61,165,255,.16)] text-[var(--accent2)]',
+  3: 'bg-[rgba(255,176,32,.16)] text-[var(--warn)]',
+  4: 'bg-[var(--panel2)] text-[var(--muted)]',
+  5: 'bg-[var(--panel2)] text-[var(--muted)]',
+};
+---
+
+{label && (
+  <span
+    class:list={['inline-block rounded-full px-2 py-0.5 text-[11px] font-bold', COLOR[rank]]}
+    title={title ?? `${kind === 'club' ? 'Club' : 'Player'} strength: ${label}`}
+  >
+    {label}
+  </span>
+)}
