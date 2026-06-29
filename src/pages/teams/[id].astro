@@ -125,7 +125,7 @@ const jsonLd = {
     <h2 class="font-display mt-7 mb-3 text-[20px] font-extrabold">Star players</h2>
     <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
       {stars.map((p) => (
-        <div class="kb-card-hover flex items-center gap-3 rounded-[14px] border p-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <a href={`/players/${p.id}/`} class="kb-card-hover flex items-center gap-3 rounded-[14px] border p-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
           <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={46} />
           <div class="min-w-0 flex-1">
             <b class="block truncate text-[15px]">{p.name}</b>
@@ -135,7 +135,7 @@ const jsonLd = {
             <div class="font-display text-[16px] font-black" style="color:var(--color-royal)">{p.goals}</div>
             <div class="text-[11px]" style="color:var(--color-ink-3)">goals</div>
           </div>
-        </div>
+        </a>
       ))}
     </div>
 
@@ -145,13 +145,13 @@ const jsonLd = {
         <h3 class="font-display mt-[18px] mb-2 text-[15px] font-extrabold" style="color:var(--color-ink-2)">{label}</h3>
         <div class="grid gap-2.5" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">
           {byPos(pos).map((p) => (
-            <div class="flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-surface-3)">
+            <a href={`/players/${p.id}/`} class="kb-card-hover flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-surface-3)">
               <Avatar name={p.name} position={p.pos} photo={tiersById.get(p.id)?.photo ?? null} size={34} />
               <span class="min-w-0 flex-1">
                 <b class="block truncate text-[13.5px]">{p.name}</b>
                 <span class="text-[11.5px]" style="color:var(--color-ink-3)">{p.age}y · {p.club} · {p.goals}g</span>
               </span>
-            </div>
+            </a>
           ))}
         </div>
       </div>

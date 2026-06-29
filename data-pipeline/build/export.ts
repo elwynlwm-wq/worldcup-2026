@@ -57,6 +57,38 @@ function main() {
     .all();
   write('players.json', players);
 
+  // player-wc-stats.json — each player's WC match log + totals, keyed by the
+  // API-Football player id (the UI bridges to it via the AF id in the photo URL,
+  // since our player.id is a slug). Only finished fixtures have player stats.
+  const pStatRows = db
+    .prepare(
+      `SELECT ps.player_id AS afId, ps.fixture_id AS fixtureId,
+              ps.minutes, ps.rating, ps.goals, ps.assists, ps.shots, ps.shots_on AS shotsOn,
+              ps.passes, ps.pass_accuracy AS passAccuracy, ps.yellow, ps.red,
+              f.home_team_id AS homeId, f.away_team_id AS awayId,
+              f.home_score AS homeScore, f.away_score AS awayScore, f.stage, f.date
+       FROM af_player_stat ps JOIN af_fixture f ON f.id = ps.fixture_id
+       WHERE ps.player_id IS NOT NULL
+       ORDER BY f.date`,
+    )
+    .all() as Array<Record<string, any>>;
+  const wcByPlayer: Record<string, any> = {};
+  for (const r of pStatRows) {
+    const e = (wcByPlayer[r.afId] ??= { apps: 0, mins: 0, goals: 0, assists: 0, matches: [] });
+    if ((r.minutes ?? 0) > 0) e.apps++;
+    e.mins += r.minutes ?? 0;
+    e.goals += r.goals ?? 0;
+    e.assists += r.assists ?? 0;
+    e.matches.push({
+      homeId: r.homeId, awayId: r.awayId, homeScore: r.homeScore, awayScore: r.awayScore,
+      stage: r.stage, date: r.date,
+      minutes: r.minutes, rating: r.rating, goals: r.goals, assists: r.assists,
+      shots: r.shots, shotsOn: r.shotsOn, passes: r.passes, passAccuracy: r.passAccuracy,
+      yellow: r.yellow, red: r.red,
+    });
+  }
+  write('player-wc-stats.json', wcByPlayer);
+
   // h2h.json — keyed "teamA__teamB" → record (both directions present)
   const h2hRows = db
     .prepare(

@@ -18,7 +18,7 @@ const playerIndex = provider.getAllPlayers()
   .slice(0, 400)
   .map((p) => {
     const t = provider.getTeam(p.teamId)!;
-    return { n: p.name, m: `${p.pos} · ${t.shortCode} · ${p.club}`, f: flagUrl(p.teamId), h: `/teams/${p.teamId}/` };
+    return { n: p.name, m: `${p.pos} · ${t.shortCode} · ${p.club}`, f: flagUrl(p.teamId), h: `/players/${p.id}/` };
   });
 ---
 

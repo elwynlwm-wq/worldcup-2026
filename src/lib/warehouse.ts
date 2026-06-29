@@ -18,6 +18,7 @@ import afFixturesData from '../../data-pipeline/warehouse/export/af-fixtures.jso
 import ssByPairData from '../../data-pipeline/warehouse/export/ss-by-pair.json';
 import afMatchDetailData from '../../data-pipeline/warehouse/export/af-match-detail.json';
 import oddsByPairData from '../../data-pipeline/warehouse/export/odds-by-pair.json';
+import playerWcStatsData from '../../data-pipeline/warehouse/export/player-wc-stats.json';
 
 export interface H2HRecord {
   played: number;
@@ -213,4 +214,28 @@ const oddsByPair = oddsByPairData as Record<string, OddsPair>;
 /** Bookmaker odds for a pairing (order-independent), or null if unpriced. */
 export function getOddsPair(a: string, b: string): OddsPair | null {
   return oddsByPair[[a, b].sort().join('__')] ?? null;
+}
+
+// --- Per-player WC tournament stats (by API-Football player id) -------------
+export interface PlayerWcMatch {
+  homeId: string; awayId: string; homeScore: number | null; awayScore: number | null;
+  stage: string; date: string;
+  minutes: number | null; rating: string | null; goals: number | null; assists: number | null;
+  shots: number | null; shotsOn: number | null; passes: number | null; passAccuracy: number | null;
+  yellow: number | null; red: number | null;
+}
+export interface PlayerWcStats {
+  apps: number; mins: number; goals: number; assists: number; matches: PlayerWcMatch[];
+}
+const playerWcStats = playerWcStatsData as Record<string, PlayerWcStats>;
+
+/** The API-Football player id embedded in a photo URL (…/players/<id>.png), or null. */
+export function afPlayerId(photo: string | null | undefined): string | null {
+  const m = photo?.match(/\/players\/(\d+)\.png/);
+  return m ? m[1] : null;
+}
+
+/** A player's WC tournament log + totals, looked up by AF player id. */
+export function getPlayerWcStats(afId: string | null): PlayerWcStats | null {
+  return afId ? playerWcStats[afId] ?? null : null;
 }

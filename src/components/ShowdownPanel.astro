@@ -174,7 +174,7 @@ const matchKey = [home.id, away.id].sort().join('|');
         <div class="mb-2.5 flex items-center gap-2"><Flag team={t.id} w={26} /><b class="text-[14px]">{t.name}</b></div>
         <div class="flex flex-col gap-2">
           {starsFor(t.id).map((p) => (
-            <a href={`/teams/${t.id}/`} class="flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+            <a href={`/players/${p.id}/`} class="kb-card-hover flex items-center gap-2.5 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
               <Avatar name={p.name} position={p.pos} photo={photoFor(p.name)} size={34} />
               <span class="font-display flex-none rounded-md px-1.5 py-0.5 text-[10px] font-extrabold text-white" style={`background:${p.pos === 'GK' ? '#e0a200' : p.pos === 'DF' ? '#5b6470' : p.pos === 'MF' ? '#1f7a4d' : '#b23b2e'}`}>{POSNAME[p.pos] ?? p.pos}</span>
               <span class="min-w-0 flex-1"><b class="block truncate text-[13px]">{p.name}</b><span class="text-[11px]" style="color:var(--color-ink-3)">{p.club}</span></span>

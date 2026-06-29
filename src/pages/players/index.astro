@@ -41,7 +41,7 @@ const posColor: Record<string, string> = { GK: '#e0a200', DF: '#1f3fbf', MF: '#1
       {players.map((p) => {
         const t = teamById.get(p.teamId);
         return (
-          <a href={`/teams/${p.teamId}/`} data-pos={p.pos} class="kb-prow kb-card-hover flex items-center gap-3 rounded-[13px] border px-[14px] py-[11px]" style="background:#fff;border-color:#e9e1d2">
+          <a href={`/players/${p.id}/`} data-pos={p.pos} class="kb-prow kb-card-hover flex items-center gap-3 rounded-[13px] border px-[14px] py-[11px]" style="background:#fff;border-color:#e9e1d2">
             <Avatar name={p.name} position={p.pos} photo={p.photo} size={40} />
             <Flag team={p.teamId} w={26} />
             <div class="min-w-0 flex-1"><b class="block truncate text-[14.5px]">{p.name}</b><div class="text-[12px]" style="color:#a59a85">{posName[p.pos] ?? p.pos} · {t?.shortCode ?? ''} · {p.club}</div></div>
