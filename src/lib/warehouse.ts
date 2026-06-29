@@ -16,6 +16,7 @@ import wcMatchesData from '../../data-pipeline/warehouse/export/wc-matches.json'
 import h2hByTeamData from '../../data-pipeline/warehouse/export/h2h-by-team.json';
 import afFixturesData from '../../data-pipeline/warehouse/export/af-fixtures.json';
 import ssByPairData from '../../data-pipeline/warehouse/export/ss-by-pair.json';
+import afMatchDetailData from '../../data-pipeline/warehouse/export/af-match-detail.json';
 
 export interface H2HRecord {
   played: number;
@@ -173,6 +174,16 @@ const ssByPair = ssByPairData as Record<string, SsPair>;
 /** Predicted lineups + who-will-win votes for a pairing (order-independent). */
 export function getSsPair(a: string, b: string): SsPair | null {
   return ssByPair[[a, b].sort().join('__')] ?? null;
+}
+
+// --- Played-match detail (AF): key team stats + goals, by AF fixture id ------
+export interface AfMatchDetail {
+  stats: Record<string, Record<string, string>>; // statType → { teamId: value }
+  goals: { teamId: string; scorer: string; minute: number; pen: boolean }[];
+}
+const afMatchDetail = afMatchDetailData as Record<string, AfMatchDetail>;
+export function getMatchDetail(fixtureId: number): AfMatchDetail | null {
+  return afMatchDetail[String(fixtureId)] ?? null;
 }
 
 /** All pairs that have SofaScore data — for generating H2H static paths. */

@@ -5,7 +5,7 @@
 // warehouse.) One page per finished fixture. See docs/port-plan.md.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
-import { getRecentResults, getMatchGoals, getH2H } from '../../lib/warehouse';
+import { getRecentResults, getMatchDetail, getH2H } from '../../lib/warehouse';
 import { teamGrad } from '../../data/teamColors';
 import { getCollection } from 'astro:content';
 
@@ -22,9 +22,32 @@ export function getStaticPaths() {
 const { m } = Astro.props;
 const h = provider.getTeam(m.homeTeamId)!;
 const a = provider.getTeam(m.awayTeamId)!;
-// goalscorers (from openfootball, keyed by wc-match id — best-effort match by teams)
-const goals = getMatchGoals(`wc-${m.id}`); // af id won't match wc id; left for follow-up
 const h2h = getH2H(h.id, a.id);
+
+// real played-match detail: goals + key stats (xG/possession/shots…)
+const md = getMatchDetail(m.id);
+const goals = (md?.goals ?? []).sort((x, y) => x.minute - y.minute);
+const homeGoals = goals.filter((g) => g.teamId === h.id);
+const awayGoals = goals.filter((g) => g.teamId === a.id);
+
+// stat-comparison rows (parse "61%" → 61 for the bars)
+const STAT_DISPLAY: [string, string][] = [
+  ['Ball Possession', 'Possession'],
+  ['expected_goals', 'Expected goals (xG)'],
+  ['Total Shots', 'Shots'],
+  ['Shots on Goal', 'Shots on target'],
+  ['Corner Kicks', 'Corners'],
+  ['Passes %', 'Pass accuracy'],
+];
+const num = (v: string | undefined) => (v == null ? 0 : parseFloat(v.replace('%', '')) || 0);
+const statRows = STAT_DISPLAY.map(([key, label]) => {
+  const s = md?.stats?.[key];
+  if (!s || (s[h.id] == null && s[a.id] == null)) return null;
+  const hv = s[h.id] ?? '–', av = s[a.id] ?? '–';
+  const hn = num(s[h.id]), an = num(s[a.id]);
+  const tot = hn + an || 1;
+  return { label, hv, av, homePct: Math.round((hn / tot) * 100), awayPct: Math.round((an / tot) * 100) };
+}).filter(Boolean) as { label: string; hv: string; av: string; homePct: number; awayPct: number }[];
 
 const stageLabel: Record<string, string> = { group: 'Group stage', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: 'Third place' };
 const fmtDate = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(iso)) : '');
@@ -73,24 +96,50 @@ const jsonLd = {
     </div>
 
     {goals.length > 0 && (
-      <div class="mt-4 rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-        <div class="font-display mb-2 text-center text-[11px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-3)">⚽ Goals</div>
-        <ul class="text-sm">
-          {goals.map((g) => (<li>{g.scorer} <span style="color:var(--color-ink-3)">{g.minute}'</span></li>))}
-        </ul>
+      <div class="mx-auto mt-4 max-w-[600px] rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <div class="font-display mb-3 text-center text-[11px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-3)">⚽ Goals</div>
+        <div class="grid grid-cols-2 gap-5">
+          <div class="flex flex-col gap-1.5">
+            {homeGoals.map((g) => (<div class="text-sm"><b>{g.scorer}</b> <span class="font-semibold" style="color:var(--color-ink-3)">{g.minute}'{g.pen ? ' (P)' : ''}</span></div>))}
+          </div>
+          <div class="flex flex-col gap-1.5 text-right">
+            {awayGoals.map((g) => (<div class="text-sm"><span class="font-semibold" style="color:var(--color-ink-3)">{g.minute}'{g.pen ? ' (P)' : ''}</span> <b>{g.scorer}</b></div>))}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* stat comparison */}
+    {statRows.length > 0 && (
+      <div class="mx-auto mt-4 max-w-[600px] rounded-[14px] border px-[18px] pt-1.5 pb-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <div class="flex items-center justify-center gap-3 border-b py-3" style="border-color:var(--color-surface-3)">
+          <span class="h-[18px] w-[26px] rounded-[3px]" style={`background:${teamGrad(h.id)}`}></span>
+          <b class="font-display text-[14px]">{h.shortCode}</b>
+          <span class="font-display px-1 text-[16px] font-black">{m.homeScore}–{m.awayScore}</span>
+          <b class="font-display text-[14px]">{a.shortCode}</b>
+          <span class="h-[18px] w-[26px] rounded-[3px]" style={`background:${teamGrad(a.id)}`}></span>
+        </div>
+        {statRows.map((s) => (
+          <div class="border-b py-2" style="border-color:var(--color-surface-3)">
+            <div class="mb-1 flex items-center justify-between">
+              <b class="font-display w-[52px] text-[14px]">{s.hv}</b>
+              <span class="text-[12.5px] font-semibold" style="color:var(--color-ink-2)">{s.label}</span>
+              <b class="font-display w-[52px] text-right text-[14px]">{s.av}</b>
+            </div>
+            <div class="flex h-[5px] gap-[5px]">
+              <span class="flex flex-1 justify-end overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="rounded-[3px]" style={`width:${s.homePct}%;background:var(--color-royal)`}></span></span>
+              <span class="flex-1 overflow-hidden rounded-[3px]" style="background:var(--color-surface-3)"><span class="block h-full rounded-[3px]" style={`width:${s.awayPct}%;background:#2b2e36`}></span></span>
+            </div>
+          </div>
+        ))}
       </div>
     )}
 
     {h2h && (
-      <p class="mt-4 text-sm" style="color:var(--color-ink-2)">
+      <p class="mt-4 text-center text-sm" style="color:var(--color-ink-2)">
         All-time: {h.shortCode} {h2h.aWins}W · {h2h.draws}D · {a.shortCode} {h2h.bWins}W (over {h2h.played} meetings).
       </p>
     )}
-
-    <p class="mt-4 text-[13px]" style="color:var(--color-ink-3)">
-      Full match stats (possession, shots, xG) and lineups are in the warehouse — wiring to this
-      page is a follow-up.
-    </p>
 
     {related.length > 0 && (
       <div class="mt-6">

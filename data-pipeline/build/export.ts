@@ -149,6 +149,34 @@ function main() {
   }
   write('ss-by-pair.json', ssByPair);
 
+  // af-match-detail.json — per finished AF fixture: key team stats (for the
+  // comparison bars) + goals. Keyed by AF fixture id (matches af-fixtures.json).
+  const STAT_KEYS = ['Ball Possession', 'Total Shots', 'Shots on Goal', 'expected_goals', 'Passes %', 'Corner Kicks'];
+  const statRows = db
+    .prepare(
+      `SELECT fixture_id AS fid, team_id AS teamId, stat_type AS type, stat_value AS val
+       FROM af_team_stat WHERE team_id IS NOT NULL`,
+    )
+    .all() as Array<{ fid: number; teamId: string; type: string; val: string }>;
+  const goalRowsAf = db
+    .prepare(
+      `SELECT fixture_id AS fid, team_id AS teamId, player_name AS scorer, minute, detail
+       FROM af_event WHERE type='Goal' AND team_id IS NOT NULL ORDER BY fixture_id, minute`,
+    )
+    .all() as Array<{ fid: number; teamId: string; scorer: string; minute: number; detail: string }>;
+
+  const detail: Record<number, { stats: Record<string, Record<string, string>>; goals: Array<{ teamId: string; scorer: string; minute: number; pen: boolean }> }> = {};
+  for (const r of statRows) {
+    if (!STAT_KEYS.includes(r.type)) continue;
+    const d = (detail[r.fid] ??= { stats: {}, goals: [] });
+    (d.stats[r.type] ??= {})[r.teamId] = r.val;
+  }
+  for (const g of goalRowsAf) {
+    const d = (detail[g.fid] ??= { stats: {}, goals: [] });
+    d.goals.push({ teamId: g.teamId, scorer: g.scorer, minute: g.minute, pen: /penalty/i.test(g.detail) });
+  }
+  write('af-match-detail.json', detail);
+
   // match-goals.json — goalscorers keyed by match id
   const goalRows = db
     .prepare(
