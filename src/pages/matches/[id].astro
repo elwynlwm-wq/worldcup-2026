@@ -6,7 +6,6 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
 import { getRecentResults, getMatchDetail, getH2H } from '../../lib/warehouse';
-import { teamGrad } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
 
@@ -114,11 +113,11 @@ const jsonLd = {
     {statRows.length > 0 && (
       <div class="mx-auto mt-4 max-w-[600px] rounded-[14px] border px-[18px] pt-1.5 pb-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
         <div class="flex items-center justify-center gap-3 border-b py-3" style="border-color:var(--color-surface-3)">
-          <span class="h-[18px] w-[26px] rounded-[3px]" style={`background:${teamGrad(h.id)}`}></span>
+          <Flag team={h.id} w={26} />
           <b class="font-display text-[14px]">{h.shortCode}</b>
           <span class="font-display px-1 text-[16px] font-black">{m.homeScore}–{m.awayScore}</span>
           <b class="font-display text-[14px]">{a.shortCode}</b>
-          <span class="h-[18px] w-[26px] rounded-[3px]" style={`background:${teamGrad(a.id)}`}></span>
+          <Flag team={a.id} w={26} />
         </div>
         {statRows.map((s) => (
           <div class="border-b py-2" style="border-color:var(--color-surface-3)">

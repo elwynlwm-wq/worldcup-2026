@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
 import { getAfFixtures } from '../../lib/warehouse';
 import standingsData from '../../../data-pipeline/warehouse/export/standings.json';
-import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 
 const getTeam = (id: string) => provider.getTeam(id);
 const fixtures = getAfFixtures();
@@ -51,9 +51,9 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
                   <div class="kb-tie">
                     <a href={matchHref(m)} class="kb-card-hover block rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
                       <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-ink-4)">{dateLabel(m.date)}</div>
-                      <div class="flex items-center gap-2"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style={`background:${teamGrad(h.id)}`}></span><b class="flex-1 text-[13px]">{h.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.homeScore ?? ''}</span></div>
+                      <div class="flex items-center gap-2"><Flag team={h.id} w={22} /><b class="flex-1 text-[13px]">{h.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.homeScore ?? ''}</span></div>
                       <div class="my-1.5 h-px" style="background:var(--color-surface-3)"></div>
-                      <div class="flex items-center gap-2"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style={`background:${teamGrad(a.id)}`}></span><b class="flex-1 text-[13px]">{a.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.awayScore ?? ''}</span></div>
+                      <div class="flex items-center gap-2"><Flag team={a.id} w={22} /><b class="flex-1 text-[13px]">{a.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.awayScore ?? ''}</span></div>
                     </a>
                   </div>
                 );
@@ -74,7 +74,7 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
             return (
               <a href={t ? `/teams/${t.id}/` : '#'} class="flex items-center gap-2 border-b px-4 py-2 text-[13px]" style="border-color:var(--color-surface-3)">
                 <span class="w-4 text-center text-[11px] font-bold" style={`color:${i < 2 ? 'var(--color-pitch)' : 'var(--color-ink-4)'}`}>{row.rank}</span>
-                <span class="h-[14px] w-5 flex-none rounded-[3px]" style={`background:${teamGrad(row.teamId)}`}></span>
+                <Flag team={row.teamId} w={22} />
                 <b class="flex-1 truncate">{t?.name ?? row.teamId}</b>
                 <span style="color:var(--color-ink-3)">{row.played}</span>
                 <b class="w-6 text-right" style="color:var(--color-royal)">{row.points}</b>

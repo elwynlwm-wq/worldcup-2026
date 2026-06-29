@@ -6,7 +6,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { provider } from '../../lib/provider';
-import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 
 const all = (await getCollection('articles', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
@@ -72,9 +72,9 @@ const fMeta = featured ? meta(featured) : null;
               </div>
               {ta && tb && (
                 <div class="relative flex items-center justify-center gap-4 p-5">
-                  <span class="h-14 w-[78px] rounded-[7px]" style={`background:${teamGrad(ta.id)};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></span>
+                  <Flag team={ta.id} w={78} class="shadow-[0_8px_20px_-8px_rgba(0,0,0,.6)]" />
                   <span class="font-display text-[18px] font-black" style="opacity:.85">vs</span>
-                  <span class="h-14 w-[78px] rounded-[7px]" style={`background:${teamGrad(tb.id)};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></span>
+                  <Flag team={tb.id} w={78} class="shadow-[0_8px_20px_-8px_rgba(0,0,0,.6)]" />
                 </div>
               )}
             </a>
@@ -101,8 +101,8 @@ const fMeta = featured ? meta(featured) : null;
                   {ta && tb && (
                     <div class="mt-0.5 flex items-center gap-2 border-t pt-2.5" style="border-color:var(--color-surface-3)">
                       <span class="flex gap-[3px]">
-                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(ta.id)}`}></span>
-                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(tb.id)}`}></span>
+                        <Flag team={ta.id} w={22} />
+                        <Flag team={tb.id} w={22} />
                       </span>
                       <span class="text-[12px] font-bold tracking-[.3px]" style="color:var(--color-ink-2)">{ta.shortCode} v {tb.shortCode}</span>
                     </div>

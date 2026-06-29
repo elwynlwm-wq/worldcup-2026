@@ -7,7 +7,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
 import { getUpcomingFixtures, getSsPair } from '../lib/warehouse';
-import { teamGrad } from '../data/teamColors';
+import Flag from '../components/Flag.astro';
 import MatchupGraphic from '../components/MatchupGraphic.astro';
 import { getCollection } from 'astro:content';
 
@@ -98,10 +98,14 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
         })()}
         {featured && (
           <a href={`/articles/${featured.id}/`} class="kb-card-hover relative flex min-h-[230px] flex-col justify-end overflow-hidden rounded-[20px] p-6 text-white" style="background:var(--color-night)">
-            <div class="font-display inline-block self-start rounded border-[1.5px] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[1.2px]" style="border-color:rgba(255,255,255,.5)">Story</div>
-            <div class="font-display mt-2.5 text-[25px] font-black leading-tight tracking-tight text-balance">{featured.data.title}</div>
-            <div class="mt-2 text-[14.5px] leading-snug" style="font-family:var(--font-serif);opacity:.92">{featured.data.description}</div>
-            <div class="mt-3 text-xs font-bold" style="color:var(--color-gold)">READ THE STORY →</div>
+            <img src={`/banners/blog/${featured.id}.jpg`} alt="" aria-hidden="true" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()" />
+            <div class="absolute inset-0" style="background:linear-gradient(105deg,rgba(8,9,12,.92) 0%,rgba(8,9,12,.72) 38%,rgba(8,9,12,.18) 72%,rgba(8,9,12,0) 100%)"></div>
+            <div class="relative">
+              <div class="font-display inline-block self-start rounded border-[1.5px] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[1.2px]" style="border-color:rgba(255,255,255,.5)">Story</div>
+              <div class="font-display mt-2.5 text-[25px] font-black leading-tight tracking-tight text-balance">{featured.data.title}</div>
+              <div class="mt-2 text-[14.5px] leading-snug" style="font-family:var(--font-serif);opacity:.92">{featured.data.description}</div>
+              <div class="mt-3 text-xs font-bold" style="color:var(--color-gold)">READ THE STORY →</div>
+            </div>
           </a>
         )}
       </div>
@@ -116,9 +120,9 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
             <a href={`/h2h/${h.id}-vs-${a.id}`} class="kb-card-hover block rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
               <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:var(--color-ink-3)">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
               <div class="mt-2.5 flex items-center justify-between">
-                <div class="flex items-center gap-1.5"><span class="h-[19px] w-[26px] rounded" style={`background:${teamGrad(h.id)}`}></span><b>{h.shortCode}</b></div>
+                <div class="flex items-center gap-1.5"><Flag team={h.id} w={26} /><b>{h.shortCode}</b></div>
                 <span class="text-xs font-bold" style="color:var(--color-ink-4)">vs</span>
-                <div class="flex items-center gap-1.5"><b>{a.shortCode}</b><span class="h-[19px] w-[26px] rounded" style={`background:${teamGrad(a.id)}`}></span></div>
+                <div class="flex items-center gap-1.5"><b>{a.shortCode}</b><Flag team={a.id} w={26} /></div>
               </div>
               <div class="mt-2.5 flex h-[9px] overflow-hidden rounded-md">
                 <span style={`width:${p.win}%;background:var(--color-royal)`}></span><span style={`width:${p.draw}%;background:#d8cfbf`}></span><span style={`width:${p.lose}%;background:#2b2e36`}></span>
@@ -137,7 +141,7 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
         {powerTop.map((t, i) => (
           <a href={`/teams/${t.id}/`} class="flex items-center gap-3 border-b px-4 py-2.5" style="border-color:var(--color-surface-3)">
             <span class="font-display w-5 text-[15px] font-black" style="color:var(--color-ink-4)">{i + 1}</span>
-            <span class="h-5 w-7 rounded" style={`background:${teamGrad(t.id)}`}></span>
+            <Flag team={t.id} w={28} />
             <b class="flex-1 text-[14.5px]">{t.name}</b>
             <span class="font-display text-[16px] font-black" style="color:var(--color-royal)">{t.strength}</span>
           </a>
@@ -148,11 +152,15 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
     {/* ============ STORIES ============ */}
     <section data-panel="stories" style="display:none">
       {featured && (
-        <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mb-6 block min-h-[200px] overflow-hidden rounded-[20px] p-8 text-white" style="background:var(--color-night)">
-          <div class="font-display inline-block rounded border-[1.5px] px-2.5 py-1 text-[11.5px] font-extrabold uppercase tracking-[1.4px]" style="border-color:rgba(255,255,255,.5)">Featured</div>
-          <div class="font-display mt-4 max-w-[680px] text-[40px] font-black leading-[1.02] tracking-tight text-balance">{featured.data.title}</div>
-          <div class="mt-2.5 max-w-[600px] text-[18px] leading-relaxed" style="font-family:var(--font-serif);opacity:.93">{featured.data.description}</div>
-          <div class="mt-4 text-[13px] font-bold" style="color:var(--color-gold)">READ THE STORY →</div>
+        <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mb-6 flex min-h-[260px] flex-col justify-end overflow-hidden rounded-[20px] p-8 text-white" style="background:var(--color-night)">
+          <img src={`/banners/blog/${featured.id}.jpg`} alt="" aria-hidden="true" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()" />
+          <div class="absolute inset-0" style="background:linear-gradient(105deg,rgba(8,9,12,.92) 0%,rgba(8,9,12,.7) 42%,rgba(8,9,12,.12) 78%,rgba(8,9,12,0) 100%)"></div>
+          <div class="relative">
+            <div class="font-display inline-block rounded border-[1.5px] px-2.5 py-1 text-[11.5px] font-extrabold uppercase tracking-[1.4px]" style="border-color:rgba(255,255,255,.5)">Featured</div>
+            <div class="font-display mt-4 max-w-[680px] text-[40px] font-black leading-[1.02] tracking-tight text-balance">{featured.data.title}</div>
+            <div class="mt-2.5 max-w-[600px] text-[18px] leading-relaxed" style="font-family:var(--font-serif);opacity:.93">{featured.data.description}</div>
+            <div class="mt-4 text-[13px] font-bold" style="color:var(--color-gold)">READ THE STORY →</div>
+          </div>
         </a>
       )}
       <h2 class="font-display mb-3 text-[22px] font-extrabold">Latest stories</h2>

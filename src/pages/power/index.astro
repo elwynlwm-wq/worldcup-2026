@@ -2,7 +2,7 @@
 // Power ranking — all 48 teams by adjusted rating. Light Kickabout style.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
-import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 
 const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
 ---
@@ -24,7 +24,7 @@ const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRati
       {teams.map((t, i) => (
         <a href={`/teams/${t.id}/`} class="flex items-center gap-3 border-b px-4 py-3 transition hover:bg-[var(--color-surface-2)]" style="border-color:var(--color-surface-3)">
           <span class="font-display w-7 text-right text-[15px] font-black" style="color:var(--color-ink-4)">{i + 1}</span>
-          <span class="h-5 w-7 flex-none rounded" style={`background:${teamGrad(t.id)}`}></span>
+          <Flag team={t.id} w={28} />
           <b class="flex-1 text-[14.5px]">{t.name}</b>
           <span class="hidden text-[12px] sm:inline" style="color:var(--color-ink-3)">Elo {t.elo} · #{t.fifaRank} · Grp {t.groupLetter}</span>
           <span class="font-display ml-3 text-[18px] font-black" style="color:var(--color-royal)">{t.strength}</span>

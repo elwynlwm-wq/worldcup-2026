@@ -9,7 +9,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Avatar from '../../components/analysis/Avatar.astro';
 import { provider } from '../../lib/provider';
 import { getPlayerTiers, getAfFixtures } from '../../lib/warehouse';
-import { teamColors, teamGrad } from '../../data/teamColors';
+import { teamColors } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
 
 export function getStaticPaths() {
@@ -120,9 +120,9 @@ const jsonLd = {
             const center = m.status === 'FT' ? `${m.homeScore}–${m.awayScore}` : 'vs';
             return (
               <a href={matchHref(m)} class="kb-card-hover flex items-center justify-between rounded-[13px] border px-4 py-3" style="background:var(--color-surface);border-color:var(--color-line-2)">
-                <div class="flex flex-1 items-center gap-2.5"><span class="h-5 w-7 rounded" style={`background:${teamGrad(hh.id)}`}></span><b class="text-[14px]">{hh.name}</b></div>
+                <div class="flex flex-1 items-center gap-2.5"><Flag team={hh.id} w={28} /><b class="text-[14px]">{hh.name}</b></div>
                 <div class="font-display flex-none px-3 text-[15px] font-black" style={m.status === 'FT' ? '' : 'color:var(--color-ink-3)'}>{center}</div>
-                <div class="flex flex-1 items-center justify-end gap-2.5"><b class="text-[14px]">{aa.name}</b><span class="h-5 w-7 rounded" style={`background:${teamGrad(aa.id)}`}></span></div>
+                <div class="flex flex-1 items-center justify-end gap-2.5"><b class="text-[14px]">{aa.name}</b><Flag team={aa.id} w={28} /></div>
               </a>
             );
           })}
