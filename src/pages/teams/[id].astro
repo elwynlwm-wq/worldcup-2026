@@ -11,6 +11,8 @@ import { provider } from '../../lib/provider';
 import { getPlayerTiers, getAfFixtures } from '../../lib/warehouse';
 import { teamColors } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
+import { getCollection } from 'astro:content';
+import { storyMeta, KIND_META } from '../../lib/stories';
 
 export function getStaticPaths() {
   return provider.getTeams().map((t) => ({ params: { id: t.id }, props: { teamId: t.id } }));
@@ -50,6 +52,15 @@ const nextMatch = matches.find((m) => m.status !== 'FT') ?? matches[0] ?? null;
 const POS: [string, string][] = [['GK', 'Goalkeepers'], ['DF', 'Defenders'], ['MF', 'Midfielders'], ['FW', 'Forwards']];
 const posName: Record<string, string> = { GK: 'Goalkeeper', DF: 'Defender', MF: 'Midfielder', FW: 'Forward' };
 const byPos = (pos: string) => squad.filter((p) => p.pos === pos);
+
+// Stories that feature this team (preview/recap/feature), newest first, top 4.
+const allArticles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+);
+const teamStories = allArticles
+  .map((entry) => ({ entry, meta: storyMeta(entry) }))
+  .filter(({ meta }) => meta.teams.includes(teamId))
+  .slice(0, 4);
 
 const jsonLd = {
   '@context': 'https://schema.org', '@type': 'SportsTeam', name: t.name, sport: 'Football',
@@ -114,6 +125,36 @@ const jsonLd = {
                 <div class="flex flex-1 items-center gap-2.5"><Flag team={hh.id} w={28} /><b class="text-[14px]">{hh.name}</b></div>
                 <div class="font-display flex-none px-3 text-[15px] font-black" style={m.status === 'FT' ? '' : 'color:var(--color-ink-3)'}>{center}</div>
                 <div class="flex flex-1 items-center justify-end gap-2.5"><b class="text-[14px]">{aa.name}</b><Flag team={aa.id} w={28} /></div>
+              </a>
+            );
+          })}
+        </div>
+      </>
+    )}
+
+    {/* Stories — articles featuring this team */}
+    {teamStories.length > 0 && (
+      <>
+        <div class="mb-3 mt-7 flex items-baseline justify-between">
+          <h2 class="font-display text-[20px] font-extrabold">Stories</h2>
+          <a href="/articles" class="text-[13.5px] font-bold" style="color:var(--color-royal)">All {t.name} stories →</a>
+        </div>
+        <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+          {teamStories.map(({ entry, meta }) => {
+            const km = KIND_META[meta.kind];
+            const oa = meta.a ? provider.getTeam(meta.a) : null;
+            const ob = meta.b ? provider.getTeam(meta.b) : null;
+            return (
+              <a href={`/articles/${entry.id}/`} class="kb-card-hover flex flex-col rounded-[14px] border p-[15px]" style="background:#fff;border-color:#e9e1d2">
+                <span class="font-display inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[.8px]" style={`color:${km.accent}`}><span class="h-[9px] w-[9px] rounded-[2px]" style={`background:${km.accent}`}></span>{km.label}</span>
+                <div class="font-display my-[6px] mt-2 text-[17px] font-extrabold leading-[1.15] text-balance">{entry.data.title}</div>
+                <div class="flex-1 text-[13.5px] leading-[1.4]" style="color:#6f6655">{entry.data.description}</div>
+                {oa && ob && (
+                  <div class="mt-[11px] flex items-center gap-[7px] border-t pt-[11px]" style="border-color:#f1ebdf">
+                    <span class="flex gap-[3px]"><Flag team={oa.id} w={22} /><Flag team={ob.id} w={22} /></span>
+                    <span class="text-[12px] font-bold" style="color:#8a7f6a">{oa.shortCode} vs {ob.shortCode}</span>
+                  </div>
+                )}
               </a>
             );
           })}
