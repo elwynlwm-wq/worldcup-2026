@@ -184,23 +184,23 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
     </div>
 
     {/* scoreline / matchup header */}
-    <div class="mt-2 flex items-center gap-4 rounded-[16px] border p-5" style="background:var(--color-surface);border-color:var(--color-line-2)">
-      <a href={`/teams/${h.id}/`} class="group flex min-w-0 flex-1 items-center gap-3">
-        <Flag team={h.id} w={42} />
-        <b class="font-display text-[18px] tracking-tight group-hover:underline">{h.name}</b>
+    <div class="mt-2 flex items-center gap-4 rounded-[14px] border px-5 py-3" style="background:var(--color-surface);border-color:var(--color-line-2)">
+      <a href={`/teams/${h.id}/`} class="group flex min-w-0 flex-1 items-center gap-2.5">
+        <Flag team={h.id} w={34} />
+        <b class="font-display text-[17px] tracking-tight group-hover:underline">{h.name}</b>
       </a>
       <div class="flex-none px-2 text-center">
         {ended || live ? (
-          <div class="font-display text-[28px] font-black leading-none">{m.homeScore ?? 0}–{m.awayScore ?? 0}</div>
+          <div class="font-display text-[24px] font-black leading-none">{m.homeScore ?? 0}–{m.awayScore ?? 0}</div>
         ) : (
-          <div class="font-display text-[20px] font-black" style="color:var(--color-ink-3)">vs</div>
+          <div class="font-display text-[18px] font-black" style="color:var(--color-ink-3)">vs</div>
         )}
-        {live && <div class="font-display mt-1 text-[10.5px] font-extrabold uppercase tracking-wide" style="color:var(--color-clay)">● Live{m.elapsed ? ` · ${m.elapsed}'` : ''}</div>}
-        {ended && <div class="font-display mt-1 text-[10.5px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-4)">Full time</div>}
+        {live && <div class="font-display mt-0.5 text-[10px] font-extrabold uppercase tracking-wide" style="color:var(--color-clay)">● Live{m.elapsed ? ` · ${m.elapsed}'` : ''}</div>}
+        {ended && <div class="font-display mt-0.5 text-[10px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-4)">Full time</div>}
       </div>
-      <a href={`/teams/${a.id}/`} class="group flex min-w-0 flex-1 items-center justify-end gap-3">
-        <b class="font-display text-right text-[18px] tracking-tight group-hover:underline">{a.name}</b>
-        <Flag team={a.id} w={42} />
+      <a href={`/teams/${a.id}/`} class="group flex min-w-0 flex-1 items-center justify-end gap-2.5">
+        <b class="font-display text-right text-[17px] tracking-tight group-hover:underline">{a.name}</b>
+        <Flag team={a.id} w={34} />
       </a>
     </div>
 
