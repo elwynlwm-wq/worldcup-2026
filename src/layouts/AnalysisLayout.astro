@@ -23,7 +23,8 @@ const NAV: [string, string][] = [
   ['teams', 'Teams'],
   ['bracket', 'Bracket'],
 ];
-const href = (key: string) => (key ? `/analysis/${key}/` : '/analysis/');
+// Overview ('') is the site home; the rest live under /analysis/.
+const href = (key: string) => (key ? `/analysis/${key}/` : '/');
 ---
 
 <!doctype html>

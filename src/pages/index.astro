@@ -1,11 +1,14 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+// Home = the analysis overview (the site's primary content). Blog lives at /articles.
+import AnalysisLayout from '../layouts/AnalysisLayout.astro';
+import ForecastBlock from '../components/analysis/ForecastBlock.astro';
+import RecentResults from '../components/analysis/RecentResults.astro';
+import { provider } from '../lib/provider';
 
-// Latest published articles for the home feed.
-const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
-);
+const fixtures = provider.getFixtures();
+const upcoming = fixtures.filter((m) => m.stage === 'r32');
+const top = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating).slice(0, 6);
+const getTeam = (id: string) => provider.getTeam(id)!;
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -13,46 +16,70 @@ const jsonLd = {
   name: 'World Cup 2026',
   url: Astro.site?.href,
 };
-
-const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
 ---
 
-<BaseLayout
-  title="World Cup 2026 — Predictions, Analysis & Blog"
-  description="Predictions, analysis, match previews and reviews for the 2026 World Cup. The free, entertaining read for every fan — from curious newcomers to seasonal watchers."
+<AnalysisLayout
+  title="World Cup 2026 — Forecasts, Power Ranking & Bracket"
+  description="Data-driven 2026 World Cup analysis: match forecasts from a transparent Elo model, a power ranking of all 48 teams, all-time head-to-heads, and the knockout bracket."
+  active=""
+  canonical="/"
   jsonLd={jsonLd}
 >
-  <section class="mx-auto max-w-5xl px-4 py-12">
-    <h1 class="text-5xl font-extrabold tracking-tight text-balance">
-      Your guide to the 2026 World Cup
-    </h1>
-    <p class="mt-4 max-w-2xl text-lg text-gray-600">
-      Predictions, analysis and stories — written to be useful whether you watch every
-      match or just want to know who'll win.
-    </p>
-  </section>
+  <div
+    class="my-4 rounded-xl border border-[var(--line)] bg-gradient-to-r from-[#16314a] to-[#15233a] px-4 py-2.5 text-[13px] text-[var(--muted)]"
+  >
+    <b class="text-[var(--accent2)]">Round of 32 · from 28 June.</b> Forecasts use real Elo ratings,
+    tournament form and squad strength. Final 19 July, MetLife Stadium.
+  </div>
 
-  <section class="mx-auto max-w-5xl px-4 pb-12">
-    <h2 class="mb-6 text-2xl font-bold tracking-tight">Latest</h2>
-    {articles.length === 0 ? (
-      <p class="text-gray-500">No articles yet — the first ones are on the way.</p>
-    ) : (
-      <ul class="grid gap-6 sm:grid-cols-2">
-        {articles.map((a) => (
-          <li class="rounded-xl border border-gray-200 p-5 transition hover:border-gray-400">
-            <a href={`/articles/${a.id}/`} class="block">
-              <h3 class="text-xl font-bold tracking-tight">{a.data.title}</h3>
-              <p class="mt-2 text-gray-600">{a.data.description}</p>
-              <time
-                datetime={a.data.publishDate.toISOString()}
-                class="mt-3 block text-sm text-gray-400"
-              >
-                {dateFmt.format(a.data.publishDate)}
-              </time>
-            </a>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
-</BaseLayout>
+  <h1 class="mb-1 text-2xl font-bold">World Cup 2026</h1>
+  <p class="text-[13.5px] text-[var(--muted)]">What's coming up, and who the model favours.</p>
+
+  <h2 class="mt-6 mb-2 text-lg font-bold">Upcoming ties</h2>
+  <div class="grid gap-3 sm:grid-cols-2">
+    {upcoming.map((m) => {
+      const h = getTeam(m.homeTeamId);
+      const a = getTeam(m.awayTeamId);
+      return (
+        <a
+          href={`/analysis/predict/?a=${h.id}&b=${a.id}`}
+          class="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5 transition hover:-translate-y-0.5 hover:border-[var(--accent)]"
+        >
+          <div class="flex items-center justify-between font-semibold">
+            <span>{h.name}</span>
+            <span class="text-[var(--muted)]">vs</span>
+            <span>{a.name}</span>
+          </div>
+          <div class="mt-1 text-[11px] text-[var(--muted)]">
+            {m.city} · {m.venue}
+          </div>
+        </a>
+      );
+    })}
+  </div>
+
+  <h2 class="mt-8 mb-2 text-lg font-bold">Title contenders</h2>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    {top.map((t) => (
+      <a
+        href={`/analysis/teams/${t.id}/`}
+        class="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5 transition hover:-translate-y-0.5 hover:border-[var(--accent)]"
+      >
+        <div class="flex items-center justify-between">
+          <b>{t.name}</b>
+          <span class="text-[var(--accent)]">{t.strength}</span>
+        </div>
+        <div class="mt-1 text-[11px] text-[var(--muted)]">
+          Elo {t.elo} · FIFA #{t.fifaRank} · Group {t.groupLetter}
+        </div>
+      </a>
+    ))}
+  </div>
+
+  <RecentResults />
+
+  <h2 class="mt-8 mb-2 text-lg font-bold">Featured forecast</h2>
+  {upcoming[0] && (
+    <ForecastBlock home={getTeam(upcoming[0].homeTeamId)} away={getTeam(upcoming[0].awayTeamId)} />
+  )}
+</AnalysisLayout>
