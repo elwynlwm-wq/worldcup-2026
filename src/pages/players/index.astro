@@ -1,0 +1,71 @@
+---
+// Players index — built from claude-design Kickabout.dc.html (players section).
+// Every squad's players, biggest names by international goals. Position filter +
+// sort, client-side. Real photos via Avatar; 2-tone team swatch per row.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { provider } from '../../lib/provider';
+import { getPlayerTiers } from '../../lib/warehouse';
+import { teamGrad } from '../../data/teamColors';
+import Avatar from '../../components/analysis/Avatar.astro';
+
+const teams = provider.getTeams();
+const teamById = new Map(teams.map((t) => [t.id, t]));
+const all = provider.getAllPlayers()
+  .map((p) => ({ ...p, photo: getPlayerTiers(p.id)?.photo ?? null }))
+  .sort((a, b) => b.goals - a.goals);
+// Cap the listing for weight; the full set is reachable via team pages.
+const players = all.slice(0, 120);
+
+const posName: Record<string, string> = { GK: 'Goalkeeper', DF: 'Defender', MF: 'Midfielder', FW: 'Forward' };
+const posColor: Record<string, string> = { GK: '#e0a200', DF: '#1f3fbf', MF: '#138a5e', FW: '#b23b2e' };
+---
+
+<BaseLayout
+  title="Players — World Cup 2026 | Kickabout"
+  description="The biggest names at the 2026 World Cup, across every squad — ranked by international goals. Filter by position."
+  active="teams"
+  canonical="/players/"
+>
+  <div class="kb-route">
+    <h1 class="font-display text-[34px] font-black tracking-[-1px]">Players</h1>
+    <p class="mt-0.5 mb-4 text-[15px]" style="color:#6f6655">The biggest names across every squad, by international goals.</p>
+
+    <div id="pos-filter" class="mb-[18px] flex flex-wrap gap-2">
+      {[['all', 'All'], ['GK', 'Goalkeepers'], ['DF', 'Defenders'], ['MF', 'Midfielders'], ['FW', 'Forwards']].map(([k, label], i) => (
+        <button data-pos={k} class="kb-pos cursor-pointer rounded-full border px-[15px] py-[7px] text-[13.5px] font-bold"
+          style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:#fff;border-color:var(--color-line)'}>{label}</button>
+      ))}
+    </div>
+
+    <div class="grid gap-2.5" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+      {players.map((p) => {
+        const t = teamById.get(p.teamId);
+        return (
+          <a href={`/teams/${p.teamId}/`} data-pos={p.pos} class="kb-prow kb-card-hover flex items-center gap-3 rounded-[13px] border px-[14px] py-[11px]" style="background:#fff;border-color:#e9e1d2">
+            <Avatar name={p.name} position={p.pos} photo={p.photo} size={40} />
+            <span class="h-[18px] w-[26px] flex-none rounded-[3px]" style={`background:${teamGrad(p.teamId)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+            <div class="min-w-0 flex-1"><b class="block truncate text-[14.5px]">{p.name}</b><div class="text-[12px]" style="color:#a59a85">{posName[p.pos] ?? p.pos} · {t?.shortCode ?? ''} · {p.club}</div></div>
+            <div class="flex-none text-right"><div class="font-display text-[15px] font-black" style="color:var(--color-royal)">{p.goals}</div><div class="text-[10.5px]" style="color:#a59a85">goals</div></div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+
+  <script is:inline>
+    (() => {
+      const pills = document.querySelectorAll('#pos-filter .kb-pos');
+      const rows = document.querySelectorAll('.kb-prow');
+      pills.forEach((p) => p.addEventListener('click', () => {
+        const k = p.getAttribute('data-pos');
+        rows.forEach((r) => { r.style.display = k === 'all' || r.getAttribute('data-pos') === k ? '' : 'none'; });
+        pills.forEach((x) => {
+          const on = x === p;
+          x.style.color = on ? '#fff' : 'var(--color-ink-2)';
+          x.style.background = on ? 'var(--color-night)' : '#fff';
+          x.style.borderColor = on ? 'var(--color-night)' : 'var(--color-line)';
+        });
+      }));
+    })();
+  </script>
+</BaseLayout>

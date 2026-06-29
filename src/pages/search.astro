@@ -1,0 +1,72 @@
+---
+// Search — built from claude-design Kickabout.dc.html (search section). Static
+// page with an embedded index (teams + players); filters client-side on ?q=.
+// Results render as Teams + Players cards with 2-tone swatches.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { provider } from '../lib/provider';
+import { teamGrad } from '../data/teamColors';
+
+const teams = provider.getTeams();
+// Compact index shipped to the client. Players capped to keep it light.
+const teamIndex = teams.map((t) => ({ n: t.name, c: t.shortCode, g: teamGrad(t.id), h: `/teams/${t.id}/` }));
+const playerIndex = provider.getAllPlayers()
+  .slice()
+  .sort((a, b) => b.goals - a.goals)
+  .slice(0, 400)
+  .map((p) => {
+    const t = provider.getTeam(p.teamId)!;
+    return { n: p.name, m: `${p.pos} · ${t.shortCode} · ${p.club}`, g: teamGrad(p.teamId), h: `/teams/${p.teamId}/` };
+  });
+---
+
+<BaseLayout
+  title="Search — World Cup 2026 | Kickabout"
+  description="Search teams and players across the 2026 World Cup."
+  active=""
+  canonical="/search/"
+>
+  <div class="kb-route">
+    <h1 id="search-heading" class="font-display mb-4 text-[30px] font-black tracking-[-.8px]">Search</h1>
+
+    <div id="teams-block" style="display:none">
+      <h2 class="font-display mb-[11px] text-[18px] font-extrabold">Teams</h2>
+      <div id="teams-results" class="mb-[22px] grid gap-[11px]" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))"></div>
+    </div>
+
+    <div id="players-block" style="display:none">
+      <h2 class="font-display mb-[11px] text-[18px] font-extrabold">Players</h2>
+      <div id="players-results" class="grid gap-2.5" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))"></div>
+    </div>
+
+    <p id="empty-msg" class="text-[15px]" style="color:#6f6655;display:none">No teams or players match that search.</p>
+    <p id="prompt-msg" class="text-[15px]" style="color:#6f6655">Type in the search box above to find teams and players.</p>
+  </div>
+
+  <script is:inline define:vars={{ teamIndex, playerIndex }}>
+    (() => {
+      const q = (new URLSearchParams(location.search).get('q') || '').trim().toLowerCase();
+      const heading = document.getElementById('search-heading');
+      const prompt = document.getElementById('prompt-msg');
+      const empty = document.getElementById('empty-msg');
+      if (!q) return;
+      prompt.style.display = 'none';
+      heading.textContent = `Results for “${q}”`;
+
+      const teams = teamIndex.filter((t) => t.n.toLowerCase().includes(q) || t.c.toLowerCase().includes(q)).slice(0, 12);
+      const players = playerIndex.filter((p) => p.n.toLowerCase().includes(q)).slice(0, 24);
+
+      const sw = (g) => `<span style="width:30px;height:21px;border-radius:4px;background:${g};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);flex:none"></span>`;
+      if (teams.length) {
+        document.getElementById('teams-block').style.display = '';
+        document.getElementById('teams-results').innerHTML = teams.map((t) =>
+          `<a href="${t.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:12px 14px">${sw(t.g)}<b>${t.n}</b></a>`).join('');
+      }
+      if (players.length) {
+        document.getElementById('players-block').style.display = '';
+        document.getElementById('players-results').innerHTML = players.map((p) =>
+          `<a href="${p.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px"><span style="width:26px;height:18px;border-radius:3px;background:${p.g};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);flex:none"></span><span style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</b><span style="color:#a59a85;font-size:12px">${p.m}</span></span></a>`).join('');
+      }
+      if (!teams.length && !players.length) empty.style.display = '';
+    })();
+  </script>
+</BaseLayout>

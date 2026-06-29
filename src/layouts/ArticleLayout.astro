@@ -3,6 +3,8 @@
 // Builds BlogPosting JSON-LD from the article's frontmatter. See docs/seo.md.
 import BaseLayout from './BaseLayout.astro';
 import type { CollectionEntry } from 'astro:content';
+import { provider } from '../lib/provider';
+import { teamGrad } from '../data/teamColors';
 
 interface Props {
   entry: CollectionEntry<'articles'>;
@@ -12,6 +14,22 @@ const { entry } = Astro.props;
 const { title, description, publishDate, updatedDate, author } = entry.data;
 
 const canonical = `/articles/${entry.id}/`;
+
+// Derive kind + the two teams from tags (matches the stories hub vocabulary).
+const tags = (entry.data.tags || []).map((t) => t.toLowerCase());
+const KIND = {
+  preview: { label: 'Preview', accent: '#1f3fbf' },
+  recap: { label: 'Recap', accent: '#138a5e' },
+  feature: { label: 'Feature', accent: '#b23b2e' },
+} as const;
+const kindKey = (['preview', 'recap', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
+const kind = KIND[kindKey];
+const teamIds = new Set(provider.getTeams().map((t) => t.id));
+const matchTeams = tags.filter((t) => teamIds.has(t)).slice(0, 2).map((id) => provider.getTeam(id)!);
+const [ta, tb] = matchTeams;
+const heroColor = ta ? teamGrad(ta.id) : 'var(--color-night)';
+const readMins = Math.max(1, Math.round((entry.body?.split(/\s+/).length ?? 200) / 200));
+const dateMed = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -37,25 +55,31 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
   author={author}
   jsonLd={jsonLd}
 >
-  <article class="kb-article mx-auto max-w-3xl py-10">
-    <header class="mb-8">
-      <h1 class="font-display text-[44px] font-black leading-[1.04] tracking-tight text-balance">{title}</h1>
-      <p class="mt-4 text-[20px] leading-relaxed" style="font-family:var(--font-serif);color:var(--color-ink-2)">{description}</p>
-      <div class="mt-4 flex items-center gap-2 text-sm" style="color:var(--color-ink-3)">
-        <span class="font-semibold">{author}</span>
-        <span aria-hidden="true">·</span>
-        <time datetime={publishDate.toISOString()}>{dateFmt.format(publishDate)}</time>
-        {updatedDate && (
-          <>
-            <span aria-hidden="true">·</span>
-            <span>Updated {dateFmt.format(updatedDate)}</span>
-          </>
-        )}
-      </div>
-    </header>
+  <article class="kb-article mx-auto max-w-[680px] py-8">
+    <a href="/articles" class="text-[13.5px] font-bold" style="color:#a59a85">← All stories</a>
+    <div class="mt-[18px] flex items-center gap-2">
+      <span class="font-display text-[11px] font-extrabold uppercase tracking-[1px]" style={`color:${kind.accent}`}>{kind.label}</span>
+      <span class="text-[13px]" style="color:#b3a890">· {dateMed.format(publishDate)} · {readMins} min read</span>
+    </div>
+    <h1 class="font-display mt-3 mb-3 text-[38px] font-black leading-[1.03] tracking-[-1px] text-balance">{title}</h1>
+    <p class="mb-[22px] text-[20px] font-medium leading-[1.45]" style="font-family:var(--font-serif);color:#3f3a30">{description}</p>
 
-    <div class="prose prose-lg max-w-none prose-headings:font-display prose-headings:tracking-tight">
+    {ta && tb && (
+      <div class="relative mb-2 flex min-h-[150px] items-center justify-center gap-[22px] overflow-hidden rounded-[16px] px-[22px] py-[26px] text-white" style={`background:${heroColor}`}>
+        <div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(0,0,0,.4))"></div>
+        <div class="absolute inset-0 opacity-40" style="background:url('/assets/pitch.svg') no-repeat center/cover"></div>
+        <div class="relative text-center"><div class="mx-auto mb-[9px] h-[52px] w-[74px] rounded-[8px]" style={`background:${teamGrad(ta.id)};box-shadow:0 6px 16px -6px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></div><b class="font-display text-[15px]">{ta.name}</b></div>
+        <div class="relative text-center"><div class="font-display text-[24px] font-black tracking-[.5px]" style="color:var(--color-gold)">VS</div></div>
+        <div class="relative text-center"><div class="mx-auto mb-[9px] h-[52px] w-[74px] rounded-[8px]" style={`background:${teamGrad(tb.id)};box-shadow:0 6px 16px -6px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></div><b class="font-display text-[15px]">{tb.name}</b></div>
+      </div>
+    )}
+
+    <div class="prose prose-lg mt-3.5 max-w-none prose-headings:font-display prose-headings:tracking-tight">
       <slot />
+    </div>
+
+    <div class="mt-3.5 border-t pt-4 text-[13px]" style="border-color:#e4dccd;color:#a59a85">
+      {author}. Built on real squads, standings and our prediction model — not betting advice.
     </div>
   </article>
 

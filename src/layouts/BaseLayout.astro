@@ -72,10 +72,11 @@ const href = (key: string) =>
             </a>
           ))}
         </nav>
-        <form class="flex items-center gap-2 rounded-[11px] border px-3 py-2"
+        <form action="/search" method="get" class="flex items-center gap-2 rounded-[11px] border px-3 py-2"
           style="background:#fff;border-color:var(--color-line)">
           <span style="color:var(--color-ink-3)">⌕</span>
           <input
+            name="q"
             placeholder="Search teams, players…"
             class="w-[150px] border-none bg-transparent text-sm outline-none"
             style="font-family:inherit;color:var(--color-ink)"

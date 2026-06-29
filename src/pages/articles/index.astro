@@ -6,7 +6,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { provider } from '../../lib/provider';
-import Flag from '../../components/Flag.astro';
+import { teamGrad } from '../../data/teamColors';
 
 const all = (await getCollection('articles', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
@@ -17,17 +17,17 @@ const readMins = (body: string) => Math.max(1, Math.round((body?.split(/\s+/).le
 
 // derive kind + matchup teams from tags
 const KIND = {
-  'pre-match': { label: 'Preview', accent: 'var(--color-pitch)' },
-  'post-match': { label: 'Recap', accent: 'var(--color-clay)' },
-  feature: { label: 'Feature', accent: 'var(--color-royal)' },
+  preview: { label: 'Preview', accent: '#1f3fbf' },
+  recap: { label: 'Recap', accent: '#138a5e' },
+  feature: { label: 'Feature', accent: '#b23b2e' },
 } as const;
 const teamIds = new Set(provider.getTeams().map((t) => t.id));
 
 function meta(art: (typeof all)[number]) {
   const tags = (art.data.tags || []).map((t) => t.toLowerCase());
-  const kindKey = (['pre-match', 'post-match', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
+  const kindKey = (['preview', 'recap', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
   const matchTeams = tags.filter((t) => teamIds.has(t)).slice(0, 2);
-  return { kind: KIND[kindKey], teams: matchTeams };
+  return { kind: KIND[kindKey], teams: matchTeams, kindKey };
 }
 
 const featured = all[0] ?? null;
@@ -49,7 +49,7 @@ const fMeta = featured ? meta(featured) : null;
 
     {/* filter pills (client-side) */}
     <div id="story-filters" class="mb-5 flex flex-wrap gap-2">
-      {[['all', 'All'], ['pre-match', 'Previews'], ['post-match', 'Recaps'], ['feature', 'Features']].map(([k, label], i) => (
+      {[['all', 'All'], ['preview', 'Previews'], ['recap', 'Recaps'], ['feature', 'Features']].map(([k, label], i) => (
         <button data-sfilter={k} class="kb-sfilter cursor-pointer rounded-full border px-[15px] py-[7px] text-[13.5px] font-bold"
           style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:#fff;border-color:var(--color-line)'}>{label}</button>
       ))}
@@ -62,8 +62,10 @@ const fMeta = featured ? meta(featured) : null;
         {/* featured */}
         {featured && fMeta && (() => {
           const [ta, tb] = fMeta.teams.map((id) => provider.getTeam(id));
+          const heroColor = ta ? teamGrad(ta.id) : 'var(--color-night)';
           return (
-            <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mb-[22px] grid min-h-[230px] overflow-hidden rounded-[20px] text-white md:grid-cols-[1.2fr_1fr]" style="background:var(--color-night)">
+            <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mb-[22px] grid min-h-[230px] overflow-hidden rounded-[20px] text-white md:grid-cols-[1.2fr_1fr]" style={`background:${heroColor}`}>
+              <div class="absolute inset-0" style="background:linear-gradient(90deg,rgba(16,18,24,.82) 0%,rgba(16,18,24,.5) 60%,rgba(16,18,24,.25) 100%)"></div>
               <div class="relative z-[2] flex flex-col justify-center p-[30px]">
                 <div class="font-display inline-flex self-start rounded border-[1.5px] px-2.5 py-[5px] text-[11px] font-extrabold uppercase tracking-[1.2px]" style="border-color:rgba(255,255,255,.5)">{fMeta.kind.label}</div>
                 <div class="font-display mt-3.5 mb-2 text-[32px] font-black leading-[1.04] tracking-tight text-balance">{featured.data.title}</div>
@@ -71,10 +73,11 @@ const fMeta = featured ? meta(featured) : null;
                 <div class="mt-3.5 text-[12px] font-bold tracking-[.3px]" style="color:var(--color-gold)">{featured.data.author} · {readMins((featured.body as string) || '')} MIN READ</div>
               </div>
               {ta && tb && (
-                <div class="relative flex items-center justify-center gap-4 p-5">
-                  <Flag team={ta.id} w={78} class="shadow-[0_8px_20px_-8px_rgba(0,0,0,.6)]" />
-                  <span class="font-display text-[18px] font-black" style="opacity:.85">vs</span>
-                  <Flag team={tb.id} w={78} class="shadow-[0_8px_20px_-8px_rgba(0,0,0,.6)]" />
+                <div class="relative z-[2] flex items-center justify-center gap-4 p-5">
+                  <div class="absolute inset-0 opacity-50" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
+                  <span class="relative h-[56px] w-[78px] rounded-[7px]" style={`background:${teamGrad(ta.id)};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></span>
+                  <span class="relative font-display text-[18px] font-black" style="opacity:.85">vs</span>
+                  <span class="relative h-[56px] w-[78px] rounded-[7px]" style={`background:${teamGrad(tb.id)};box-shadow:0 8px 20px -8px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.25)`}></span>
                 </div>
               )}
             </a>
@@ -99,12 +102,12 @@ const fMeta = featured ? meta(featured) : null;
                   <div class="font-display text-[18.5px] font-extrabold leading-tight tracking-tight text-balance">{s.data.title}</div>
                   <div class="flex-1 text-[14px] leading-snug" style="color:var(--color-ink-2)">{s.data.description}</div>
                   {ta && tb && (
-                    <div class="mt-0.5 flex items-center gap-2 border-t pt-2.5" style="border-color:var(--color-surface-3)">
+                    <div class="mt-0.5 flex items-center gap-[7px] border-t pt-[11px]" style="border-color:#f1ebdf">
                       <span class="flex gap-[3px]">
-                        <Flag team={ta.id} w={22} />
-                        <Flag team={tb.id} w={22} />
+                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(ta.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+                        <span class="h-[15px] w-[22px] rounded-[3px]" style={`background:${teamGrad(tb.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
                       </span>
-                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:var(--color-ink-2)">{ta.shortCode} v {tb.shortCode}</span>
+                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:#8a7f6a">{ta.shortCode} vs {tb.shortCode}</span>
                     </div>
                   )}
                 </div>
