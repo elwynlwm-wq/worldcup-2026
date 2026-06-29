@@ -7,6 +7,12 @@
 
 import { fetchCached } from '../lib/util';
 
+export interface OfGoal {
+  name: string;
+  minute: string;
+  penalty: boolean;
+}
+
 export interface OfMatch {
   round: string;
   date: string;
@@ -17,6 +23,8 @@ export interface OfMatch {
   ftAway: number | null;
   group: string | null;
   ground: string | null;
+  goals1: OfGoal[];
+  goals2: OfGoal[];
 }
 
 const URL =
@@ -24,6 +32,7 @@ const URL =
 
 export async function fetchOpenfootball(): Promise<OfMatch[]> {
   const text = await fetchCached(URL, 'openfootball-2026.json');
+  type RawGoal = { name?: string; minute?: string | number; penalty?: boolean };
   const data = JSON.parse(text) as {
     matches: Array<{
       round?: string;
@@ -34,8 +43,16 @@ export async function fetchOpenfootball(): Promise<OfMatch[]> {
       score?: { ft?: [number, number] };
       group?: string;
       ground?: string;
+      goals1?: RawGoal[];
+      goals2?: RawGoal[];
     }>;
   };
+  const mapGoals = (g?: RawGoal[]): OfGoal[] =>
+    (g || []).map((x) => ({
+      name: (x.name || '').trim(),
+      minute: String(x.minute ?? ''),
+      penalty: !!x.penalty,
+    }));
   return (data.matches || []).map((m) => ({
     round: m.round || '',
     date: m.date || '',
@@ -46,5 +63,7 @@ export async function fetchOpenfootball(): Promise<OfMatch[]> {
     ftAway: m.score?.ft ? m.score.ft[1] : null,
     group: m.group || null,
     ground: m.ground || null,
+    goals1: mapGoals(m.goals1),
+    goals2: mapGoals(m.goals2),
   }));
 }

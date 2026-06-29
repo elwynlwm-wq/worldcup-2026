@@ -1,0 +1,47 @@
+---
+// Recent finished WC matches with score, venue and goalscorers — all from the
+// enriched warehouse (openfootball). Build-time; static HTML.
+import { provider } from '../../lib/provider';
+import { getRecentResults, getMatchGoals } from '../../lib/warehouse';
+
+const results = getRecentResults(6);
+const teamName = (id: string | null) => (id ? provider.getTeam(id)?.name ?? id : 'TBD');
+const teamCode = (id: string | null) => (id ? provider.getTeam(id)?.shortCode ?? '' : '');
+---
+
+{results.length > 0 && (
+  <section>
+    <h2 class="mt-8 mb-2 text-lg font-bold">Recent results</h2>
+    <div class="grid gap-3 sm:grid-cols-2">
+      {results.map((m) => {
+        const goals = getMatchGoals(m.id);
+        return (
+          <div class="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-3.5">
+            <div class="flex items-center justify-between font-semibold">
+              <span>{teamName(m.homeTeamId)}</span>
+              <span class="tabular-nums text-[var(--accent)]">
+                {m.homeScore} – {m.awayScore}
+              </span>
+              <span class="text-right">{teamName(m.awayTeamId)}</span>
+            </div>
+            {m.venue && (
+              <div class="mt-1 text-[11px] text-[var(--muted)]">
+                {m.groupLetter ? `Group ${m.groupLetter} · ` : ''}{m.venue}
+              </div>
+            )}
+            {goals.length > 0 && (
+              <ul class="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-[var(--muted)]">
+                {goals.map((g) => (
+                  <li>
+                    <span class="text-[var(--text)]">{teamCode(g.teamId)}</span> {g.scorer}{' '}
+                    {g.minute}&prime;{g.penalty ? ' (pen)' : ''}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </section>
+)}

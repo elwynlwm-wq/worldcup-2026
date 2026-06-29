@@ -1,6 +1,7 @@
 ---
 import AnalysisLayout from '../../layouts/AnalysisLayout.astro';
 import ForecastBlock from '../../components/analysis/ForecastBlock.astro';
+import RecentResults from '../../components/analysis/RecentResults.astro';
 import { provider } from '../../lib/provider';
 
 const fixtures = provider.getFixtures();
@@ -64,6 +65,8 @@ const getTeam = (id: string) => provider.getTeam(id)!;
       </a>
     ))}
   </div>
+
+  <RecentResults />
 
   <h2 class="mt-8 mb-2 text-lg font-bold">Featured forecast</h2>
   {upcoming[0] && (

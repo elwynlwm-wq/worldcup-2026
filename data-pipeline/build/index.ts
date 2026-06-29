@@ -20,6 +20,19 @@ import { deriveH2H, deriveTiers } from './derive';
 
 const DB_PATH = join(WAREHOUSE_DIR, 'warehouse.db');
 
+// Map openfootball round labels → our stage codes.
+function stageForRound(round: string): string {
+  const r = round.toLowerCase();
+  if (r.startsWith('matchday')) return 'group';
+  if (r.includes('round of 32')) return 'r32';
+  if (r.includes('round of 16')) return 'r16';
+  if (r.includes('quarter')) return 'qf';
+  if (r.includes('semi')) return 'sf';
+  if (r.includes('third')) return 'third_place';
+  if (r.includes('final')) return 'final';
+  return 'group';
+}
+
 async function main() {
   ensureDir(WAREHOUSE_DIR);
   const db = new Database(DB_PATH);
@@ -108,12 +121,54 @@ async function main() {
   )();
   console.log(`  ${snap.players.length} players`);
 
-  // ---- WC matches (snapshot) ----
+  // ---- WC matches (openfootball: all 104, with venues + goalscorers) ----
+  const of = await fetchOpenfootball();
   const insWc = db.prepare(`INSERT INTO wc_match
     (id,stage,group_letter,kickoff,venue,city,home_team_id,away_team_id,home_score,away_score,status)
     VALUES (@id,@stage,@groupLetter,@kickoff,@venue,@city,@homeTeamId,@awayTeamId,@homeScore,@awayScore,@status)`);
-  db.transaction(() => snap.matches.forEach((m) => insWc.run(m)))();
-  console.log(`  ${snap.matches.length} WC matches (snapshot)`);
+  const insGoal = db.prepare(`INSERT INTO match_goal
+    (match_id,side,team_id,scorer,minute,penalty)
+    VALUES (@matchId,@side,@teamId,@scorer,@minute,@penalty)`);
+  let goalCount = 0;
+  db.transaction(() => {
+    of.forEach((m, i) => {
+      const stage = stageForRound(m.round);
+      const homeId = countryToTeamSlug(m.team1, validTeamIds); // null for TBD placeholders
+      const awayId = countryToTeamSlug(m.team2, validTeamIds);
+      const played = m.ftHome != null && m.ftAway != null;
+      const matchId = 'wc-' + i;
+      insWc.run({
+        id: matchId,
+        stage,
+        groupLetter: m.group ? m.group.replace(/^Group\s+/i, '') : null,
+        kickoff: m.date + (m.time ? 'T' + m.time : ''),
+        venue: m.ground,
+        city: m.ground, // openfootball "ground" is a city/venue label
+        homeTeamId: homeId,
+        awayTeamId: awayId,
+        homeScore: m.ftHome,
+        awayScore: m.ftAway,
+        status: played ? 'finished' : 'scheduled',
+      });
+      for (const [side, goals, teamId] of [
+        ['home', m.goals1, homeId],
+        ['away', m.goals2, awayId],
+      ] as const) {
+        for (const g of goals) {
+          insGoal.run({
+            matchId,
+            side,
+            teamId,
+            scorer: g.name,
+            minute: g.minute,
+            penalty: g.penalty ? 1 : 0,
+          });
+          goalCount++;
+        }
+      }
+    });
+  })();
+  console.log(`  ${of.length} WC matches (openfootball), ${goalCount} goals`);
 
   // ---- All-time international results (for H2H) ----
   console.log('Loading all-time international results…');
@@ -141,11 +196,6 @@ async function main() {
     }
   })();
   console.log(`  ${intl.length} results (${mappedRows} involve a WC nation)`);
-
-  // ---- openfootball: enrich WC matches with venue/city where missing ----
-  // (v1: lightweight — we keep the snapshot as the authority and just log overlap.)
-  const of = await fetchOpenfootball();
-  console.log(`  openfootball: ${of.length} matches available for future enrichment`);
 
   // ---- Derive signals ----
   console.log('Deriving head-to-head…');

@@ -71,6 +71,20 @@ function main() {
     .all();
   write('wc-matches.json', matches);
 
+  // match-goals.json — goalscorers keyed by match id
+  const goalRows = db
+    .prepare(
+      `SELECT match_id AS matchId, side, team_id AS teamId, scorer, minute, penalty
+       FROM match_goal ORDER BY match_id, CAST(minute AS INTEGER)`,
+    )
+    .all() as Array<{ matchId: string; [k: string]: unknown }>;
+  const goalsByMatch: Record<string, unknown[]> = {};
+  for (const g of goalRows) {
+    const { matchId, ...rest } = g;
+    (goalsByMatch[matchId] ??= []).push({ ...rest, penalty: rest.penalty === 1 });
+  }
+  write('match-goals.json', goalsByMatch);
+
   // meta.json — provenance + counts, so consumers know what they're reading
   const count = (t: string) => (db.prepare(`SELECT count(*) n FROM ${t}`).get() as { n: number }).n;
   write('meta.json', {
@@ -82,6 +96,8 @@ function main() {
       clubs: count('club'),
       h2hPairs: count('h2h'),
       intlResults: count('intl_result'),
+      wcMatches: count('wc_match'),
+      goals: count('match_goal'),
     },
   });
 

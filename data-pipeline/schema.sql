@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS player_tier;
 DROP TABLE IF EXISTS club_tier;
 DROP TABLE IF EXISTS h2h;
 DROP TABLE IF EXISTS intl_result;
+DROP TABLE IF EXISTS match_goal;
 DROP TABLE IF EXISTS wc_match;
 DROP TABLE IF EXISTS player;
 DROP TABLE IF EXISTS club;
@@ -89,6 +90,18 @@ CREATE TABLE wc_match (
   away_score    INTEGER,
   status        TEXT                        -- scheduled | finished
 );
+
+-- Goalscorers per WC match (from openfootball goals1/goals2). side = home|away.
+CREATE TABLE match_goal (
+  id            INTEGER PRIMARY KEY,
+  match_id      TEXT NOT NULL REFERENCES wc_match(id),
+  side          TEXT NOT NULL,             -- home | away
+  team_id       TEXT REFERENCES team(id),
+  scorer        TEXT NOT NULL,             -- player name as in openfootball
+  minute        TEXT,                      -- "67", "90+2", etc.
+  penalty       INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX idx_goal_match ON match_goal(match_id);
 
 -- All-time international results (martj42 international_results, ~48k rows).
 -- Stored with raw country names; we map to our team ids where possible so H2H

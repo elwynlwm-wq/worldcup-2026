@@ -11,6 +11,8 @@
 
 import h2hData from '../../data-pipeline/warehouse/export/h2h.json';
 import playersData from '../../data-pipeline/warehouse/export/players.json';
+import matchGoalsData from '../../data-pipeline/warehouse/export/match-goals.json';
+import wcMatchesData from '../../data-pipeline/warehouse/export/wc-matches.json';
 
 export interface H2HRecord {
   played: number;
@@ -34,8 +36,32 @@ interface WarehousePlayer {
   playerTier: TierLabel | null;
 }
 
+export interface MatchGoal {
+  side: 'home' | 'away';
+  teamId: string | null;
+  scorer: string;
+  minute: string;
+  penalty: boolean;
+}
+
 const h2h = h2hData as Record<string, H2HRecord>;
 const players = playersData as WarehousePlayer[];
+const matchGoals = matchGoalsData as Record<string, MatchGoal[]>;
+
+export interface WarehouseMatch {
+  id: string;
+  stage: string;
+  groupLetter: string | null;
+  kickoff: string;
+  venue: string | null;
+  city: string | null;
+  homeTeamId: string | null;
+  awayTeamId: string | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: string;
+}
+const wcMatches = wcMatchesData as WarehouseMatch[];
 
 // Index players by id once for cheap lookup at build.
 const playerById = new Map(players.map((p) => [p.id, p]));
@@ -60,4 +86,22 @@ export function getPlayerTiers(
 /** All warehouse players for a team (used to enrich squad views with tiers). */
 export function getTeamPlayers(teamId: string): WarehousePlayer[] {
   return players.filter((p) => p.teamId === teamId);
+}
+
+/** Goalscorers for a WC match (by warehouse match id, e.g. "wc-0"), in order. */
+export function getMatchGoals(matchId: string): MatchGoal[] {
+  return matchGoals[matchId] ?? [];
+}
+
+/** All WC fixtures/results from the warehouse (104, with venues). */
+export function getWarehouseMatches(): WarehouseMatch[] {
+  return wcMatches;
+}
+
+/** Most recent finished matches, newest first. */
+export function getRecentResults(limit = 6): WarehouseMatch[] {
+  return wcMatches
+    .filter((m) => m.status === 'finished')
+    .sort((a, b) => (a.kickoff < b.kickoff ? 1 : -1))
+    .slice(0, limit);
 }

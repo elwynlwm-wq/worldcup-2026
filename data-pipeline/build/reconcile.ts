@@ -115,6 +115,8 @@ export const COUNTRY_ALIASES: Record<string, string> = {
   'curaçao': 'curacao',
   'turkey': 'turkiye',
   'türkiye': 'turkiye',
+  'bosnia & herzegovina': 'bosnia-and-herzegovina',
+  'bosnia and herzegovina': 'bosnia-and-herzegovina',
 };
 
 /** Map a results-CSV country name to a WC team slug, or null if not a WC nation. */
