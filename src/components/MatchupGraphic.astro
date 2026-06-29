@@ -33,6 +33,10 @@ const hc = teamColors(home.id);
 const ac = teamColors(away.id);
 const Tag = href ? 'a' : 'div';
 
+// Compact band uses the zoomed-out/cropped thumb art (pops at small size); the
+// full hero uses the full-bleed banner.
+const bannerSrc = (id: string) => (compact ? `/banners/thumbs/${id}.webp` : `/banners/${id}.png`);
+
 // Normalize to percentages — callers may pass raw vote COUNTS (SofaScore) or
 // already-percentages (the model). Either way we display a clean 0–100 split.
 const total = rawVote.home + rawVote.draw + rawVote.away || 1;
@@ -51,11 +55,11 @@ const vote = { home: homePct, draw: drawPct, away: awayPct };
       team's own banner art, meeting at an angled seam. clip-path makes the edge
       crisp; a team-colour gradient on top keeps identity strong + text legible. */}
   <div class="absolute inset-0" style={`clip-path:polygon(0 0, 58% 0, 42% 100%, 0 100%);background:linear-gradient(135deg, ${hc.c1} 0%, ${hc.c2} 100%)`}>
-    <div class="absolute inset-0" style={`background-image:url(/banners/${home.id}.png);background-size:cover;background-position:left center`}></div>
+    <div class="absolute inset-0" style={`background-image:url(${bannerSrc(home.id)});background-size:cover;background-position:left center`}></div>
     <div class="absolute inset-0" style={`background:linear-gradient(120deg, ${hc.c1}d9 0%, ${hc.c1}59 70%, transparent 100%)`}></div>
   </div>
   <div class="absolute inset-0" style={`clip-path:polygon(58% 0, 100% 0, 100% 100%, 42% 100%);background:linear-gradient(225deg, ${ac.c1} 0%, ${ac.c2} 100%)`}>
-    <div class="absolute inset-0" style={`background-image:url(/banners/${away.id}.png);background-size:cover;background-position:right center`}></div>
+    <div class="absolute inset-0" style={`background-image:url(${bannerSrc(away.id)});background-size:cover;background-position:right center`}></div>
     <div class="absolute inset-0" style={`background:linear-gradient(240deg, ${ac.c1}d9 0%, ${ac.c1}59 70%, transparent 100%)`}></div>
   </div>
 
