@@ -167,6 +167,8 @@ export interface SsPair {
   homeId: string;
   awayId: string;
   votes: { homeId: string; awayId: string; home: number; draw: number; away: number } | null;
+  /** true once `votes` is the frozen pre-match snapshot (KO−1h), not the live feed. */
+  frozen?: boolean;
   lineups: Record<string, SsLineup>;
 }
 const ssByPair = ssByPairData as Record<string, SsPair>;

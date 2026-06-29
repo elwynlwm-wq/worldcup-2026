@@ -4,11 +4,21 @@
 // Run: npm run export  (after build:warehouse)
 
 import Database from 'better-sqlite3';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { WAREHOUSE_DIR, EXPORT_DIR, ensureDir } from '../lib/util';
 
 const DB_PATH = join(WAREHOUSE_DIR, 'warehouse.db');
+
+// Prediction/odds snapshots are frozen this long BEFORE kick-off. Matches the
+// "Confirmed ~1h before kick-off" lineup note in the design. Once a fixture
+// crosses this line, we freeze the then-current fan votes so the published
+// prediction never drifts retroactively (accountability — see the match page).
+const FREEZE_LEAD_MS = 60 * 60 * 1000; // 1 hour
+// Durable snapshot store. Lives in WAREHOUSE_DIR (NOT the DB), so it survives
+// the schema's DROP/CREATE rebuild on every pipeline run. Committed alongside
+// the exports so the static site renders the frozen value, not the live one.
+const SNAPSHOT_PATH = join(WAREHOUSE_DIR, 'vote-snapshots.json');
 
 function main() {
   ensureDir(EXPORT_DIR);
@@ -111,10 +121,10 @@ function main() {
   // "<a>__<b>" sorted, so the H2H page can look up regardless of home/away.
   const ssMatches = db
     .prepare(
-      `SELECT id, home_team_id AS h, away_team_id AS a FROM ss_match
+      `SELECT id, home_team_id AS h, away_team_id AS a, start_ts AS startTs FROM ss_match
        WHERE home_team_id IS NOT NULL AND away_team_id IS NOT NULL`,
     )
-    .all() as { id: number; h: string; a: string }[];
+    .all() as { id: number; h: string; a: string; startTs: number | null }[];
   const pairKey = (x: string, y: string) => [x, y].sort().join('__');
 
   // votes keyed by pair (oriented to the stored home/away)
@@ -131,13 +141,42 @@ function main() {
     )
     .all() as Array<{ id: number; teamId: string; side: string; formation: string; name: string; pos: string; jersey: string; substitute: number }>;
 
-  // Assemble per-pair: { votes:{home,draw,away,homeId,awayId}, lineups:{teamId:{formation,starters[],subs[]}} }
+  // ---- Freeze step: snapshot the fan votes once a fixture passes KO-1h. ------
+  // We keep a durable store keyed by pair. On each run, for any fixture whose
+  // freeze line has passed and that we haven't already frozen, we capture the
+  // current votes. After that the live ss_vote keeps updating but the published
+  // export reads the FROZEN value, so the prediction is fixed at kick-off time.
+  type VoteSnap = { home: number; draw: number; away: number; homeId: string; awayId: string; frozenAt: number };
+  const snapshots: Record<string, VoteSnap> = existsSync(SNAPSHOT_PATH)
+    ? JSON.parse(readFileSync(SNAPSHOT_PATH, 'utf8'))
+    : {};
+  const now = Date.now();
+  for (const m of ssMatches) {
+    const key = pairKey(m.h, m.a);
+    if (snapshots[key]) continue; // already frozen — never overwrite
+    if (m.startTs == null) continue;
+    const koMs = m.startTs * 1000;
+    if (now < koMs - FREEZE_LEAD_MS) continue; // not yet within the freeze window
+    const v = voteByMatch.get(m.id);
+    if (!v) continue; // nothing to freeze
+    snapshots[key] = { home: v.vh, draw: v.vd, away: v.va, homeId: m.h, awayId: m.a, frozenAt: now };
+  }
+  writeFileSync(SNAPSHOT_PATH, JSON.stringify(snapshots, null, 0));
+
+  // Assemble per-pair: { votes, frozen, lineups }. `votes` prefers the frozen
+  // snapshot when present, so the site always renders the pre-match value.
   const ssByPair: Record<string, any> = {};
   for (const m of ssMatches) {
     const key = pairKey(m.h, m.a);
-    const entry = (ssByPair[key] ??= { homeId: m.h, awayId: m.a, votes: null, lineups: {} });
-    const v = voteByMatch.get(m.id);
-    if (v) entry.votes = { homeId: m.h, awayId: m.a, home: v.vh, draw: v.vd, away: v.va };
+    const entry = (ssByPair[key] ??= { homeId: m.h, awayId: m.a, votes: null, frozen: false, lineups: {} });
+    const snap = snapshots[key];
+    if (snap) {
+      entry.votes = { homeId: snap.homeId, awayId: snap.awayId, home: snap.home, draw: snap.draw, away: snap.away };
+      entry.frozen = true;
+    } else {
+      const v = voteByMatch.get(m.id);
+      if (v) entry.votes = { homeId: m.h, awayId: m.a, home: v.vh, draw: v.vd, away: v.va };
+    }
   }
   for (const p of predRows) {
     const m = ssMatches.find((x) => x.id === p.id);
