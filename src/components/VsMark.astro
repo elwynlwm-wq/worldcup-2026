@@ -1,0 +1,65 @@
+---
+// Fierce "VS" mark — a bold italic V / S split by a glowing diagonal slash, with
+// a metallic gold gradient and a warm glow halo. Inline SVG so it stays crisp at
+// any size and needs no extra asset. Used in the centre of MatchupGraphic.
+interface Props {
+  /** rendered width in px (height scales) */
+  w?: number;
+  /** unique-ish suffix so multiple instances don't share gradient/filter ids */
+  uid?: string;
+  class?: string;
+}
+const { w = 110, uid = 'vs', class: cls = '' } = Astro.props;
+const id = (n: string) => `${n}-${uid}`;
+---
+
+<svg
+  viewBox="0 0 200 150"
+  width={w}
+  height={Math.round((w * 150) / 200)}
+  class:list={['block', cls]}
+  style="overflow:visible"
+  aria-label="versus"
+  role="img"
+>
+  <defs>
+    {/* metallic gold → cream → deep-gold, top-to-bottom */}
+    <linearGradient id={id('metal')} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff7e0" />
+      <stop offset="38%" stop-color="#fbd77a" />
+      <stop offset="55%" stop-color="#f3b50a" />
+      <stop offset="100%" stop-color="#b97c08" />
+    </linearGradient>
+    {/* the slash streak: transparent → white-hot → gold → transparent */}
+    <linearGradient id={id('slash')} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0" />
+      <stop offset="42%" stop-color="#fff" stop-opacity=".95" />
+      <stop offset="55%" stop-color="#ffe6a3" stop-opacity="1" />
+      <stop offset="100%" stop-color="#f3b50a" stop-opacity="0" />
+    </linearGradient>
+    {/* warm outer glow */}
+    <filter id={id('glow')} x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.2" result="b" />
+      <feFlood flood-color="#f3b50a" flood-opacity=".9" result="c" />
+      <feComposite in="c" in2="b" operator="in" result="g" />
+      <feMerge>
+        <feMergeNode in="g" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter={`url(#${id('glow')})`} font-family="var(--font-display), Archivo, sans-serif" font-weight="900" font-style="italic">
+    {/* dark edge for contrast on both halves, then the metallic fill on top */}
+    <text x="58" y="108" text-anchor="middle" font-size="118" fill="none" stroke="rgba(40,22,4,.55)" stroke-width="9" stroke-linejoin="round">V</text>
+    <text x="142" y="128" text-anchor="middle" font-size="100" fill="none" stroke="rgba(40,22,4,.55)" stroke-width="9" stroke-linejoin="round">S</text>
+    <text x="58" y="108" text-anchor="middle" font-size="118" fill={`url(#${id('metal')})`} stroke="#fff7e0" stroke-width="1.2">V</text>
+    <text x="142" y="128" text-anchor="middle" font-size="100" fill={`url(#${id('metal')})`} stroke="#fff7e0" stroke-width="1.2">S</text>
+
+    {/* diagonal light slash through the middle (matches the seam lean) */}
+    <g transform="rotate(13 100 75)">
+      <rect x="96" y="-30" width="9" height="210" fill={`url(#${id('slash')})`} />
+      <rect x="99" y="-30" width="2.4" height="210" fill="#fff" opacity=".95" />
+    </g>
+  </g>
+</svg>

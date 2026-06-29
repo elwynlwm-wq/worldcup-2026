@@ -10,6 +10,7 @@
 //
 // Used on the home "Today" hero and the /h2h/<a>-vs-<b> hero.
 import Flag from './Flag.astro';
+import VsMark from './VsMark.astro';
 import { teamColors } from '../data/teamColors';
 import type { Team } from '../lib/model';
 
@@ -72,7 +73,7 @@ const vote = { home: homePct, draw: drawPct, away: awayPct };
       <div class="font-display text-[clamp(15px,3vw,30px)] font-black leading-none" style="text-shadow:0 2px 8px rgba(0,0,0,.5)">{home.shortCode}</div>
       <div class="text-[clamp(8px,1.2vw,12.5px)] font-bold leading-tight" style="text-shadow:0 1px 5px rgba(0,0,0,.55);opacity:.95">{home.name}</div>
     </div>
-    <div class="font-display text-[clamp(22px,4.2vw,46px)] font-black italic text-white" style="text-shadow:0 2px 10px rgba(0,0,0,.45)">VS</div>
+    <div class="flex-none" style="width:clamp(64px,11vw,118px)"><VsMark uid={`${home.id}-${away.id}`} w={118} class="h-auto w-full" /></div>
     <div class="flex w-[30%] flex-col items-center gap-1.5 text-white">
       <Flag team={away.id} w={58} />
       <div class="font-display text-[clamp(15px,3vw,30px)] font-black leading-none" style="text-shadow:0 2px 8px rgba(0,0,0,.5)">{away.shortCode}</div>
