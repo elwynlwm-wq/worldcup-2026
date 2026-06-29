@@ -7,6 +7,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
 import { getRecentResults, getMatchDetail, getH2H } from '../../lib/warehouse';
 import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
 
 export function getStaticPaths() {
@@ -85,13 +86,13 @@ const jsonLd = {
     {/* scoreline */}
     <div class="mt-2 flex items-center gap-4 rounded-[14px] border p-5" style="background:var(--color-surface);border-color:var(--color-line-2)">
       <div class="flex min-w-0 flex-1 items-center gap-3">
-        <span class="h-7 w-10 flex-none rounded-[5px]" style={`background:${teamGrad(h.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+        <Flag team={h.id} w={40} />
         <b class="font-display text-[18px] tracking-tight">{h.name}</b>
       </div>
       <div class="font-display flex-none px-2 text-[28px] font-black">{m.homeScore}–{m.awayScore}</div>
       <div class="flex min-w-0 flex-1 items-center justify-end gap-3">
         <b class="font-display text-right text-[18px] tracking-tight">{a.name}</b>
-        <span class="h-7 w-10 flex-none rounded-[5px]" style={`background:${teamGrad(a.id)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+        <Flag team={a.id} w={40} />
       </div>
     </div>
 

@@ -1,0 +1,60 @@
+---
+// MOCKUP — upcoming-match graphic: AI line-art PNG as background + CSS overlay
+// for the precise, data-driven bits (flags, names, kickoff, vote). The AI does
+// the decorative line frame/texture; CSS only positions legible elements.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Flag from '../components/Flag.astro';
+import { teamColors } from '../data/teamColors';
+import { provider } from '../lib/provider';
+
+const h = provider.getTeam('brazil')!;
+const a = provider.getTeam('japan')!;
+const hc = teamColors(h.id), ac = teamColors(a.id);
+const vote = { home: 72, draw: 9, away: 19 };
+---
+
+<BaseLayout title="Match mock" description="mock" active="">
+  <h1 class="font-display mb-4 text-2xl font-black">Upcoming match — AI bg + overlay</h1>
+
+  <div class="relative overflow-hidden rounded-[18px]" style="aspect-ratio:21/9">
+    {/* AI line-art background */}
+    <img src="/banners/matchup-lineart.png" alt="" class="absolute inset-0 h-full w-full object-cover" />
+
+    {/* OVERLAY — flags + names + VS + kickoff + vote */}
+    {/* top: kickoff label */}
+    <div class="absolute left-1/2 top-[6%] -translate-x-1/2 whitespace-nowrap font-display text-[clamp(8px,1.3vw,13px)] font-extrabold uppercase tracking-[2px]" style="color:var(--color-ink)">
+      Round of 32 · 30 Jun · NRG Stadium
+    </div>
+
+    {/* center: flags + names + VS, aligned to the image's left/right zones */}
+    <div class="absolute inset-0 flex items-center justify-between px-[7%]">
+      <div class="flex flex-col items-center gap-2" style="width:30%">
+        <Flag team={h.id} w={62} />
+        <div class="font-display text-[clamp(15px,3vw,30px)] font-black leading-none drop-shadow-sm">{h.shortCode}</div>
+        <div class="text-[clamp(9px,1.3vw,13px)] font-bold" style="color:var(--color-ink-2)">{h.name}</div>
+      </div>
+      <div class="font-display text-[clamp(18px,3.6vw,38px)] font-black italic" style="color:var(--color-ink)">VS</div>
+      <div class="flex flex-col items-center gap-2" style="width:30%">
+        <Flag team={a.id} w={62} />
+        <div class="font-display text-[clamp(15px,3vw,30px)] font-black leading-none drop-shadow-sm">{a.shortCode}</div>
+        <div class="text-[clamp(9px,1.3vw,13px)] font-bold" style="color:var(--color-ink-2)">{a.name}</div>
+      </div>
+    </div>
+
+    {/* bottom: vote bar, aligned over the image's baked-in bar position */}
+    <div class="absolute bottom-[6%] left-1/2 w-[60%] -translate-x-1/2">
+      <div class="mb-1 flex justify-between text-[clamp(8px,1.2vw,12px)] font-extrabold" style="color:var(--color-ink)">
+        <span>{h.shortCode} {vote.home}%</span><span style="color:var(--color-ink-2)">WHO WINS?</span><span>{vote.away}% {a.shortCode}</span>
+      </div>
+      <div class="flex h-[8px] overflow-hidden rounded-full" style="box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)">
+        <span style={`width:${vote.home}%;background:${hc.c1}`}></span>
+        <span style={`width:${vote.draw}%;background:rgba(0,0,0,.15)`}></span>
+        <span style={`width:${vote.away}%;background:${ac.c1}`}></span>
+      </div>
+    </div>
+  </div>
+
+  <p class="mt-4 text-sm" style="color:var(--color-ink-2)">
+    AI line-art PNG as background, CSS overlay for flags / names / VS / kickoff / vote.
+  </p>
+</BaseLayout>

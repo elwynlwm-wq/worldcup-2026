@@ -10,6 +10,7 @@ import Avatar from '../../components/analysis/Avatar.astro';
 import { provider } from '../../lib/provider';
 import { getPlayerTiers, getAfFixtures } from '../../lib/warehouse';
 import { teamColors, teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 
 export function getStaticPaths() {
   return provider.getTeams().map((t) => ({ params: { id: t.id }, props: { teamId: t.id } }));
@@ -18,7 +19,7 @@ export function getStaticPaths() {
 const { teamId } = Astro.props;
 const t = provider.getTeam(teamId)!;
 const squad = provider.getSquad(teamId);
-const { c1, c2 } = teamColors(teamId);
+const { c1 } = teamColors(teamId);
 
 // Our generated banner (dev copies in public/banners; falls back to colour only).
 const bannerSrc = `/banners/${teamId}.png`;
@@ -80,10 +81,9 @@ const jsonLd = {
         onerror="this.style.display='none'"
       />
       <div class="absolute inset-0" style={`background:linear-gradient(90deg, ${c1} 0%, rgba(0,0,0,.12) 100%);mix-blend-mode:multiply`}></div>
-      {/* two-tone swatches */}
-      <div class="absolute right-6 top-1/2 hidden -translate-y-1/2 gap-1.5 sm:flex">
-        <span style={`width:54px;height:38px;border-radius:6px;background:${c1};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)`}></span>
-        <span style={`width:54px;height:38px;border-radius:6px;background:${c2};box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4)`}></span>
+      {/* country flag */}
+      <div class="absolute right-6 top-1/2 hidden -translate-y-1/2 sm:block" style="filter:drop-shadow(0 4px 14px rgba(0,0,0,.35))">
+        <Flag team={teamId} w={92} class="!ring-1 !ring-white/45" />
       </div>
       <div class="relative z-[2]">
         <div class="font-display text-[40px] font-black tracking-tight" style="text-shadow:0 2px 12px rgba(0,0,0,.35)">{t.name}</div>

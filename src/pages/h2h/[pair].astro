@@ -10,7 +10,7 @@ import ShowdownPanel from '../../components/ShowdownPanel.astro';
 import PitchLineup from '../../components/PitchLineup.astro';
 import { provider } from '../../lib/provider';
 import { getSsPair, getSsPairKeys, getH2H } from '../../lib/warehouse';
-import { teamGrad } from '../../data/teamColors';
+import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -58,13 +58,13 @@ const hasLineups = !!(luA?.starters?.length || luB?.starters?.length);
     {/* teams header */}
     <div class="mt-1.5 flex items-center gap-4 rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
       <a href={`/teams/${a}/`} class="flex min-w-0 flex-1 items-center gap-3">
-        <span class="h-7 w-10 flex-none rounded-[5px]" style={`background:${teamGrad(a)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+        <Flag team={a} w={40} />
         <b class="font-display text-[18px] tracking-tight">{ta.name}</b>
       </a>
       <div class="font-display flex-none px-1.5 text-[22px] font-black">vs</div>
       <a href={`/teams/${b}/`} class="flex min-w-0 flex-1 items-center justify-end gap-3">
         <b class="font-display text-right text-[18px] tracking-tight">{tb.name}</b>
-        <span class="h-7 w-10 flex-none rounded-[5px]" style={`background:${teamGrad(b)};box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)`}></span>
+        <Flag team={b} w={40} />
       </a>
     </div>
 
