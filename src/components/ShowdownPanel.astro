@@ -126,9 +126,14 @@ const matchKey = [home.id, away.id].sort().join('|');
   </>
   )}
 
-  {/* FORECAST — shown in both prediction and insights */}
-  <h2 class="font-display mt-[26px] mb-1 text-[21px] font-extrabold">{fav.name} are favoured</h2>
-  <p class="mb-3 text-[14.5px]" style="color:var(--color-ink-2)">{fav.name} have about a {pct(Math.max(pr.win, pr.lose))}% chance of winning in 90 minutes.</p>
+  {/* FORECAST — shown in both prediction and insights. Past tense once frozen so
+      it reads clearly as the PRE-MATCH view on live/ended pages. */}
+  <h2 class="font-display mt-[26px] mb-1 text-[21px] font-extrabold">{frozen ? `${fav.name} were favoured` : `${fav.name} are favoured`}</h2>
+  <p class="mb-3 text-[14.5px]" style="color:var(--color-ink-2)">
+    {frozen
+      ? `Before kick-off our model gave ${fav.name} about a ${pct(Math.max(pr.win, pr.lose))}% chance of winning in 90 minutes.`
+      : `${fav.name} have about a ${pct(Math.max(pr.win, pr.lose))}% chance of winning in 90 minutes.`}
+  </p>
   <div class="font-display flex h-[34px] overflow-hidden rounded-[10px] text-[13px] font-extrabold">
     <div class="flex min-w-[30px] items-center justify-center text-white" style={`width:${pct(pr.win)}%;background:var(--color-royal)`}>{pct(pr.win)}</div>
     <div class="flex min-w-[30px] items-center justify-center" style={`width:${pct(pr.draw)}%;background:#e7dfce;color:var(--color-ink-2)`}>{pct(pr.draw)}</div>

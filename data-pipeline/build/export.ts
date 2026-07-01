@@ -269,6 +269,28 @@ function main() {
   }
   write('ss-by-pair.json', ssByPair);
 
+  // af-lineups.json — the ACTUAL XIs that played, per finished AF fixture. Keyed
+  // by AF fixture id → { <team_id>: { formation, coach, starters[], subs[] } },
+  // matching the SsLineup shape so the pitch can render it. Finished matches show
+  // this instead of the SofaScore predicted XI.
+  const luRows = db
+    .prepare(
+      `SELECT l.fixture_id AS fid, l.team_id AS teamId, l.formation, l.coach,
+              p.player_name AS name, p.number AS jersey, p.pos, p.starter
+       FROM af_lineup l JOIN af_lineup_player p
+         ON p.fixture_id = l.fixture_id AND p.af_team_id = l.af_team_id
+       WHERE l.team_id IS NOT NULL
+       ORDER BY l.fixture_id, l.team_id, p.starter DESC`,
+    )
+    .all() as Array<{ fid: number; teamId: string; formation: string; coach: string; name: string; jersey: number | null; pos: string; starter: number }>;
+  const afLineups: Record<string, Record<string, any>> = {};
+  for (const r of luRows) {
+    const fx = (afLineups[r.fid] ??= {});
+    const lu = (fx[r.teamId] ??= { formation: r.formation, coach: r.coach, starters: [], subs: [] });
+    (r.starter ? lu.starters : lu.subs).push({ name: r.name, pos: r.pos, jersey: r.jersey == null ? null : String(r.jersey) });
+  }
+  write('af-lineups.json', afLineups);
+
   // af-match-detail.json — per finished AF fixture: key team stats (for the
   // comparison bars) + goals. Keyed by AF fixture id (matches af-fixtures.json).
   const STAT_KEYS = ['Ball Possession', 'Total Shots', 'Shots on Goal', 'expected_goals', 'Passes %', 'Corner Kicks'];

@@ -19,6 +19,7 @@ import ssByPairData from '../../data-pipeline/warehouse/export/ss-by-pair.json';
 import afMatchDetailData from '../../data-pipeline/warehouse/export/af-match-detail.json';
 import oddsByPairData from '../../data-pipeline/warehouse/export/odds-by-pair.json';
 import playerWcStatsData from '../../data-pipeline/warehouse/export/player-wc-stats.json';
+import afLineupsData from '../../data-pipeline/warehouse/export/af-lineups.json';
 
 export interface H2HRecord {
   played: number;
@@ -238,4 +239,12 @@ export function afPlayerId(photo: string | null | undefined): string | null {
 /** A player's WC tournament log + totals, looked up by AF player id. */
 export function getPlayerWcStats(afId: string | null): PlayerWcStats | null {
   return afId ? playerWcStats[afId] ?? null : null;
+}
+
+// --- Actual match lineups (AF), by AF fixture id → { teamId: SsLineup+coach } --
+const afLineups = afLineupsData as Record<string, Record<string, SsLineup & { coach?: string }>>;
+
+/** The real XIs that played a finished fixture (by AF fixture id), or null. */
+export function getActualLineups(fixtureId: number): Record<string, SsLineup & { coach?: string }> | null {
+  return afLineups[String(fixtureId)] ?? null;
 }

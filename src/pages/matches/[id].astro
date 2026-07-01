@@ -12,7 +12,7 @@ import ShowdownPanel from '../../components/ShowdownPanel.astro';
 import MatchPitch from '../../components/MatchPitch.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
-import { getAfFixtures, getSsPair, getH2H, getMatchDetail, getOddsPair } from '../../lib/warehouse';
+import { getAfFixtures, getSsPair, getH2H, getMatchDetail, getOddsPair, getActualLineups } from '../../lib/warehouse';
 import Flag from '../../components/Flag.astro';
 import { storyForMatch, KIND_META } from '../../lib/stories';
 import PlayerModal from '../../components/PlayerModal.astro';
@@ -53,8 +53,12 @@ let fans: { home: number; away: number } | null = null;
 if (ss?.votes) {
   fans = ss.votes.homeId === h.id ? { home: ss.votes.home, away: ss.votes.away } : { home: ss.votes.away, away: ss.votes.home };
 }
-const luHome = ss?.lineups?.[h.id] ?? null;
-const luAway = ss?.lineups?.[a.id] ?? null;
+// Lineups: finished matches show the ACTUAL XIs that played (AF), upcoming/live
+// show the SofaScore predicted XI. Fall back to predicted if no actual exists.
+const actual = ended ? getActualLineups(m.id) : null;
+const luHome = actual?.[h.id] ?? ss?.lineups?.[h.id] ?? null;
+const luAway = actual?.[a.id] ?? ss?.lineups?.[a.id] ?? null;
+const lineupsAreActual = !!(actual?.[h.id]?.starters?.length && actual?.[a.id]?.starters?.length);
 const hasLineups = !!(luHome?.starters?.length && luAway?.starters?.length);
 
 const h2h = getH2H(h.id, a.id);
@@ -248,12 +252,8 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
     {/* ============ PREDICTION ============ */}
     <section data-mpanel="prediction">
       {ended && (
-        <div class="mt-4 flex items-start gap-3 rounded-[14px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
-          <span class="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-white" style="background:var(--color-royal)">📌</span>
-          <div class="text-[13.5px]" style="color:var(--color-ink-2)">
-            <b>What we said before kick-off.</b> Our pre-match forecast is kept below for transparency — final score was
-            <b> {h.shortCode} {m.homeScore}–{m.awayScore} {a.shortCode}</b>.
-          </div>
+        <div class="mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-extrabold uppercase tracking-wide" style="background:var(--color-surface-2);color:var(--color-ink-3)">
+          <span class="h-1.5 w-1.5 rounded-full" style="background:var(--color-ink-4)"></span>Before kick-off
         </div>
       )}
       <ShowdownPanel home={h} away={a} fans={fans} mode="prediction" frozen={ended || live} />
@@ -262,9 +262,9 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
           shown when the API has priced this fixture. */}
       {oddsBooks.length > 0 && (
         <>
-          <h2 class="font-display mt-7 mb-1 text-[21px] font-extrabold">Bookmaker odds</h2>
+          <h2 class="font-display mt-7 mb-1 text-[21px] font-extrabold">{ended ? 'Pre-match odds' : 'Bookmaker odds'}</h2>
           <p class="mb-3 text-[14.5px]" style="color:var(--color-ink-2)">
-            {oddsFrozen ? 'Pre-match prices, frozen at kick-off.' : 'Compare the books — best price for each result is highlighted.'}
+            {ended ? 'The bookmakers’ prices as they stood before kick-off.' : oddsFrozen ? 'Pre-match prices, frozen at kick-off.' : 'Compare the books — best price for each result is highlighted.'}
           </p>
           <div class="overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
             <div class="flex items-center border-b px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide" style="border-color:var(--color-surface-3);background:var(--color-surface-2);color:var(--color-ink-3)">
@@ -291,9 +291,9 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
     {hasLineups && (
       <section data-mpanel="lineups" style="display:none">
         <p class="mt-4 mb-3 text-[13.5px]" style="color:var(--color-ink-2)">
-          {ended ? 'Predicted XIs (confirmed lineups land here once exported).' : 'No confirmed XI yet — most likely teams based on recent selection.'}
+          {lineupsAreActual ? 'The XIs that started this match.' : 'No confirmed XI yet — most likely teams based on recent selection.'}
         </p>
-        <MatchPitch home={h} away={a} homeLineup={luHome!} awayLineup={luAway!} snapshotLabel="Most likely XI" />
+        <MatchPitch home={h} away={a} homeLineup={luHome!} awayLineup={luAway!} snapshotLabel={lineupsAreActual ? 'Starting XI' : 'Most likely XI'} />
       </section>
     )}
 
