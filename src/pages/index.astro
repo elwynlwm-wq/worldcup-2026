@@ -7,9 +7,9 @@ import { getCollection } from 'astro:content';
 import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
 import { teamColors } from '../data/teamColors';
+import { MARKET_MATCHES, MARKET_OUTRIGHT, MARKET_ASOF } from '../data/market';
 
 const fixtures = provider.getFixtures().filter((m) => m.stage === 'r32');
-
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmt = (iso: string) => { const [, m, d] = iso.split('-'); return `${+d} ${MON[+m - 1]}`; };
 
@@ -19,58 +19,45 @@ const ties: Tie[] = fixtures.map((m) => {
   const pr = predict(h, a);
   const [hc1, hc2] = teamColors(h.id);
   const [ac1, ac2] = teamColors(a.id);
+  const mkt = MARKET_MATCHES[`${h.id}-${a.id}`];
   return {
     home: { id: h.id, name: h.name, code: h.shortCode, c1: hc1, c2: hc2 },
     away: { id: a.id, name: a.name, code: a.shortCode, c1: ac1, c2: ac2 },
     win: pr.win, draw: pr.draw, lose: pr.lose,
+    mHome: mkt?.home ?? null, mDraw: mkt?.draw ?? null, mAway: mkt?.away ?? null,
     date: fmt(m.kickoff.slice(0, 10)), city: m.city ?? '', venue: m.venue ?? '',
     href: `/analysis/predict/?a=${h.id}&b=${a.id}`,
   };
 });
 
+const outright = MARKET_OUTRIGHT.map((r) => ({ ...r, team: provider.getTeam(r.id) })).filter((r) => r.team);
+const maxBook = Math.max(...outright.map((r) => r.book));
 const contenders = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating).slice(0, 6);
 const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
 const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
-
-const jsonLd = {
-  '@context': 'https://schema.org', '@type': 'WebSite',
-  name: 'Kickabout — Predict the World Cup 2026', url: Astro.site?.href,
-};
+const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kickabout — Predict the World Cup 2026', url: Astro.site?.href };
 ---
 
 <BaseLayout
   title="Kickabout — Predict the 2026 World Cup"
-  description="Call every 2026 World Cup knockout match and see if you can beat the model. A transparent forecast for all 48 teams, plus analysis and match stories for every fan."
+  description="Call every 2026 World Cup knockout match and see if you can beat the model — and the market. A transparent Elo forecast plus live betting-market odds for all 48 teams."
   jsonLd={jsonLd}
 >
   <div class="mx-auto max-w-5xl px-4">
     <section class="pt-8">
-      <div
-        class="relative flex items-center gap-6 overflow-hidden rounded-2xl border border-line p-6 md:p-8"
-        style="background:radial-gradient(130% 170% at 6% -10%, rgba(255,210,63,.18), transparent 46%), radial-gradient(130% 170% at 104% 120%, rgba(232,72,43,.22), transparent 52%), linear-gradient(180deg,#1c1f27,#181a21)"
-      >
+      <div class="relative flex items-center gap-6 overflow-hidden rounded-2xl border border-line p-6 md:p-8" style="background:radial-gradient(130% 170% at 6% -10%, rgba(255,210,63,.18), transparent 46%), radial-gradient(130% 170% at 104% 120%, rgba(232,72,43,.22), transparent 52%), linear-gradient(180deg,#1c1f27,#181a21)">
         <svg class="hidden h-[72px] w-[72px] shrink-0 md:block" viewBox="0 0 32 32" aria-hidden="true">
           <circle cx="16" cy="16" r="15" fill="#f6f4ee"></circle>
           <path d="M16 5.4l6.4 4.7-2.45 7.5h-7.9l-2.45-7.5z" fill="#15171c"></path>
-          <g fill="none" stroke="#15171c" stroke-width="1.5">
-            <path d="M16 5.4V1.4"></path><path d="M22.4 10.1l4.5-2.2"></path>
-            <path d="M19.95 17.6l4.6 3M12.05 17.6l-4.6 3"></path><path d="M9.6 10.1L5.1 7.9"></path>
-          </g>
+          <g fill="none" stroke="#15171c" stroke-width="1.5"><path d="M16 5.4V1.4"></path><path d="M22.4 10.1l4.5-2.2"></path><path d="M19.95 17.6l4.6 3M12.05 17.6l-4.6 3"></path><path d="M9.6 10.1L5.1 7.9"></path></g>
           <circle cx="16" cy="16" r="15" fill="none" stroke="#15171c" stroke-width="1.3"></circle>
         </svg>
         <div>
-          <div class="font-display text-xs font-extrabold uppercase tracking-[0.14em] text-ball">
-            World Cup 2026 · Round of 32 live
-          </div>
-          <h1 class="mt-1 font-display text-4xl font-black leading-[0.96] tracking-tight md:text-5xl">
-            Can you beat <span class="text-ball">the model?</span>
-          </h1>
-          <p class="mt-2 max-w-xl text-[15px] text-muted">
-            Call every knockout tie. Commit your pick, then see the model's forecast and how it
-            stacks up. A transparent Elo model across all 48 teams — no black box.
-          </p>
+          <div class="font-display text-xs font-extrabold uppercase tracking-[0.14em] text-ball">World Cup 2026 · Round of 32 live</div>
+          <h1 class="mt-1 font-display text-4xl font-black leading-[0.96] tracking-tight md:text-5xl">Can you beat <span class="text-ball">the model?</span></h1>
+          <p class="mt-2 max-w-xl text-[15px] text-muted">Call every knockout tie, then see how you stack up against a transparent Elo model — and against the betting market. Three views on every match.</p>
           <div class="mt-3.5 flex flex-wrap gap-2">
             <span class="flex items-center gap-1.5 rounded-full border border-line bg-black/25 px-2.5 py-1 font-display text-[11.5px] font-bold"><span class="h-2 w-2 rounded-full" style="background:#3c3b6e"></span>United States</span>
             <span class="flex items-center gap-1.5 rounded-full border border-line bg-black/25 px-2.5 py-1 font-display text-[11.5px] font-bold"><span class="h-2 w-2 rounded-full" style="background:#d52b1e"></span>Canada</span>
@@ -82,17 +69,52 @@ const jsonLd = {
 
     <section class="mt-9">
       <PredictBoard client:load ties={ties} />
+      <p class="mt-2 text-[12px] text-muted">Model: transparent Elo forecast. Market: bookmaker-implied odds ({MARKET_ASOF}). Not betting advice.</p>
     </section>
+
+    <div class="mt-10 mb-1 flex flex-wrap items-baseline justify-between gap-2">
+      <h2 class="font-display text-xl font-extrabold tracking-tight">The market's call — who lifts the trophy?</h2>
+      <span class="text-[12px] text-muted">implied odds to win · {MARKET_ASOF}</span>
+    </div>
+    <div class="overflow-hidden rounded-2xl border border-line">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-line text-left font-display text-[11px] uppercase tracking-wide text-muted">
+            <th class="px-4 py-2.5">Team</th>
+            <th class="px-3 py-2.5 text-right">Bookmakers</th>
+            <th class="px-3 py-2.5 text-right">Polymarket</th>
+            <th class="px-3 py-2.5 text-right">Kalshi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {outright.map((r) => (
+            <tr class="border-b border-line/60 last:border-0">
+              <td class="px-4 py-2.5">
+                <a href={`/analysis/teams/${r.id}/`} class="flex items-center gap-2.5 font-display font-bold hover:text-ball">
+                  <TeamMark id={r.id} size={22} /> {r.team!.name}
+                </a>
+              </td>
+              <td class="px-3 py-2.5">
+                <div class="flex items-center justify-end gap-2">
+                  <span class="hidden h-1.5 rounded-full bg-ball sm:block" style={`width:${Math.round((r.book / maxBook) * 90)}px`}></span>
+                  <span class="w-10 text-right font-display font-extrabold tabular-nums">{r.book}%</span>
+                </div>
+              </td>
+              <td class="px-3 py-2.5 text-right tabular-nums text-muted">{r.polymarket != null ? r.polymarket + '%' : '—'}</td>
+              <td class="px-3 py-2.5 text-right tabular-nums text-muted">{r.kalshi != null ? r.kalshi + '%' : '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-2 text-[12px] text-muted">Implied probabilities from decimal odds; snapshot, not live. Prediction-market columns from Polymarket &amp; Kalshi.</p>
 
     <h2 class="mt-10 mb-3 font-display text-xl font-extrabold tracking-tight">Who the model backs to go far</h2>
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {contenders.map((t) => (
         <a href={`/analysis/teams/${t.id}/`} class="flex items-center gap-3 rounded-2xl border border-line bg-panel p-3.5 hover:border-ball">
           <TeamMark id={t.id} size={34} />
-          <div>
-            <div class="font-display font-extrabold">{t.name}</div>
-            <div class="text-[12px] text-muted">Strength {t.strength} · Elo {t.elo}</div>
-          </div>
+          <div><div class="font-display font-extrabold">{t.name}</div><div class="text-[12px] text-muted">Strength {t.strength} · Elo {t.elo}</div></div>
         </a>
       ))}
     </div>
