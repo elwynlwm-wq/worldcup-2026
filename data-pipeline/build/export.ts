@@ -257,6 +257,20 @@ function main() {
   }
   write('injuries.json', injByTeam);
 
+  // odds-history.json — hourly 1X2 snapshots per fixture (movement toward KO).
+  // Keyed by AF fixture id → [{ bookmaker, home/draw/away, ts }], newest last.
+  const histRows = db
+    .prepare(
+      `SELECT fixture_id AS fid, bookmaker, home_odd AS h, draw_odd AS d, away_odd AS a, snapshot_ts AS ts
+       FROM af_odds_history ORDER BY fixture_id, snapshot_ts`,
+    )
+    .all() as Array<{ fid: number; bookmaker: string; h: number; d: number; a: number; ts: number }>;
+  const oddsHist: Record<string, any[]> = {};
+  for (const r of histRows) {
+    (oddsHist[r.fid] ??= []).push({ bookmaker: r.bookmaker, home: r.h, draw: r.d, away: r.a, ts: r.ts });
+  }
+  write('odds-history.json', oddsHist);
+
   // Assemble per-pair: { votes, frozen, lineups }. `votes` prefers the frozen
   // snapshot when present, so the site always renders the pre-match value.
   const ssByPair: Record<string, any> = {};

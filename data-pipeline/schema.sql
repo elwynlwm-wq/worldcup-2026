@@ -14,6 +14,7 @@ PRAGMA foreign_keys = ON;
 DROP TABLE IF EXISTS ss_predicted_lineup_player;
 DROP TABLE IF EXISTS ss_vote;
 DROP TABLE IF EXISTS ss_match;
+DROP TABLE IF EXISTS af_odds_history;
 DROP TABLE IF EXISTS af_injury;
 DROP TABLE IF EXISTS af_odds;
 DROP TABLE IF EXISTS af_player_stat;
@@ -298,6 +299,19 @@ CREATE TABLE af_injury (
 );
 CREATE INDEX idx_afinjury_team ON af_injury(team_id);
 CREATE INDEX idx_afinjury_fixture ON af_injury(fixture_id);
+
+-- Odds MOVEMENT — append-only time series of hourly 1X2 snapshots per bookmaker
+-- per fixture. af_odds holds only the LATEST snapshot (the site reads that);
+-- this accumulates the history so writers (and, later, a site "line moved"
+-- indicator) can see directional shift toward kick-off. Persisted across the
+-- per-run schema rebuild via warehouse/odds-history.json.
+CREATE TABLE af_odds_history (
+  fixture_id    INTEGER,
+  bookmaker     TEXT,
+  home_odd      REAL, draw_odd REAL, away_odd REAL,
+  snapshot_ts   INTEGER                    -- unix seconds when captured
+);
+CREATE INDEX idx_afoddshist_fixture ON af_odds_history(fixture_id);
 
 -- ---------------------------------------------------------------------------
 -- SofaScore (scraped via RapidAPI) — DEV SOURCE ONLY, own namespace.

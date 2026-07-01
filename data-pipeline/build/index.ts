@@ -3,7 +3,7 @@
 // Run: npm run build:warehouse  (after npm run fetch)
 
 import Database from 'better-sqlite3';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, WAREHOUSE_DIR, ensureDir, slug } from '../lib/util';
 import { loadSnapshot } from '../fetch/snapshot';
@@ -298,26 +298,48 @@ async function main() {
   console.log(`  rich data: ${nStats} team-stat rows, ${nEvents} events, ${nLineups} lineups, ${nPStats} player-match rows`);
 
   // ---- Pre-match 1X2 odds for upcoming fixtures (API-Football) -------------
-  // Odds only exist near kick-off, so the API returns [] for far-out matches —
-  // that's fine, we just store what's priced. Cached per fixture like the rest.
+  // Two outputs: af_odds = the LATEST snapshot (the site reads this, full-replaced
+  // each run); af_odds_history = an append-only hourly time series so writers (and
+  // later a site "line moved" indicator) can see movement toward kick-off. On
+  // REFRESH we force-refetch so each hourly snapshot is genuinely current, not a
+  // cache replay. The history persists across the schema rebuild via a durable
+  // JSON store (odds-history.json), pruned to fixtures still upcoming.
   const insOdds = db.prepare(`INSERT INTO af_odds
     (fixture_id,bookmaker,home_odd,draw_odd,away_odd)
     VALUES (@fixture_id,@bookmaker,@home_odd,@draw_odd,@away_odd)`);
   const upcoming = afFixtures.filter((f) => f.statusShort !== 'FT');
-  let nOdds = 0, nPriced = 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  type OddsHistRow = { fixture_id: number; bookmaker: string; home_odd: number | null; draw_odd: number | null; away_odd: number | null; snapshot_ts: number };
+  const ODDS_HIST_PATH = join(WAREHOUSE_DIR, 'odds-history.json');
+  const history: OddsHistRow[] = existsSync(ODDS_HIST_PATH) ? JSON.parse(readFileSync(ODDS_HIST_PATH, 'utf8')) : [];
+  let nOdds = 0, nPriced = 0, nSnap = 0;
   for (let i = 0; i < upcoming.length; i++) {
     const f = upcoming[i];
     if (i % 20 === 0) console.log(`  odds ${i}/${upcoming.length}…`);
-    const odds = await fetchAfFixtureOdds(f.id);
+    const odds = await fetchAfFixtureOdds(f.id, { force: REFRESH });
     if (odds.length) nPriced++;
     db.transaction(() => {
       for (const o of odds) {
         insOdds.run({ fixture_id: o.fixtureId, bookmaker: o.bookmaker, home_odd: o.homeOdd, draw_odd: o.drawOdd, away_odd: o.awayOdd });
         nOdds++;
+        // append this run's snapshot to the durable history (only on a real
+        // refresh — dev runs replay the cache and would duplicate a timestamp).
+        if (REFRESH) {
+          history.push({ fixture_id: o.fixtureId, bookmaker: o.bookmaker, home_odd: o.homeOdd, draw_odd: o.drawOdd, away_odd: o.awayOdd, snapshot_ts: nowSec });
+          nSnap++;
+        }
       }
     })();
   }
-  console.log(`  odds: ${nOdds} bookmaker rows across ${nPriced}/${upcoming.length} priced fixtures`);
+  // prune history to fixtures still upcoming (drop played games' movement).
+  const upcomingIds = new Set(upcoming.map((f) => f.id));
+  const prunedHistory = history.filter((h) => upcomingIds.has(h.fixture_id));
+  writeFileSync(ODDS_HIST_PATH, JSON.stringify(prunedHistory));
+  const insOddsHist = db.prepare(`INSERT INTO af_odds_history
+    (fixture_id,bookmaker,home_odd,draw_odd,away_odd,snapshot_ts)
+    VALUES (@fixture_id,@bookmaker,@home_odd,@draw_odd,@away_odd,@snapshot_ts)`);
+  db.transaction(() => { for (const h of prunedHistory) insOddsHist.run(h); })();
+  console.log(`  odds: ${nOdds} latest rows (${nPriced}/${upcoming.length} priced)${REFRESH ? `, +${nSnap} history snapshots (${prunedHistory.length} total)` : ''}`);
 
   // ---- Injuries & suspensions (API-Football) — a writer-facing fact --------
   // One call for the whole tournament, forced fresh on REFRESH (squads update).

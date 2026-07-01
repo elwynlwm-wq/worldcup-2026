@@ -313,8 +313,8 @@ export interface AfOdds {
  * Returns [] when the API hasn't priced the fixture yet (normal pre-tournament
  * or far-out matches). Cached like the other per-fixture calls.
  */
-export async function fetchAfFixtureOdds(fixtureId: number): Promise<AfOdds[]> {
-  const j = await afGet(`/odds?fixture=${fixtureId}`, `apifootball-odds-${fixtureId}.json`, { quiet: true });
+export async function fetchAfFixtureOdds(fixtureId: number, opts: { force?: boolean } = {}): Promise<AfOdds[]> {
+  const j = await afGet(`/odds?fixture=${fixtureId}`, `apifootball-odds-${fixtureId}.json`, { quiet: true, force: opts.force });
   const out: AfOdds[] = [];
   for (const r of j.response || []) {
     for (const bm of r.bookmakers || []) {

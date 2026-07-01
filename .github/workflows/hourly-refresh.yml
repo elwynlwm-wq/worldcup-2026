@@ -77,7 +77,7 @@ jobs:
         run: |
           git config user.name  "kickabout-bot"
           git config user.email "bot@kickabout.local"
-          git add data-pipeline/warehouse/export data-pipeline/warehouse/vote-snapshots.json data-pipeline/warehouse/odds-snapshots.json
+          git add data-pipeline/warehouse/export data-pipeline/warehouse/vote-snapshots.json data-pipeline/warehouse/odds-snapshots.json data-pipeline/warehouse/odds-history.json
           if git diff --cached --quiet; then
             echo "No data changes this run."
           else
