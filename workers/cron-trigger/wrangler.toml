@@ -1,4 +1,4 @@
-name = "kickabout-cron-trigger"
+name = "worldcup-2026-cron-trigger"
 main = "src/index.ts"
 compatibility_date = "2026-07-01"
 
