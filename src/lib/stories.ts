@@ -7,12 +7,13 @@ import { provider } from './provider';
 import { getAfFixtures, type AfFixture } from './warehouse';
 import type { CollectionEntry } from 'astro:content';
 
-export type StoryKind = 'preview' | 'recap' | 'feature';
+export type StoryKind = 'preview' | 'recap' | 'postmatch' | 'feature';
 // `hero` is the FIXED panel colour per kind (design: HEROGRAD) — story heroes and
 // the match→story banner are coloured by kind, NOT by team.
 export const KIND_META: Record<StoryKind, { label: string; accent: string; bannerLabel: string; hero: string }> = {
-  preview: { label: 'Preview', accent: '#1f3fbf', bannerLabel: 'Match preview', hero: '#11643f' },
-  recap: { label: 'Recap', accent: '#138a5e', bannerLabel: 'Match recap', hero: '#9d2730' },
+  preview: { label: 'Pre-match predictions', accent: '#1f3fbf', bannerLabel: 'Pre-match prediction', hero: '#11643f' },
+  recap: { label: 'Post-match analytics', accent: '#9d2730', bannerLabel: 'Post-match analysis', hero: '#16181d' },
+  postmatch: { label: 'Post-match analytics', accent: '#9d2730', bannerLabel: 'Post-match analysis', hero: '#16181d' },
   feature: { label: 'Feature', accent: '#b23b2e', bannerLabel: 'Feature', hero: '#1f3fbf' },
 };
 
@@ -22,7 +23,7 @@ const teamIds = new Set(provider.getTeams().map((t) => t.id));
 /** Kind + the two team slugs an article is about (teams may be < 2 for features). */
 export function storyMeta(entry: CollectionEntry<'articles'>) {
   const tags = (entry.data.tags || []).map((t) => t.toLowerCase());
-  const kind = (['preview', 'recap', 'feature'] as StoryKind[]).find((k) => tags.includes(k)) ?? 'feature';
+  const kind = (['preview', 'recap', 'postmatch', 'feature'] as StoryKind[]).find((k) => tags.includes(k)) ?? 'feature';
   const teams = tags.filter((t) => teamIds.has(t)).slice(0, 2);
   return { kind, teams, a: teams[0] ?? null, b: teams[1] ?? null };
 }
@@ -38,7 +39,8 @@ export function fixtureForStory(entry: CollectionEntry<'articles'>): AfFixture |
   if (!fixtures.length) return null;
   // Prefer a fixture whose lifecycle matches the kind (recap→finished, preview→
   // upcoming/live); else just the first (e.g. two meetings is impossible in a WC).
-  const wantFinished = entry.data.tags?.map((t) => t.toLowerCase()).includes('recap');
+  const _lc = entry.data.tags?.map((t) => t.toLowerCase()) ?? [];
+  const wantFinished = _lc.includes('recap') || _lc.includes('postmatch');
   return fixtures.find((f) => FINISHED.has(f.status) === !!wantFinished) ?? fixtures[0];
 }
 
@@ -63,7 +65,7 @@ export function storyForMatch(
     .map((entry) => ({ entry, m: storyMeta(entry) }))
     .filter(({ m }) => m.a && m.b && pair.has(m.a) && pair.has(m.b));
   if (!candidates.length) return null;
-  const want: StoryKind = ended ? 'recap' : 'preview';
+  const want: StoryKind = ended ? 'postmatch' : 'preview';
   const pick = candidates.find(({ m }) => m.kind === want) ?? candidates[0];
   return { entry: pick.entry, kind: pick.m.kind };
 }
