@@ -49,7 +49,7 @@ const fMeta = featured ? meta(featured) : null;
 
     {/* filter pills (client-side) */}
     <div id="story-filters" class="mb-5 flex flex-wrap gap-2">
-      {[['all', 'All'], ['preview', 'Pre-match'], ['postmatch', 'Post-match'], ['feature', 'Features']].map(([k, label], i) => (
+      {[['all', 'All'], ['preview', 'Pre-match predictions'], ['postmatch', 'Post-match analytics'], ['feature', 'Features']].map(([k, label], i) => (
         <button data-sfilter={k} class="kb-sfilter cursor-pointer rounded-full border px-[15px] py-[7px] text-[13.5px] font-bold"
           style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:#fff;border-color:var(--color-line)'}>{label}</button>
       ))}
