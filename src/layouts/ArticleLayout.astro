@@ -7,6 +7,7 @@ import { provider } from '../lib/provider';
 import Flag from '../components/Flag.astro';
 import { fixtureForStory, matchHref, KIND_META } from '../lib/stories';
 import CommunityCTA from '../components/CommunityCTA.astro';
+import MatchForecast from '../components/MatchForecast.astro';
 
 interface Props {
   entry: CollectionEntry<'articles'>;
@@ -19,7 +20,7 @@ const canonical = `/articles/${entry.id}/`;
 
 // Derive kind + the two teams from tags (matches the stories hub vocabulary).
 const tags = (entry.data.tags || []).map((t) => t.toLowerCase());
-const kindKey = (['preview', 'recap', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
+const kindKey = (['preview', 'recap', 'postmatch', 'teamanalytics', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
 const kind = KIND_META[kindKey];
 const teamIds = new Set(provider.getTeams().map((t) => t.id));
 const matchTeams = tags.filter((t) => teamIds.has(t)).slice(0, 2).map((id) => provider.getTeam(id)!);
@@ -79,6 +80,8 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
     {matchUrl && (
       <a href={matchUrl} class="mt-[6px] mb-[4px] inline-block text-[14px] font-bold" style="color:var(--color-royal)">Get match analytics! →</a>
     )}
+
+    {kindKey === 'preview' && ta && tb && <MatchForecast home={ta.id} away={tb.id} />}
 
     <div class="prose prose-lg mt-3.5 max-w-none prose-headings:font-display prose-headings:tracking-tight">
       <slot />

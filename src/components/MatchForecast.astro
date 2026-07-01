@@ -1,0 +1,64 @@
+---
+// Pre-match forecast infographic for prediction articles. Prominent "Our call"
+// banner + the model bar and (where available) the market bar. Built from the
+// real model + odds at build time.
+import Flag from './Flag.astro';
+import { provider } from '../lib/provider';
+import { predict } from '../lib/model';
+import { getOddsPair } from '../lib/warehouse';
+
+interface Props { home: string; away: string }
+const { home, away } = Astro.props;
+const h = provider.getTeam(home)!, a = provider.getTeam(away)!;
+const pct = (x: number) => Math.round(x * 100);
+const pr = predict(h, a);
+const mh = pct(pr.win), md = pct(pr.draw), ma = pct(pr.lose);
+const favHome = pr.win >= pr.lose;
+const fav = favHome ? h : a;
+const favPct = Math.max(mh, ma);
+
+function mkt() {
+  const op = getOddsPair(home, away);
+  if (!op || !op.books?.length) return null;
+  let H = 0, D = 0, A = 0;
+  for (const b of op.books) { const ih = 1 / b.home, id = 1 / b.draw, ia = 1 / b.away, s = ih + id + ia; H += ih / s; D += id / s; A += ia / s; }
+  const n = op.books.length; let x = Math.round(H / n * 100), y = Math.round(D / n * 100), z = Math.round(A / n * 100);
+  if (op.homeId !== home) { const t = x; x = z; z = t; }
+  return { h: x, d: y, a: z };
+}
+const m = mkt();
+const barSeg = 'display:flex;align-items:center;justify-content:center;min-width:24px';
+---
+<figure style="margin:0 0 8px;border:1px solid var(--color-line);border-radius:18px;overflow:hidden;background:#fff">
+  <div style="background:var(--color-night);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:12px">
+    <span style="font-family:var(--font-display);font-weight:800;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--color-gold);white-space:nowrap">Our call</span>
+    <span style="flex:1;display:flex;align-items:center;justify-content:center;gap:10px">
+      <Flag team={fav.id} shape="circle" w={30} />
+      <b style="font-family:var(--font-display);font-weight:900;font-size:clamp(19px,4vw,26px);letter-spacing:-.5px">{fav.name} favoured</b>
+    </span>
+    <span style="font-family:var(--font-display);font-weight:900;font-size:clamp(22px,5vw,30px);color:var(--color-gold)">{favPct}%</span>
+  </div>
+  <div style="padding:15px 18px 17px">
+    <div style="display:flex;align-items:center;justify-content:space-between;font-family:var(--font-display);font-size:12px;font-weight:800">
+      <span style="display:flex;align-items:center;gap:8px"><Flag team={h.id} w={22} /> {h.shortCode}</span>
+      <span style="color:var(--color-ink-3)">draw</span>
+      <span style="display:flex;align-items:center;gap:8px">{a.shortCode} <Flag team={a.id} w={22} /></span>
+    </div>
+    <div style="margin-top:9px;font-family:var(--font-display);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--color-ink-3)">The model</div>
+    <div style="display:flex;height:26px;border-radius:8px;overflow:hidden;font-family:var(--font-display);font-weight:800;font-size:11px;margin-top:4px">
+      <div style={`width:${mh}%;background:var(--color-royal);color:#fff;${barSeg}`}>{mh}</div>
+      <div style={`width:${md}%;background:var(--color-surface-3);color:var(--color-ink-2);${barSeg}`}>{md}</div>
+      <div style={`width:${ma}%;background:var(--color-clay);color:#fff;${barSeg}`}>{ma}</div>
+    </div>
+    {m && (
+      <>
+        <div style="margin-top:11px;font-family:var(--font-display);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--color-ink-3)">The market</div>
+        <div style="display:flex;height:26px;border-radius:8px;overflow:hidden;font-family:var(--font-display);font-weight:800;font-size:11px;margin-top:4px">
+          <div style={`width:${m.h}%;background:var(--color-royal);color:#fff;${barSeg}`}>{m.h}</div>
+          <div style={`width:${m.d}%;background:var(--color-surface-3);color:var(--color-ink-2);${barSeg}`}>{m.d}</div>
+          <div style={`width:${m.a}%;background:var(--color-clay);color:#fff;${barSeg}`}>{m.a}</div>
+        </div>
+      </>
+    )}
+  </div>
+</figure>

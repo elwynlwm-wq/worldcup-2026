@@ -1,0 +1,61 @@
+---
+// Team analytics infographic: header, key stats, top scorers, and a match-by-
+// match result + expected-goals readout. Data baked from D1 (worldcup-team-profiles).
+import Flag from './Flag.astro';
+import profiles from '../data/worldcup-team-profiles.json';
+interface Props { team: string }
+const { team } = Astro.props;
+const p: any = (profiles as any)[team];
+const statusLabel: Record<string,string> = { winner:'Group winner', runner_up:'Group runner-up', best_third:'Best third-placed', contention:'Qualified', eliminated:'Eliminated in group' };
+const w=p.matches.filter((m:any)=>m.res==='W').length, d=p.matches.filter((m:any)=>m.res==='D').length, l=p.matches.filter((m:any)=>m.res==='L').length;
+const gf=p.matches.reduce((s:number,m:any)=>s+m.gf,0), ga=p.matches.reduce((s:number,m:any)=>s+m.ga,0);
+const xm=p.matches.filter((m:any)=>m.xgF!=null);
+const xgF=xm.length? xm.reduce((s:number,m:any)=>s+m.xgF,0)/xm.length : null;
+const xgA=xm.length? xm.reduce((s:number,m:any)=>s+m.xgA,0)/xm.length : null;
+const maxXg=Math.max(1,...p.matches.flatMap((m:any)=>[m.xgF||0,m.xgA||0]));
+const rc: Record<string,string>={W:'var(--color-pitch)',D:'var(--color-ink-3)',L:'var(--color-clay)'};
+const stageLbl: Record<string,string>={group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF',final:'Final'};
+const stats:[string,string][]=[[`${w}-${d}-${l}`,'W-D-L'],[`${gf}:${ga}`,'goals'],[xgF!=null?xgF.toFixed(2):'—','avg xG for'],[xgA!=null?xgA.toFixed(2):'—','avg xG ag.']];
+---
+<figure style="margin:0 0 10px;border:1px solid var(--color-line);border-radius:18px;overflow:hidden;background:#fff">
+  <div style="background:var(--color-night);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:14px">
+    <Flag team={team} shape="circle" w={46} />
+    <div style="flex:1;min-width:0">
+      <div style="font-family:var(--font-display);font-weight:900;font-size:22px;letter-spacing:-.5px">{p.name}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6)">{p.conf} · {statusLabel[p.status]??p.status} · {p.coach}</div>
+    </div>
+    <div style="text-align:right;flex:none">
+      <div style="font-family:var(--font-display);font-weight:900;color:var(--color-gold);font-size:20px">#{p.rank}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em">FIFA · Elo {p.elo}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--color-line)">
+    {stats.map(([v,k])=>(<div style="background:#fff;padding:12px 6px;text-align:center"><div style="font-family:var(--font-display);font-weight:900;font-size:17px">{v}</div><div style="font-size:10px;color:var(--color-ink-3);text-transform:uppercase;letter-spacing:.04em">{k}</div></div>))}
+  </div>
+  {p.star.length>0 && (
+    <div style="padding:11px 16px;border-bottom:1px solid var(--color-surface-3);font-size:12.5px">
+      <span style="font-family:var(--font-display);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--color-ink-3)">Top scorers&nbsp;</span>
+      {p.star.slice(0,3).map((s:any,i:number)=>(<span style="font-family:var(--font-display);font-weight:700">{i>0?' · ':''}{s.name} <span style="color:var(--color-ink-3);font-weight:600">{s.goals}</span></span>))}
+    </div>
+  )}
+  <div style="padding:12px 16px 16px">
+    <div style="font-family:var(--font-display);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--color-ink-3);margin-bottom:6px">Every match · result &amp; expected goals</div>
+    {p.matches.map((m:any)=>(
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-top:1px solid var(--color-surface-3)">
+        <span style={`width:16px;font-family:var(--font-display);font-weight:900;font-size:12px;color:${rc[m.res]}`}>{m.res}</span>
+        <span style="width:14px;font-size:9px;color:var(--color-ink-3);font-family:var(--font-display);font-weight:700">{stageLbl[m.stage]??''}</span>
+        <span style="display:flex;align-items:center;gap:6px;width:74px"><Flag team={m.oppId} w={17} /> <span style="font-family:var(--font-display);font-weight:700;font-size:12px">{m.oppCode}</span></span>
+        <span style="font-family:var(--font-display);font-weight:800;font-size:13px;width:30px">{m.gf}-{m.ga}</span>
+        {m.xgF!=null ? (
+          <span style="flex:1;display:flex;align-items:center;gap:5px;font-size:10px">
+            <span style={`height:7px;border-radius:4px;background:var(--color-royal);width:${Math.round((m.xgF/maxXg)*64)}px`}></span>
+            <span style="font-family:var(--font-display);font-weight:700;color:var(--color-ink-2)">{m.xgF.toFixed(1)}</span>
+            <span style="color:var(--color-ink-3)">xG</span>
+            <span style="font-family:var(--font-display);font-weight:700;color:var(--color-ink-2)">{m.xgA.toFixed(1)}</span>
+            <span style={`height:7px;border-radius:4px;background:var(--color-clay);width:${Math.round((m.xgA/maxXg)*64)}px`}></span>
+          </span>
+        ) : <span style="flex:1;font-size:10px;color:var(--color-ink-3)">no xG (shootout)</span>}
+      </div>
+    ))}
+  </div>
+</figure>
