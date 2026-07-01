@@ -16,7 +16,7 @@ import { ROOT, WAREHOUSE_DIR } from '../lib/util';
 
 const DB_PATH = join(WAREHOUSE_DIR, 'warehouse.db');
 const DUMP_PATH = join(WAREHOUSE_DIR, 'warehouse-d1.sql');
-const D1_NAME = process.env.D1_NAME || 'kickabout-warehouse';
+const D1_NAME = process.env.D1_NAME || 'worldcup-site';
 const INSERT_BATCH = 500; // rows per multi-row INSERT (keeps statements D1-friendly)
 
 function sqlLiteral(v: unknown): string {
