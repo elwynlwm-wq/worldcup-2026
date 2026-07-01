@@ -7,13 +7,14 @@ import { provider } from './provider';
 import { getAfFixtures, type AfFixture } from './warehouse';
 import type { CollectionEntry } from 'astro:content';
 
-export type StoryKind = 'preview' | 'recap' | 'postmatch' | 'feature';
+export type StoryKind = 'preview' | 'recap' | 'postmatch' | 'teamanalytics' | 'feature';
 // `hero` is the FIXED panel colour per kind (design: HEROGRAD) — story heroes and
 // the match→story banner are coloured by kind, NOT by team.
 export const KIND_META: Record<StoryKind, { label: string; accent: string; bannerLabel: string; hero: string }> = {
   preview: { label: 'Pre-match predictions', accent: '#1f3fbf', bannerLabel: 'Pre-match prediction', hero: '#11643f' },
   recap: { label: 'Post-match analytics', accent: '#9d2730', bannerLabel: 'Post-match analysis', hero: '#16181d' },
   postmatch: { label: 'Post-match analytics', accent: '#9d2730', bannerLabel: 'Post-match analysis', hero: '#16181d' },
+  teamanalytics: { label: 'Team analytics', accent: '#0e7490', bannerLabel: 'Team analytics', hero: '#0e7490' },
   feature: { label: 'Feature', accent: '#b23b2e', bannerLabel: 'Feature', hero: '#1f3fbf' },
 };
 
@@ -23,7 +24,7 @@ const teamIds = new Set(provider.getTeams().map((t) => t.id));
 /** Kind + the two team slugs an article is about (teams may be < 2 for features). */
 export function storyMeta(entry: CollectionEntry<'articles'>) {
   const tags = (entry.data.tags || []).map((t) => t.toLowerCase());
-  const kind = (['preview', 'recap', 'postmatch', 'feature'] as StoryKind[]).find((k) => tags.includes(k)) ?? 'feature';
+  const kind = (['preview', 'recap', 'postmatch', 'teamanalytics', 'feature'] as StoryKind[]).find((k) => tags.includes(k)) ?? 'feature';
   const teams = tags.filter((t) => teamIds.has(t)).slice(0, 2);
   return { kind, teams, a: teams[0] ?? null, b: teams[1] ?? null };
 }

@@ -12,8 +12,9 @@ interface Props {
   scorers?: Scorer[];
   stage?: string; date?: string; venue?: string;
   headline?: string; pens?: string;
+  homeXg?: number; awayXg?: number;
 }
-const { home, away, homeScore, awayScore, scorers = [], stage, date, venue, headline, pens } = Astro.props;
+const { home, away, homeScore, awayScore, scorers = [], stage, date, venue, headline, pens, homeXg, awayXg } = Astro.props;
 const hName = provider.getTeam(home)?.name ?? home;
 const aName = provider.getTeam(away)?.name ?? away;
 const homeG = scorers.filter((s) => s.side === 'home');
@@ -37,6 +38,12 @@ const awayG = scorers.filter((s) => s.side === 'away');
   </div>
   {pens && (
     <div style="text-align:center;margin-top:12px;font-family:var(--font-display);font-weight:800;font-size:13px;color:var(--color-gold)">{pens}</div>
+  )}
+  {homeXg != null && awayXg != null && (
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;font-family:var(--font-display);font-size:12px;font-weight:800;color:rgba(255,255,255,.8)">
+      <span style="color:rgba(255,255,255,.5);font-size:10px;letter-spacing:.14em;text-transform:uppercase">Expected goals</span>
+      <span>{homeXg.toFixed(2)}</span><span style="opacity:.4">–</span><span>{awayXg.toFixed(2)}</span>
+    </div>
   )}
   {(homeG.length > 0 || awayG.length > 0) && (
     <div style="display:flex;justify-content:space-between;gap:16px;margin-top:18px;border-top:1px solid rgba(255,255,255,.14);padding-top:13px;font-size:13px">

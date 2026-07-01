@@ -20,7 +20,7 @@ const canonical = `/articles/${entry.id}/`;
 
 // Derive kind + the two teams from tags (matches the stories hub vocabulary).
 const tags = (entry.data.tags || []).map((t) => t.toLowerCase());
-const kindKey = (['preview', 'recap', 'postmatch', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
+const kindKey = (['preview', 'recap', 'postmatch', 'teamanalytics', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
 const kind = KIND_META[kindKey];
 const teamIds = new Set(provider.getTeams().map((t) => t.id));
 const matchTeams = tags.filter((t) => teamIds.has(t)).slice(0, 2).map((id) => provider.getTeam(id)!);
