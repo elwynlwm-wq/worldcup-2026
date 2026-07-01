@@ -99,7 +99,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Julián Quiñones",
+"g": 3,
+"a": 1,
+"apps": 4,
+"rating": 7.72
+},
+"next": null
 },
 "south-africa": {
 "name": "South Africa",
@@ -186,7 +195,25 @@
 "g": 1,
 "p": 1
 }
-]
+],
+"inj": [
+{
+"name": "T. Zwane",
+"reason": "Suspension Through Sports Court"
+},
+{
+"name": "T. Mokoena",
+"reason": "Yellow Card"
+}
+],
+"best": {
+"name": "Teboho Mokoena",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 7.07
+},
+"next": null
 },
 "south-korea": {
 "name": "South Korea",
@@ -263,7 +290,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Hwang In-beom",
+"g": 1,
+"a": 1,
+"apps": 3,
+"rating": 7.47
+},
+"next": null
 },
 "czechia": {
 "name": "Czechia",
@@ -340,7 +376,21 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "D. Jurásek",
+"reason": "Thigh problems"
+}
+],
+"best": {
+"name": "Michal Sadílek",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 7.1
+},
+"next": null
 },
 "switzerland": {
 "name": "Switzerland",
@@ -427,7 +477,35 @@
 "g": 1,
 "p": 1
 }
-]
+],
+"inj": [
+{
+"name": "M. Muheim",
+"reason": "Calf Muscle Strain"
+}
+],
+"best": {
+"name": "Johan Manzambi",
+"g": 3,
+"a": 1,
+"apps": 3,
+"rating": 7.63
+},
+"next": {
+"oppId": "algeria",
+"opp": "Algeria",
+"date": "2026-07-03",
+"stage": "r32",
+"home": true,
+"pct": 74,
+"h2h": {
+"p": 2,
+"w": 2,
+"d": 0,
+"l": 0,
+"last": "1986-05-06"
+}
+}
 },
 "canada": {
 "name": "Canada",
@@ -534,7 +612,39 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "I. Koné",
+"reason": "Fracture Of Lower Leg"
+},
+{
+"name": "A. Jones",
+"reason": "Muscle Bruise"
+}
+],
+"best": {
+"name": "Nathan-Dylan Saliba",
+"g": 1,
+"a": 2,
+"apps": 4,
+"rating": 7.5
+},
+"next": {
+"oppId": "morocco",
+"opp": "Morocco",
+"date": "2026-07-04",
+"stage": "r16",
+"home": true,
+"pct": 42,
+"h2h": {
+"p": 4,
+"w": 0,
+"d": 1,
+"l": 3,
+"last": "2022-12-01"
+}
+}
 },
 "bosnia-and-herzegovina": {
 "name": "Bosnia and Herzegovina",
@@ -621,7 +731,35 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "T. Muharemović",
+"reason": "Red Card"
+}
+],
+"best": {
+"name": "Ermin Mahmić",
+"g": 2,
+"a": 0,
+"apps": 2,
+"rating": 7.55
+},
+"next": {
+"oppId": "united-states",
+"opp": "United States",
+"date": "2026-07-02",
+"stage": "r32",
+"home": false,
+"pct": 23,
+"h2h": {
+"p": 3,
+"w": 0,
+"d": 1,
+"l": 2,
+"last": "2021-12-18"
+}
+}
 },
 "qatar": {
 "name": "Qatar",
@@ -698,7 +836,25 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "Assim Madibo",
+"reason": "Red Card"
+},
+{
+"name": "Homam Ahmed",
+"reason": "Red Card"
+}
+],
+"best": {
+"name": "Hassan Al Haydos",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 6.8
+},
+"next": null
 },
 "brazil": {
 "name": "Brazil",
@@ -785,7 +941,39 @@
 "g": 3,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "Raphinha",
+"reason": "Hamstring Muscle Injury"
+},
+{
+"name": "Neymar",
+"reason": "Calf Injury"
+}
+],
+"best": {
+"name": "Vinícius Júnior",
+"g": 4,
+"a": 1,
+"apps": 4,
+"rating": 8.22
+},
+"next": {
+"oppId": "norway",
+"opp": "Norway",
+"date": "2026-07-05",
+"stage": "r16",
+"home": true,
+"pct": 70,
+"h2h": {
+"p": 4,
+"w": 0,
+"d": 2,
+"l": 2,
+"last": "2006-08-16"
+}
+}
 },
 "morocco": {
 "name": "Morocco",
@@ -882,7 +1070,30 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Ismael Saibari",
+"g": 3,
+"a": 0,
+"apps": 3,
+"rating": 7.67
+},
+"next": {
+"oppId": "canada",
+"opp": "Canada",
+"date": "2026-07-04",
+"stage": "r16",
+"home": false,
+"pct": 58,
+"h2h": {
+"p": 4,
+"w": 3,
+"d": 1,
+"l": 0,
+"last": "2022-12-01"
+}
+}
 },
 "scotland": {
 "name": "Scotland",
@@ -954,7 +1165,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "John McGinn",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 6.7
+},
+"next": null
 },
 "haiti": {
 "name": "Haiti",
@@ -1031,7 +1251,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Wilson Isidor",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 6.73
+},
+"next": null
 },
 "united-states": {
 "name": "United States",
@@ -1133,7 +1362,39 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "C. Roldan",
+"reason": "Muscle bruise"
+},
+{
+"name": "C. Pulišić",
+"reason": "Calf muscle strain"
+}
+],
+"best": {
+"name": "Folarin Balogun",
+"g": 2,
+"a": 0,
+"apps": 3,
+"rating": 7.75
+},
+"next": {
+"oppId": "bosnia-and-herzegovina",
+"opp": "Bosnia and Herzegovina",
+"date": "2026-07-02",
+"stage": "r32",
+"home": true,
+"pct": 77,
+"h2h": {
+"p": 3,
+"w": 2,
+"d": 1,
+"l": 0,
+"last": "2021-12-18"
+}
+}
 },
 "australia": {
 "name": "Australia",
@@ -1210,7 +1471,35 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "J. Italiano",
+"reason": "Adductor Injury"
+}
+],
+"best": {
+"name": "Connor Metcalfe",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 7.07
+},
+"next": {
+"oppId": "egypt",
+"opp": "Egypt",
+"date": "2026-07-03",
+"stage": "r32",
+"home": true,
+"pct": 66,
+"h2h": {
+"p": 2,
+"w": 0,
+"d": 1,
+"l": 1,
+"last": "2010-11-17"
+}
+}
 },
 "paraguay": {
 "name": "Paraguay",
@@ -1297,7 +1586,25 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "D. Gómez",
+"reason": "Yellow Card"
+},
+{
+"name": "M. Almirón",
+"reason": "Red Card"
+}
+],
+"best": {
+"name": "Julio Enciso",
+"g": 0,
+"a": 2,
+"apps": 3,
+"rating": 6.93
+},
+"next": null
 },
 "turkiye": {
 "name": "Turkiye",
@@ -1379,7 +1686,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Barış Alper Yılmaz",
+"g": 1,
+"a": 1,
+"apps": 3,
+"rating": 6.8
+},
+"next": null
 },
 "germany": {
 "name": "Germany",
@@ -1491,7 +1807,25 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "N. Brown",
+"reason": "Adductor Injury"
+},
+{
+"name": "N. Schlotterbeck",
+"reason": "Ligament Stretching"
+}
+],
+"best": {
+"name": "Deniz Undav",
+"g": 3,
+"a": 2,
+"apps": 3,
+"rating": 7.63
+},
+"next": null
 },
 "ivory-coast": {
 "name": "Ivory Coast",
@@ -1583,7 +1917,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Nicolas Pépé",
+"g": 2,
+"a": 1,
+"apps": 4,
+"rating": 7.1
+},
+"next": null
 },
 "ecuador": {
 "name": "Ecuador",
@@ -1670,7 +2013,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Pedro Vite",
+"g": 0,
+"a": 1,
+"apps": 4,
+"rating": 7.47
+},
+"next": null
 },
 "curacao": {
 "name": "Curacao",
@@ -1742,7 +2094,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Livano Comenencia",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 6.9
+},
+"next": null
 },
 "netherlands": {
 "name": "Netherlands",
@@ -1849,7 +2210,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Crysencio Summerville",
+"g": 2,
+"a": 1,
+"apps": 3,
+"rating": 7.7
+},
+"next": null
 },
 "japan": {
 "name": "Japan",
@@ -1951,7 +2321,25 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "S. Machino",
+"reason": "Illness"
+},
+{
+"name": "T. Kubo",
+"reason": "Injury"
+}
+],
+"best": {
+"name": "Ayase Ueda",
+"g": 2,
+"a": 1,
+"apps": 4,
+"rating": 7.28
+},
+"next": null
 },
 "sweden": {
 "name": "Sweden",
@@ -2053,7 +2441,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Alexander Isak",
+"g": 1,
+"a": 3,
+"apps": 4,
+"rating": 7
+},
+"next": null
 },
 "tunisia": {
 "name": "Tunisia",
@@ -2130,7 +2527,25 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "A. Arous",
+"reason": "Wound"
+},
+{
+"name": "M. Neffati",
+"reason": "Wound"
+}
+],
+"best": {
+"name": "Hannibal Mejbri",
+"g": 0,
+"a": 2,
+"apps": 3,
+"rating": 7.07
+},
+"next": null
 },
 "egypt": {
 "name": "Egypt",
@@ -2222,7 +2637,39 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "Hamdi Fathy",
+"reason": "Muscle Bruise"
+},
+{
+"name": "Hossam Abdelmaguid",
+"reason": "Suspension Through Sports Court"
+}
+],
+"best": {
+"name": "Mohamed Salah",
+"g": 1,
+"a": 2,
+"apps": 3,
+"rating": 7.43
+},
+"next": {
+"oppId": "australia",
+"opp": "Australia",
+"date": "2026-07-03",
+"stage": "r32",
+"home": false,
+"pct": 34,
+"h2h": {
+"p": 2,
+"w": 1,
+"d": 1,
+"l": 0,
+"last": "2010-11-17"
+}
+}
 },
 "iran": {
 "name": "Iran",
@@ -2299,7 +2746,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Ramin Rezaeian",
+"g": 2,
+"a": 1,
+"apps": 3,
+"rating": 7.7
+},
+"next": null
 },
 "belgium": {
 "name": "Belgium",
@@ -2391,7 +2847,37 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "Z. Debast",
+"reason": "Injury"
+},
+{
+"name": "J. Doku",
+"reason": "Illness"
+},
+{
+"name": "N. Ngoy",
+"reason": "Red Card"
+}
+],
+"best": {
+"name": "Leandro Trossard",
+"g": 2,
+"a": 0,
+"apps": 3,
+"rating": 8.03
+},
+"next": {
+"oppId": "senegal",
+"opp": "Senegal",
+"date": "2026-07-01",
+"stage": "r32",
+"home": true,
+"pct": 64,
+"h2h": null
+}
 },
 "new-zealand": {
 "name": "New Zealand",
@@ -2468,7 +2954,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Elijah Just",
+"g": 3,
+"a": 0,
+"apps": 3,
+"rating": 7.83
+},
+"next": null
 },
 "spain": {
 "name": "Spain",
@@ -2555,7 +3050,30 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Mikel Oyarzabal",
+"g": 2,
+"a": 1,
+"apps": 3,
+"rating": 7.17
+},
+"next": {
+"oppId": "austria",
+"opp": "Austria",
+"date": "2026-07-02",
+"stage": "r32",
+"home": true,
+"pct": 89,
+"h2h": {
+"p": 16,
+"w": 9,
+"d": 3,
+"l": 4,
+"last": "2009-11-18"
+}
+}
 },
 "uruguay": {
 "name": "Uruguay",
@@ -2632,7 +3150,25 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "G. de Arrascaeta",
+"reason": "Muscle Bruise"
+},
+{
+"name": "R. Araújo",
+"reason": "Muscle Bruise"
+}
+],
+"best": {
+"name": "Maximiliano Araújo",
+"g": 2,
+"a": 1,
+"apps": 3,
+"rating": 7.43
+},
+"next": null
 },
 "cape-verde": {
 "name": "Cape Verde",
@@ -2709,7 +3245,29 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "S. Lopes Cabral",
+"reason": "Yellow Card"
+}
+],
+"best": {
+"name": "Kevin Lenini",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 7.17
+},
+"next": {
+"oppId": "argentina",
+"opp": "Argentina",
+"date": "2026-07-03",
+"stage": "r32",
+"home": false,
+"pct": 3,
+"h2h": null
+}
 },
 "saudi-arabia": {
 "name": "Saudi Arabia",
@@ -2781,7 +3339,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Abdulelah Al-Amri",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 6.97
+},
+"next": null
 },
 "france": {
 "name": "France",
@@ -2878,7 +3445,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Kylian Mbappé",
+"g": 6,
+"a": 2,
+"apps": 4,
+"rating": 8.65
+},
+"next": null
 },
 "norway": {
 "name": "Norway",
@@ -2980,7 +3556,30 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Erling Haaland",
+"g": 5,
+"a": 0,
+"apps": 4,
+"rating": 8.07
+},
+"next": {
+"oppId": "brazil",
+"opp": "Brazil",
+"date": "2026-07-05",
+"stage": "r16",
+"home": false,
+"pct": 30,
+"h2h": {
+"p": 4,
+"w": 2,
+"d": 2,
+"l": 0,
+"last": "2006-08-16"
+}
+}
 },
 "senegal": {
 "name": "Senegal",
@@ -3072,7 +3671,29 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "É. Mendy",
+"reason": "Twisted Knee"
+}
+],
+"best": {
+"name": "Ismaïla Sarr",
+"g": 3,
+"a": 1,
+"apps": 3,
+"rating": 7.4
+},
+"next": {
+"oppId": "belgium",
+"opp": "Belgium",
+"date": "2026-07-01",
+"stage": "r32",
+"home": false,
+"pct": 36,
+"h2h": null
+}
 },
 "iraq": {
 "name": "Iraq",
@@ -3144,7 +3765,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Aymen Hussein",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 6.9
+},
+"next": null
 },
 "argentina": {
 "name": "Argentina",
@@ -3226,7 +3856,24 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Lionel Messi",
+"g": 6,
+"a": 0,
+"apps": 3,
+"rating": 9.27
+},
+"next": {
+"oppId": "cape-verde",
+"opp": "Cape Verde",
+"date": "2026-07-03",
+"stage": "r32",
+"home": true,
+"pct": 97,
+"h2h": null
+}
 },
 "austria": {
 "name": "Austria",
@@ -3318,7 +3965,30 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Marko Arnautović",
+"g": 2,
+"a": 0,
+"apps": 3,
+"rating": 6.97
+},
+"next": {
+"oppId": "spain",
+"opp": "Spain",
+"date": "2026-07-02",
+"stage": "r32",
+"home": false,
+"pct": 11,
+"h2h": {
+"p": 16,
+"w": 4,
+"d": 3,
+"l": 9,
+"last": "2009-11-18"
+}
+}
 },
 "algeria": {
 "name": "Algeria",
@@ -3405,7 +4075,35 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "M. Amoura",
+"reason": "Hamstring muscle injury"
+}
+],
+"best": {
+"name": "Riyad Mahrez",
+"g": 2,
+"a": 1,
+"apps": 3,
+"rating": 7.73
+},
+"next": {
+"oppId": "switzerland",
+"opp": "Switzerland",
+"date": "2026-07-03",
+"stage": "r32",
+"home": false,
+"pct": 26,
+"h2h": {
+"p": 2,
+"w": 0,
+"d": 0,
+"l": 2,
+"last": "1986-05-06"
+}
+}
 },
 "jordan": {
 "name": "Jordan",
@@ -3487,7 +4185,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Mousa Tamari",
+"g": 1,
+"a": 1,
+"apps": 3,
+"rating": 7.03
+},
+"next": null
 },
 "colombia": {
 "name": "Colombia",
@@ -3569,7 +4276,24 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Daniel Muñoz",
+"g": 2,
+"a": 0,
+"apps": 3,
+"rating": 7.43
+},
+"next": {
+"oppId": "ghana",
+"opp": "Ghana",
+"date": "2026-07-04",
+"stage": "r32",
+"home": true,
+"pct": 94,
+"h2h": null
+}
 },
 "portugal": {
 "name": "Portugal",
@@ -3661,7 +4385,30 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Cristiano Ronaldo",
+"g": 2,
+"a": 0,
+"apps": 3,
+"rating": 7.07
+},
+"next": {
+"oppId": "croatia",
+"opp": "Croatia",
+"date": "2026-07-02",
+"stage": "r32",
+"home": true,
+"pct": 69,
+"h2h": {
+"p": 10,
+"w": 7,
+"d": 2,
+"l": 1,
+"last": "2024-11-18"
+}
+}
 },
 "dr-congo": {
 "name": "DR Congo",
@@ -3738,7 +4485,24 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Yoane Wissa",
+"g": 3,
+"a": 0,
+"apps": 3,
+"rating": 7.27
+},
+"next": {
+"oppId": "england",
+"opp": "England",
+"date": "2026-07-01",
+"stage": "r32",
+"home": false,
+"pct": 10,
+"h2h": null
+}
 },
 "uzbekistan": {
 "name": "Uzbekistan",
@@ -3815,7 +4579,16 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Abbosbek Fayzullaev",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 6.87
+},
+"next": null
 },
 "england": {
 "name": "England",
@@ -3897,7 +4670,29 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [
+{
+"name": "R. James",
+"reason": "Hamstring Injury"
+}
+],
+"best": {
+"name": "Jude Bellingham",
+"g": 2,
+"a": 1,
+"apps": 3,
+"rating": 7.67
+},
+"next": {
+"oppId": "dr-congo",
+"opp": "DR Congo",
+"date": "2026-07-01",
+"stage": "r32",
+"home": true,
+"pct": 90,
+"h2h": null
+}
 },
 "ghana": {
 "name": "Ghana",
@@ -3974,7 +4769,24 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Derrick Luckassen",
+"g": 1,
+"a": 0,
+"apps": 3,
+"rating": 7.2
+},
+"next": {
+"oppId": "colombia",
+"opp": "Colombia",
+"date": "2026-07-04",
+"stage": "r32",
+"home": false,
+"pct": 6,
+"h2h": null
+}
 },
 "croatia": {
 "name": "Croatia",
@@ -4066,7 +4878,30 @@
 "g": 1,
 "p": 0
 }
-]
+],
+"inj": [],
+"best": {
+"name": "Petar Sučić",
+"g": 1,
+"a": 1,
+"apps": 3,
+"rating": 7.2
+},
+"next": {
+"oppId": "portugal",
+"opp": "Portugal",
+"date": "2026-07-02",
+"stage": "r32",
+"home": false,
+"pct": 31,
+"h2h": {
+"p": 10,
+"w": 1,
+"d": 2,
+"l": 7,
+"last": "2024-11-18"
+}
+}
 },
 "panama": {
 "name": "Panama",
@@ -4132,6 +4967,15 @@
 "xgA": 1.49
 }
 ],
-"tscorers": []
+"tscorers": [],
+"inj": [],
+"best": {
+"name": "Andrés Andrade",
+"g": 0,
+"a": 0,
+"apps": 3,
+"rating": 7
+},
+"next": null
 }
 }
