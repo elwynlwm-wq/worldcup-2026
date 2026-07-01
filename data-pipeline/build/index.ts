@@ -61,6 +61,12 @@ function stageForAfRound(round: string): string {
 
 async function main() {
   ensureDir(WAREHOUSE_DIR);
+  // REFRESH=1 forces the LIVE sources (fixtures list, standings, SS match list) to
+  // re-hit the API so new results/statuses land. Per-fixture detail stays cached by
+  // id, so only NEWLY-finished matches (no cache yet) fetch their stats/events —
+  // keeping the hourly API budget tiny. Dev runs (no REFRESH) stay fully cached.
+  const REFRESH = process.env.REFRESH === '1';
+  if (REFRESH) console.log('REFRESH=1 — forcing live fixtures/standings/SS refresh');
   const db = new Database(DB_PATH);
   db.pragma('journal_mode = WAL');
 
@@ -156,7 +162,7 @@ async function main() {
   for (const t of afTeams) afTeamSlug.set(t.id, countryToTeamSlug(t.name, validTeamIds));
 
   // Fixtures
-  const afFixtures = await fetchAfFixtures();
+  const afFixtures = await fetchAfFixtures({ force: REFRESH });
   const insAfFixture = db.prepare(`INSERT OR REPLACE INTO af_fixture
     (id,date,status_short,status_long,elapsed,round,stage,venue,city,
      home_team_id,away_team_id,home_name_raw,away_name_raw,home_score,away_score)
@@ -223,7 +229,7 @@ async function main() {
   console.log(`  ${afPlayerCount} AF players; ${photoMatched}/${snap.players.length} photos matched to our players`);
 
   // ---- AF standings (group tables) ----
-  const standings = await fetchAfStandings();
+  const standings = await fetchAfStandings({ force: REFRESH });
   const insStanding = db.prepare(`INSERT INTO af_standing
     (group_name,rank,team_id,team_name_raw,played,win,draw,lose,goals_for,goals_against,points,form)
     VALUES (@group_name,@rank,@team_id,@team_name_raw,@played,@win,@draw,@lose,@goals_for,@goals_against,@points,@form)`);
@@ -316,7 +322,7 @@ async function main() {
   // Scraped/resold — not for publishing. Reconcile SS matches → our team slugs
   // by name; fetch votes + predicted XI only for mapped matches (saves calls).
   console.log('Loading SofaScore (dev source: votes + predicted lineups)…');
-  const ssMatches = await fetchSsMatches();
+  const ssMatches = await fetchSsMatches({ force: REFRESH });
   const insSsMatch = db.prepare(`INSERT OR REPLACE INTO ss_match
     (id,home_team_id,away_team_id,home_name_raw,away_name_raw,start_ts,status)
     VALUES (@id,@home_team_id,@away_team_id,@home_name_raw,@away_name_raw,@start_ts,@status)`);
