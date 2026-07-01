@@ -330,3 +330,35 @@ export async function fetchAfFixtureOdds(fixtureId: number): Promise<AfOdds[]> {
   }
   return out;
 }
+
+export interface AfInjury {
+  fixtureId: number | null;
+  afTeamId: number | null;
+  afPlayerId: number | null;
+  playerName: string;
+  type: string | null;    // "Missing Fixture" | "Questionable" | ...
+  reason: string | null;  // "Calf Injury" | "Suspended" | ...
+  date: string | null;    // fixture date (ISO)
+}
+
+/**
+ * Injuries & suspensions for the whole tournament (one call, league+season).
+ * A key writer-facing fact. Forced fresh each run (REFRESH) since it changes as
+ * squads announce; not cached by fixture.
+ */
+export async function fetchAfInjuries(opts: { force?: boolean } = {}): Promise<AfInjury[]> {
+  const j = await afGet(
+    `/injuries?league=${WC_LEAGUE}&season=${WC_SEASON}`,
+    'apifootball-injuries-2026.json',
+    opts,
+  );
+  return (j.response || []).map((r: any) => ({
+    fixtureId: r.fixture?.id ?? null,
+    afTeamId: r.team?.id ?? null,
+    afPlayerId: r.player?.id ?? null,
+    playerName: r.player?.name ?? '',
+    type: r.player?.type ?? null,
+    reason: r.player?.reason ?? null,
+    date: r.fixture?.date ?? null,
+  }));
+}

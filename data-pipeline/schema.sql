@@ -14,6 +14,7 @@ PRAGMA foreign_keys = ON;
 DROP TABLE IF EXISTS ss_predicted_lineup_player;
 DROP TABLE IF EXISTS ss_vote;
 DROP TABLE IF EXISTS ss_match;
+DROP TABLE IF EXISTS af_injury;
 DROP TABLE IF EXISTS af_odds;
 DROP TABLE IF EXISTS af_player_stat;
 DROP TABLE IF EXISTS af_lineup_player;
@@ -283,6 +284,20 @@ CREATE TABLE af_odds (
   away_odd      REAL
 );
 CREATE INDEX idx_afodds_fixture ON af_odds(fixture_id);
+
+-- Injuries & suspensions (API-Football /injuries) for the tournament. A key
+-- writer-facing fact ("who's out") — structured & verifiable. Full-replaced each
+-- run. `type` = e.g. "Missing Fixture"/"Questionable"; `reason` = the ailment.
+CREATE TABLE af_injury (
+  fixture_id    INTEGER,                   -- the fixture they miss (AF id)
+  af_team_id    INTEGER, team_id TEXT,     -- our slug if mapped
+  af_player_id  INTEGER, player_name TEXT,
+  type          TEXT,                      -- "Missing Fixture" | "Questionable" | ...
+  reason        TEXT,                      -- "Calf Injury", "Suspended", ...
+  date          TEXT                       -- fixture date (ISO)
+);
+CREATE INDEX idx_afinjury_team ON af_injury(team_id);
+CREATE INDEX idx_afinjury_fixture ON af_injury(fixture_id);
 
 -- ---------------------------------------------------------------------------
 -- SofaScore (scraped via RapidAPI) — DEV SOURCE ONLY, own namespace.

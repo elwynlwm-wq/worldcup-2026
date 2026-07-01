@@ -244,6 +244,19 @@ function main() {
   }
   write('odds-by-pair.json', oddsByPair);
 
+  // injuries.json — injuries/suspensions grouped by team slug (writer-facing).
+  const injRows = db
+    .prepare(
+      `SELECT team_id AS teamId, player_name AS name, type, reason, date, fixture_id AS fixtureId
+       FROM af_injury WHERE team_id IS NOT NULL ORDER BY team_id, date`,
+    )
+    .all() as Array<{ teamId: string; name: string; type: string; reason: string; date: string; fixtureId: number }>;
+  const injByTeam: Record<string, any[]> = {};
+  for (const r of injRows) {
+    (injByTeam[r.teamId] ??= []).push({ name: r.name, type: r.type, reason: r.reason, date: r.date, fixtureId: r.fixtureId });
+  }
+  write('injuries.json', injByTeam);
+
   // Assemble per-pair: { votes, frozen, lineups }. `votes` prefers the frozen
   // snapshot when present, so the site always renders the pre-match value.
   const ssByPair: Record<string, any> = {};

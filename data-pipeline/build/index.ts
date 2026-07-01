@@ -20,6 +20,7 @@ import {
   fetchAfFixtureLineups,
   fetchAfFixturePlayers,
   fetchAfFixtureOdds,
+  fetchAfInjuries,
 } from '../fetch/apifootball';
 import { fetchSsMatches, fetchSsVotes, fetchSsLineup } from '../fetch/sofascore';
 import {
@@ -317,6 +318,28 @@ async function main() {
     })();
   }
   console.log(`  odds: ${nOdds} bookmaker rows across ${nPriced}/${upcoming.length} priced fixtures`);
+
+  // ---- Injuries & suspensions (API-Football) — a writer-facing fact --------
+  // One call for the whole tournament, forced fresh on REFRESH (squads update).
+  const insInjury = db.prepare(`INSERT INTO af_injury
+    (fixture_id,af_team_id,team_id,af_player_id,player_name,type,reason,date)
+    VALUES (@fixture_id,@af_team_id,@team_id,@af_player_id,@player_name,@type,@reason,@date)`);
+  const injuries = await fetchAfInjuries({ force: REFRESH });
+  db.transaction(() => {
+    for (const inj of injuries) {
+      insInjury.run({
+        fixture_id: inj.fixtureId,
+        af_team_id: inj.afTeamId,
+        team_id: inj.afTeamId ? afTeamSlug.get(inj.afTeamId) ?? null : null,
+        af_player_id: inj.afPlayerId,
+        player_name: inj.playerName,
+        type: inj.type,
+        reason: inj.reason,
+        date: inj.date,
+      });
+    }
+  })();
+  console.log(`  injuries: ${injuries.length} records`);
 
   // ---- SofaScore (DEV source): who-will-win votes + PREDICTED lineups -------
   // Scraped/resold — not for publishing. Reconcile SS matches → our team slugs
