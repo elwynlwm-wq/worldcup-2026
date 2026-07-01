@@ -14,7 +14,7 @@ const xgF=xm.length? xm.reduce((s:number,m:any)=>s+m.xgF,0)/xm.length : null;
 const xgA=xm.length? xm.reduce((s:number,m:any)=>s+m.xgA,0)/xm.length : null;
 const maxXg=Math.max(1,...p.matches.flatMap((m:any)=>[m.xgF||0,m.xgA||0]));
 const rc: Record<string,string>={W:'var(--color-pitch)',D:'var(--color-ink-3)',L:'var(--color-clay)'};
-const stageLbl: Record<string,string>={group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF',final:'Final'};
+const stageLbl: Record<string,string>={group:'GRP',r32:'R32',r16:'R16',qf:'QF',sf:'SF',final:'FIN'};
 const stats:[string,string][]=[[`${w}-${d}-${l}`,'W-D-L'],[`${gf}:${ga}`,'goals'],[xgF!=null?xgF.toFixed(2):'—','avg xG for'],[xgA!=null?xgA.toFixed(2):'—','avg xG ag.']];
 ---
 <figure style="margin:0 0 10px;border:1px solid var(--color-line);border-radius:18px;overflow:hidden;background:#fff">
@@ -34,7 +34,7 @@ const stats:[string,string][]=[[`${w}-${d}-${l}`,'W-D-L'],[`${gf}:${ga}`,'goals'
   </div>
   {p.star.length>0 && (
     <div style="padding:11px 16px;border-bottom:1px solid var(--color-surface-3);font-size:12.5px">
-      <span style="font-family:var(--font-display);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--color-ink-3)">Top scorers&nbsp;</span>
+      <span style="font-family:var(--font-display);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--color-ink-3)">All-time scorers&nbsp;</span>
       {p.star.slice(0,3).map((s:any,i:number)=>(<span style="font-family:var(--font-display);font-weight:700">{i>0?' · ':''}{s.name} <span style="color:var(--color-ink-3);font-weight:600">{s.goals}</span></span>))}
     </div>
   )}
@@ -42,10 +42,10 @@ const stats:[string,string][]=[[`${w}-${d}-${l}`,'W-D-L'],[`${gf}:${ga}`,'goals'
     <div style="font-family:var(--font-display);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--color-ink-3);margin-bottom:6px">Every match · result &amp; expected goals</div>
     {p.matches.map((m:any)=>(
       <div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-top:1px solid var(--color-surface-3)">
-        <span style={`width:16px;font-family:var(--font-display);font-weight:900;font-size:12px;color:${rc[m.res]}`}>{m.res}</span>
-        <span style="width:14px;font-size:9px;color:var(--color-ink-3);font-family:var(--font-display);font-weight:700">{stageLbl[m.stage]??''}</span>
-        <span style="display:flex;align-items:center;gap:6px;width:74px"><Flag team={m.oppId} w={17} /> <span style="font-family:var(--font-display);font-weight:700;font-size:12px">{m.oppCode}</span></span>
-        <span style="font-family:var(--font-display);font-weight:800;font-size:13px;width:30px">{m.gf}-{m.ga}</span>
+        <span style={`width:15px;flex:none;font-family:var(--font-display);font-weight:900;font-size:12px;color:${rc[m.res]}`}>{m.res}</span>
+        <span style="flex:none;font-size:8.5px;color:var(--color-ink-3);font-family:var(--font-display);font-weight:700;background:var(--color-surface-3);border-radius:4px;padding:2px 5px;letter-spacing:.3px">{stageLbl[m.stage]??''}</span>
+        <span style="display:flex;align-items:center;gap:7px;flex:none;width:66px"><Flag team={m.oppId} w={17} /> <span style="font-family:var(--font-display);font-weight:700;font-size:12px">{m.oppCode}</span></span>
+        <span style="font-family:var(--font-display);font-weight:800;font-size:13px;flex:none;width:32px">{m.gf}-{m.ga}</span>
         {m.xgF!=null ? (
           <span style="flex:1;display:flex;align-items:center;gap:5px;font-size:10px">
             <span style={`height:7px;border-radius:4px;background:var(--color-royal);width:${Math.round((m.xgF/maxXg)*64)}px`}></span>
