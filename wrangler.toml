@@ -1,0 +1,14 @@
+# Cloudflare config for the site (Pages) + the writer-facing warehouse (D1).
+# Used by: `wrangler pages deploy ./dist` and `wrangler d1 execute ...`.
+name = "worldcup-2026-now"
+compatibility_date = "2026-07-01"
+pages_build_output_dir = "dist"
+
+# D1 — the live warehouse the editorial/writer agents read. The pipeline
+# publishes the full built SQLite here each run (full replace). Create it once:
+#   wrangler d1 create kickabout-warehouse
+# then paste the returned database_id below.
+[[d1_databases]]
+binding = "WAREHOUSE"
+database_name = "kickabout-warehouse"
+database_id = "PLACEHOLDER_RUN_wrangler_d1_create"
