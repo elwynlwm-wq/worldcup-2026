@@ -1,8 +1,9 @@
 ---
 // The site shell every page renders inside. Owns <html>, <head>, and the
-// global chrome. Passes SEO props straight through to <Seo/>.
+// shared Kickabout chrome. Passes SEO props straight through to <Seo/>.
 import '../styles/global.css';
 import Seo from '../components/Seo.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 
 interface Props {
   title: string;
@@ -15,9 +16,10 @@ interface Props {
   publishDate?: Date;
   updatedDate?: Date;
   author?: string;
+  active?: string;
 }
 
-const seoProps = Astro.props;
+const { active, ...seoProps } = Astro.props;
 ---
 
 <!doctype html>
@@ -27,26 +29,20 @@ const seoProps = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <Seo {...seoProps} />
   </head>
-  <body class="min-h-screen bg-white text-gray-900 antialiased">
-    <header class="border-b border-gray-200">
-      <nav class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <a href="/" class="text-lg font-bold tracking-tight">World Cup 2026</a>
-        <div class="flex gap-6 text-sm font-medium text-gray-600">
-          <a href="/articles" class="hover:text-gray-900">Articles</a>
-          <a href="/analysis" class="hover:text-gray-900">Analysis</a>
-        </div>
-      </nav>
-    </header>
-
-    <main>
-      <slot />
-    </main>
-
-    <footer class="mt-16 border-t border-gray-200">
-      <div class="mx-auto max-w-5xl px-4 py-8 text-sm text-gray-500">
-        <p>World Cup 2026 — predictions, analysis &amp; blog. A free, fan-made site.</p>
+  <body class="min-h-screen antialiased">
+    <SiteHeader active={active} />
+    <main><slot /></main>
+    <footer class="mt-16 border-t border-line">
+      <div class="mx-auto max-w-5xl px-4 py-8 text-sm text-muted">
+        <p>Kickabout — World Cup 2026 predictions, analysis &amp; stories. A free, fan-made site.</p>
       </div>
     </footer>
   </body>

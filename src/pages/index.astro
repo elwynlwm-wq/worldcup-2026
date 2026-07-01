@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-// Latest published articles for the home feed.
 const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
@@ -18,37 +17,55 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'medium' });
 ---
 
 <BaseLayout
-  title="World Cup 2026 — Predictions, Analysis & Blog"
+  title="Kickabout — World Cup 2026 Predictions, Analysis & Stories"
   description="Predictions, analysis, match previews and reviews for the 2026 World Cup. The free, entertaining read for every fan — from curious newcomers to seasonal watchers."
   jsonLd={jsonLd}
 >
-  <section class="mx-auto max-w-5xl px-4 py-12">
-    <h1 class="text-5xl font-extrabold tracking-tight text-balance">
-      Your guide to the 2026 World Cup
-    </h1>
-    <p class="mt-4 max-w-2xl text-lg text-gray-600">
-      Predictions, analysis and stories — written to be useful whether you watch every
-      match or just want to know who'll win.
-    </p>
+  <section class="mx-auto max-w-5xl px-4 pt-10">
+    <div
+      class="relative overflow-hidden rounded-2xl border border-line p-7 md:p-9"
+      style="background:radial-gradient(130% 170% at 6% -10%, rgba(255,210,63,.18), transparent 46%), radial-gradient(130% 170% at 104% 120%, rgba(232,72,43,.22), transparent 52%), linear-gradient(180deg,#1c1f27,#181a21)"
+    >
+      <div class="font-display text-xs font-extrabold uppercase tracking-[0.14em] text-ball">
+        World Cup 2026 · 48 teams
+      </div>
+      <h1 class="mt-2 font-display text-4xl font-black leading-[0.95] tracking-tight md:text-6xl">
+        16 down. <span class="text-ball">32 to go.</span>
+      </h1>
+      <p class="mt-3 max-w-xl text-muted">
+        The knockouts kick off this weekend across the USA, Canada and Mexico. Predictions,
+        analysis and stories for every kind of fan.
+      </p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a
+          href="/analysis"
+          class="rounded-xl bg-ball px-4 py-2.5 font-display font-extrabold text-[#241c00]"
+          >See the predictions →</a
+        >
+        <a
+          href="/articles"
+          class="rounded-xl border border-line px-4 py-2.5 font-display font-bold text-ink hover:border-ball"
+          >Read the stories</a
+        >
+      </div>
+    </div>
   </section>
 
-  <section class="mx-auto max-w-5xl px-4 pb-12">
-    <h2 class="mb-6 text-2xl font-bold tracking-tight">Latest</h2>
+  <section class="mx-auto max-w-5xl px-4 py-12">
+    <h2 class="mb-6 font-display text-2xl font-extrabold tracking-tight">Latest</h2>
     {articles.length === 0 ? (
-      <p class="text-gray-500">No articles yet — the first ones are on the way.</p>
+      <p class="text-muted">No articles yet — the first ones are on the way.</p>
     ) : (
-      <ul class="grid gap-6 sm:grid-cols-2">
+      <ul class="grid gap-4 sm:grid-cols-2">
         {articles.map((a) => (
-          <li class="rounded-xl border border-gray-200 p-5 transition hover:border-gray-400">
+          <li class="rounded-xl border border-line bg-panel p-5 transition hover:border-ball">
             <a href={`/articles/${a.id}/`} class="block">
-              <h3 class="text-xl font-bold tracking-tight">{a.data.title}</h3>
-              <p class="mt-2 text-gray-600">{a.data.description}</p>
+              <h3 class="font-display text-xl font-bold tracking-tight text-ink">{a.data.title}</h3>
+              <p class="mt-2 text-muted">{a.data.description}</p>
               <time
                 datetime={a.data.publishDate.toISOString()}
-                class="mt-3 block text-sm text-gray-400"
-              >
-                {dateFmt.format(a.data.publishDate)}
-              </time>
+                class="mt-3 block text-sm text-muted"
+              >{dateFmt.format(a.data.publishDate)}</time>
             </a>
           </li>
         ))}

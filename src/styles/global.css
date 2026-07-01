@@ -1,12 +1,31 @@
 @import "tailwindcss";
-
-/* Tailwind v4 plugin loading (CSS-based config). */
 @plugin "@tailwindcss/typography";
 
-/* Theme tokens go here as we develop the design system.
-   Example (uncomment / extend as the brand takes shape):
+/* Kickabout brand tokens (Tailwind v4 theme → utilities like bg-bg, text-ball, font-display). */
 @theme {
-  --color-brand: #009b3a;
-  --font-display: "Inter", system-ui, sans-serif;
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", system-ui, sans-serif;
+  --color-bg: #16181d;
+  --color-panel: #1e2129;
+  --color-panel2: #242833;
+  --color-line: #31353f;
+  --color-ink: #f4f2ec;
+  --color-muted: #9a9ba4;
+  --color-ball: #ffd23f;
+  --color-accent: #e8482b;
+  --color-green: #2fbf71;
 }
-*/
+
+/* Shared CSS variables (used by the analysis components). Kickabout palette. */
+:root {
+  --bg: #16181d; --panel: #1e2129; --panel2: #242833; --line: #31353f;
+  --text: #f4f2ec; --muted: #9a9ba4; --accent: #ffd23f; --accent2: #e8482b;
+  --ball: #ffd23f; --warn: #ffd23f; --danger: #e8482b;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+}
+h1, h2, h3, h4 { font-family: "Archivo", system-ui, sans-serif; letter-spacing: -0.01em; }
