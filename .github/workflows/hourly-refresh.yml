@@ -4,12 +4,11 @@ name: Hourly data refresh
 # rebuilds the warehouse, re-exports the site JSON, commits it, deploys the site,
 # and publishes the full warehouse to Cloudflare D1 for the writer agents.
 on:
-  schedule:
-    # Hourly at :17. (Re-registered via a normal commit — the schedule trigger
-    # can fail to activate when a workflow first reaches the default branch via a
-    # force-push; a plain commit touching this file wakes it up.)
-    - cron: '17 * * * *'
-  workflow_dispatch: {} # allow manual runs from the Actions tab
+  # Triggered EXTERNALLY by the Cloudflare Cron Worker (workers/cron-trigger) —
+  # GitHub's own scheduled/cron trigger has been unreliable, so CF's reliable
+  # cron dispatches this hourly instead. Also runnable manually from the Actions tab.
+  workflow_dispatch: {}
+  # (No `schedule:` block on purpose — see workers/cron-trigger.)
 
 concurrency:
   group: hourly-refresh

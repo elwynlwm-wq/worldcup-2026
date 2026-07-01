@@ -1,0 +1,19 @@
+name = "kickabout-cron-trigger"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+
+# Hourly at :17. CF cron is reliable; it dispatches the GitHub Actions workflow
+# that does the actual data refresh + deploy + D1 publish.
+[triggers]
+crons = ["17 * * * *"]
+
+[vars]
+GH_OWNER = "elwynlwm-wq"
+GH_REPO = "worldcup-2026"
+GH_WORKFLOW = "hourly-refresh.yml"
+GH_REF = "main"
+
+# Secret (do NOT put here): GITHUB_TOKEN — set via
+#   wrangler secret put GITHUB_TOKEN
+# with a fine-grained PAT (Actions: Read and write on the repo) or a classic
+# token with the `workflow` scope.
