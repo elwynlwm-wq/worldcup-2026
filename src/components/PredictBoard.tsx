@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
 
-// Interactive pick board (Preact island), light Kickabout theme. Call each tie,
-// then reveal the model AND the market (bookmaker consensus), with agree/differ.
-// Picks persist in localStorage. All numbers precomputed at build time.
+// Interactive pick board (Preact island), light Kickabout theme. The market's
+// sentiment shows in every tile up front; committing a pick reveals the model
+// (Elo) and how you + the market compare. Picks persist in localStorage.
 interface Side { id: string; name: string; code: string }
 export interface Tie {
   home: Side; away: Side;
@@ -24,13 +24,14 @@ function Bar({ h, d, a }: { h: number; d: number; a: number }) {
     <div style={{ width: `${w}%`, minWidth: 22, background: bg, color: fg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{v}</div>
   );
   return (
-    <div style={{ display: 'flex', height: 26, borderRadius: 8, overflow: 'hidden', fontSize: 11, fontWeight: 800 }}>
+    <div style={{ display: 'flex', height: 24, borderRadius: 8, overflow: 'hidden', fontSize: 11, fontWeight: 800 }}>
       {seg(h, 'var(--color-royal)', '#fff', h)}
       {seg(d, 'var(--color-surface-3)', 'var(--color-ink-2)', d)}
       {seg(a, 'var(--color-clay)', '#fff', a)}
     </div>
   );
 }
+const lbl: any = { display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--color-ink-3)', marginBottom: 4, fontFamily: 'var(--font-display)' };
 
 export default function PredictBoard({ ties }: { ties: Tie[] }) {
   const [picks, setPicks] = useState<Record<number, Pick>>({});
@@ -50,7 +51,6 @@ export default function PredictBoard({ ties }: { ties: Tie[] }) {
     border: '1px solid var(--color-line)', cursor: 'pointer', background: '#fff', color: 'var(--color-ink)',
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   });
-  const lbl: any = { display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--color-ink-3)', marginBottom: 4, fontFamily: 'var(--font-display)' };
 
   return (
     <div>
@@ -80,6 +80,14 @@ export default function PredictBoard({ ties }: { ties: Tie[] }) {
                 <span class="font-display" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.4px', color: 'var(--color-ink-3)', textAlign: 'center' }}>{t.date}<br />{t.stage}</span>
                 <span class="font-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800 }}>{t.away.name} <Flag id={t.away.id} /></span>
               </div>
+
+              {hasK && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={lbl}><span>The market</span><span>{kFav.code} {kPct}%</span></div>
+                  <Bar h={t.kh as number} d={t.kd as number} a={t.ka as number} />
+                </div>
+              )}
+
               {!pk ? (
                 <div style={{ marginTop: 12 }}>
                   <div class="font-display" style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--color-ink-3)', marginBottom: 6 }}>Your call</div>
@@ -95,12 +103,6 @@ export default function PredictBoard({ ties }: { ties: Tie[] }) {
                     <div style={lbl}><span>The model</span><span>{mFav.code} {mPct}%</span></div>
                     <Bar h={t.mh} d={t.md} a={t.ma} />
                   </div>
-                  {hasK && (
-                    <div>
-                      <div style={lbl}><span>The market</span><span>{kFav.code} {kPct}%</span></div>
-                      <Bar h={t.kh as number} d={t.kd as number} a={t.ka as number} />
-                    </div>
-                  )}
                   <div style={{ fontSize: 13 }}>
                     You backed <b class="font-display">{you}</b>.{' '}
                     {pk !== 'draw' && <span style={{ color: aM ? 'var(--color-pitch)' : 'var(--color-ink-3)' }}>{aM ? 'Model agrees' : 'Model differs'}</span>}
