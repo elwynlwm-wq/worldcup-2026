@@ -37,6 +37,14 @@ const {
 
 const SITE_NAME = 'World Cup 2026';
 
+// A colleague deploys this repo to his own Vercel; that copy must NOT be
+// indexed (avoid a second crawlable site competing with production). Vercel sets
+// VERCEL=1 at build time, so any Vercel build auto-noindexes. Our production
+// build (GitHub Actions → wrangler → Cloudflare Pages) and local dev are
+// unaffected. Canonical still points to the CF `site` regardless.
+const onVercel = process.env.VERCEL === '1';
+const robotsNoindex = noindex || onVercel;
+
 // Resolve canonical + image to absolute URLs against the configured `site`.
 const canonicalURL = new URL(canonical ?? Astro.url.pathname, Astro.site);
 const imageURL = new URL(image, Astro.site);
@@ -47,7 +55,7 @@ const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonicalURL.href} />
-{noindex && <meta name="robots" content="noindex, nofollow" />}
+{robotsNoindex && <meta name="robots" content="noindex, nofollow" />}
 
 {/* Open Graph */}
 <meta property="og:type" content={type} />
