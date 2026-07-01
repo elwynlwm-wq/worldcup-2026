@@ -349,3 +349,26 @@ CREATE TABLE ss_predicted_lineup_player (
   substitute     INTEGER
 );
 CREATE INDEX idx_sspred_match ON ss_predicted_lineup_player(match_id);
+
+-- ---------------------------------------------------------------------------
+-- Writer-convenience VIEWS. These publish to D1 (see publish-d1.ts) so the
+-- editorial agent can query assembled facts without pivoting raw tables.
+-- ---------------------------------------------------------------------------
+
+-- Per-match team xG (from API-Football's expected_goals), pivoted to one row
+-- per fixture with home/away xG + the actual score — the classic "deserved it /
+-- lucky / unlucky" narrative. Only finished fixtures with xG recorded appear.
+CREATE VIEW match_xg AS
+SELECT
+  f.id            AS fixture_id,
+  f.stage,
+  f.date,
+  f.home_team_id, f.away_team_id,
+  f.home_name_raw, f.away_name_raw,
+  f.home_score, f.away_score,
+  CAST(sh.stat_value AS REAL) AS home_xg,
+  CAST(sa.stat_value AS REAL) AS away_xg
+FROM af_fixture f
+JOIN af_team_stat sh ON sh.fixture_id = f.id AND sh.team_id = f.home_team_id AND sh.stat_type = 'expected_goals'
+JOIN af_team_stat sa ON sa.fixture_id = f.id AND sa.team_id = f.away_team_id AND sa.stat_type = 'expected_goals'
+WHERE sh.stat_value IS NOT NULL AND sa.stat_value IS NOT NULL;

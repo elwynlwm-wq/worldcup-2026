@@ -59,8 +59,19 @@ function main() {
     console.log(`  ${t.name}: ${rows.length} rows`);
   }
 
+  // Views last — they read from tables, which now all exist. Writer-convenience
+  // views (e.g. match_xg) publish to D1 too.
+  const views = db
+    .prepare(`SELECT name, sql FROM sqlite_master WHERE type='view' ORDER BY name`)
+    .all() as { name: string; sql: string }[];
+  for (const v of views) {
+    out.push(`DROP VIEW IF EXISTS "${v.name}";`);
+    out.push(`${v.sql};`);
+    console.log(`  ${v.name}: (view)`);
+  }
+
   writeFileSync(DUMP_PATH, out.join('\n'));
-  console.log(`\nWrote ${DUMP_PATH} (${tables.length} tables, ${totalRows} rows)`);
+  console.log(`\nWrote ${DUMP_PATH} (${tables.length} tables, ${views.length} views, ${totalRows} rows)`);
 
   if (process.env.SKIP_D1_PUSH === '1') {
     console.log('SKIP_D1_PUSH=1 — dump written, not pushed.');
