@@ -40,15 +40,17 @@ jobs:
         working-directory: data-pipeline
         run: npm ci
 
-      # The pipeline's fetchers cache under data-pipeline/sources/. REFRESH=1
-      # forces the live fixtures list + standings; per-fixture detail is fetched
-      # only for newly-finished matches (cache-by-id), keeping API usage tiny.
-      # Cache sources/ between runs so we don't re-fetch already-finished games.
+      # The pipeline's fetchers cache raw responses under data-pipeline/sources/.
+      # REFRESH=1 re-fetches only the live fixtures list + standings; per-fixture
+      # detail is cached by id, so warm runs fetch only newly-finished matches.
+      # Restore + save are split so the cache persists even if a run fails
+      # partway (the cold start fetches ~all finished fixtures and can 429).
       - name: Restore fetch cache
-        uses: actions/cache@v4
+        id: fetch-cache
+        uses: actions/cache/restore@v4
         with:
           path: data-pipeline/sources
-          key: af-sources-${{ github.run_id }}
+          key: af-sources-v1
           restore-keys: af-sources-
 
       - name: Refresh warehouse (fetch → build → export)
@@ -56,6 +58,16 @@ jobs:
         run: |
           npm run build:warehouse
           npm run export
+
+      # Save the (now warmer) fetch cache — always(), so even a partial cold run
+      # persists what it managed to fetch and the next run resumes warmer. Rolling
+      # key so each run overwrites the newest snapshot.
+      - name: Save fetch cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data-pipeline/sources
+          key: af-sources-v1-${{ github.run_id }}
 
       - name: Publish warehouse to Cloudflare D1
         working-directory: data-pipeline

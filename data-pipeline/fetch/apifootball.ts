@@ -39,11 +39,27 @@ async function afGet(
     return JSON.parse(readFileSync(file, 'utf8'));
   }
   if (!opts.quiet) console.log(`  ↓ AF ${path}`);
-  const res = await fetch(`${BASE}${path}`, { headers: { 'x-apisports-key': key() } });
-  if (!res.ok) throw new Error(`API-Football ${res.status} for ${path}`);
-  const json = await res.json();
-  writeFileSync(file, JSON.stringify(json));
-  return json;
+  // Retry on rate-limit / transient 5xx with backoff (honours Retry-After).
+  // The cold-start run (empty sources/ cache) fetches detail for every finished
+  // fixture in a burst, which can trip 429; backing off lets it drain instead of
+  // crashing the whole pipeline. Warm runs only fetch new matches, so rarely hit this.
+  const MAX_TRIES = 5;
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(`${BASE}${path}`, { headers: { 'x-apisports-key': key() } });
+    if (res.ok) {
+      const json = await res.json();
+      writeFileSync(file, JSON.stringify(json));
+      return json;
+    }
+    const transient = res.status === 429 || res.status >= 500;
+    if (!transient || attempt >= MAX_TRIES) {
+      throw new Error(`API-Football ${res.status} for ${path}${attempt > 1 ? ` (after ${attempt} tries)` : ''}`);
+    }
+    const retryAfter = Number(res.headers.get('retry-after'));
+    const waitMs = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : Math.min(2000 * 2 ** (attempt - 1), 30000);
+    if (!opts.quiet) console.log(`  … AF ${res.status}, retry ${attempt}/${MAX_TRIES} in ${Math.round(waitMs / 1000)}s`);
+    await new Promise((r) => setTimeout(r, waitMs));
+  }
 }
 
 export interface AfFixture {
