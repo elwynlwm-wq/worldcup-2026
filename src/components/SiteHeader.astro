@@ -1,13 +1,13 @@
 ---
-// The one shared site shell header — Kickabout brand, used by every layout.
+// The one shared site shell header — Kickabout brand, predictor-first nav.
 interface Props { active?: string }
 const { active = '' } = Astro.props;
 const items: [string, string, string][] = [
-  ['/', 'Today', ''],
+  ['/', 'Predict', ''],
   ['/analysis', 'Matches', 'analysis'],
-  ['/articles', 'Stories', 'articles'],
-  ['/analysis/teams/', 'Teams', 'teams'],
   ['/analysis/bracket/', 'Bracket', 'bracket'],
+  ['/analysis/teams/', 'Teams', 'teams'],
+  ['/articles', 'Stories', 'articles'],
 ];
 ---
 <header class="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
