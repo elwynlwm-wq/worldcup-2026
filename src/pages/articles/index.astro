@@ -17,8 +17,7 @@ const readMins = (body: string) => Math.max(1, Math.round((body?.split(/\s+/).le
 
 // derive kind + matchup teams from tags
 const KIND = {
-  preview: { label: 'Preview', accent: '#1f3fbf', hero: '#11643f' },
-  recap: { label: 'Recap', accent: '#138a5e', hero: '#9d2730' },
+  preview: { label: 'Pre-match predictions', accent: '#1f3fbf', hero: '#11643f' },
   postmatch: { label: 'Post-match analytics', accent: '#9d2730', hero: '#16181d' },
   feature: { label: 'Feature', accent: '#b23b2e', hero: '#1f3fbf' },
 } as const;
@@ -26,7 +25,7 @@ const teamIds = new Set(provider.getTeams().map((t) => t.id));
 
 function meta(art: (typeof all)[number]) {
   const tags = (art.data.tags || []).map((t) => t.toLowerCase());
-  const kindKey = (['preview', 'recap', 'postmatch', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
+  const kindKey = (['preview', 'postmatch', 'feature'] as const).find((k) => tags.includes(k)) ?? 'feature';
   const matchTeams = tags.filter((t) => teamIds.has(t)).slice(0, 2);
   return { kind: KIND[kindKey], teams: matchTeams, kindKey };
 }
@@ -50,7 +49,7 @@ const fMeta = featured ? meta(featured) : null;
 
     {/* filter pills (client-side) */}
     <div id="story-filters" class="mb-5 flex flex-wrap gap-2">
-      {[['all', 'All'], ['preview', 'Previews'], ['recap', 'Recaps'], ['postmatch', 'Post-match'], ['feature', 'Features']].map(([k, label], i) => (
+      {[['all', 'All'], ['preview', 'Pre-match'], ['postmatch', 'Post-match'], ['feature', 'Features']].map(([k, label], i) => (
         <button data-sfilter={k} class="kb-sfilter cursor-pointer rounded-full border px-[15px] py-[7px] text-[13.5px] font-bold"
           style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:#fff;border-color:var(--color-line)'}>{label}</button>
       ))}
