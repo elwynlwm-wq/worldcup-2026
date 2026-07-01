@@ -1,261 +1,94 @@
 ---
-// Home — rebuilt pixel-faithfully from concepts/claude-design Kickabout.dc.html.
-// Stories-first is the default direction (matches the design default); a "Today"
-// toggle switches to the matchday direction. No generated art anywhere: team
-// identity is the 2-tone country swatch (teamGrad) + flags, exactly as the
-// design specifies. All content ships in the HTML for SEO; the toggle is CSS/JS.
+// Home = Predict. The predictor is the product: call each upcoming tie, see the
+// model AND the market in the same tile, plus who the market backs to win it all.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Flag from '../components/Flag.astro';
+import PredictBoard from '../components/PredictBoard.tsx';
+import type { Tie } from '../components/PredictBoard.tsx';
 import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
-import { getUpcomingFixtures } from '../lib/warehouse';
-import { teamGrad, teamColors } from '../data/teamColors';
-import Flag from '../components/Flag.astro';
-import { getCollection } from 'astro:content';
+import { getUpcomingFixtures, getOddsPair } from '../lib/warehouse';
+import { MARKET_OUTRIGHT, MARKET_ASOF } from '../data/market';
 
-const getTeam = (id: string) => provider.getTeam(id)!;
-
-const upcoming = getUpcomingFixtures(6).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
-const top = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
-const contenders = top.slice(0, 6);
-const todayMatch = upcoming[0] ?? null;
-
-const favLine = (homeId: string, awayId: string) => {
-  const h = getTeam(homeId), a = getTeam(awayId);
-  const pr = predict(h, a);
-  const fav = pr.win >= pr.lose ? h : a;
-  return `${fav.name} favoured · ${Math.round(Math.max(pr.win, pr.lose) * 100)}%`;
-};
-const pct = (homeId: string, awayId: string) => {
-  const pr = predict(getTeam(homeId), getTeam(awayId));
-  return { win: Math.round(pr.win * 100), draw: Math.round(pr.draw * 100), lose: Math.round(pr.lose * 100) };
-};
-
-const dateLabel = (iso: string) =>
-  iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '';
+const getTeam = (id: string) => provider.getTeam(id);
 const stageLabel: Record<string, string> = { group: 'Group', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: '3rd place' };
-const matchHref = (m: { homeTeamId: string; awayTeamId: string; stage: string }) => `/matches/${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}`;
+const dateLabel = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '');
 
-const articles = (await getCollection('articles', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
-);
-const featured = articles[0] ?? null;
-const rest = articles.slice(1, 5);
+function marketPct(hId: string, aId: string) {
+  const op = getOddsPair(hId, aId);
+  if (!op || !op.books?.length) return null;
+  let H = 0, D = 0, A = 0;
+  for (const b of op.books) { const ih = 1 / b.home, id = 1 / b.draw, ia = 1 / b.away; const s = ih + id + ia; H += ih / s; D += id / s; A += ia / s; }
+  const n = op.books.length; let h = H / n, d = D / n, a = A / n;
+  if (op.homeId !== hId) { const t = h; h = a; a = t; }
+  return { h: Math.round(h * 100), d: Math.round(d * 100), a: Math.round(a * 100) };
+}
 
-// A story's two-team matchup swatch pair, derived from its tags that map to teams.
-const storyMatch = (tags: string[] = []) => {
-  const teams = tags.map((t) => provider.getTeam(t.toLowerCase())).filter(Boolean).slice(0, 2);
-  if (teams.length < 2) return null;
-  return { a: teams[0]!, b: teams[1]! };
-};
-const kindOf = (tags: string[] = []) => {
-  const t = tags.map((x) => x.toLowerCase());
-  if (t.includes('preview')) return { label: 'Preview', accent: '#1f3fbf' };
-  if (t.includes('recap') || t.includes('report')) return { label: 'Recap', accent: '#138a5e' };
-  return { label: 'Feature', accent: '#b23b2e' };
-};
+const fixtures = getUpcomingFixtures(10).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
+const ties: Tie[] = fixtures.map((m) => {
+  const h = getTeam(m.homeTeamId)!, a = getTeam(m.awayTeamId)!;
+  const pr = predict(h, a);
+  const k = marketPct(h.id, a.id);
+  return {
+    home: { id: h.id, name: h.name, code: h.shortCode }, away: { id: a.id, name: a.name, code: a.shortCode },
+    mh: Math.round(pr.win * 100), md: Math.round(pr.draw * 100), ma: Math.round(pr.lose * 100),
+    kh: k ? k.h : null, kd: k ? k.d : null, ka: k ? k.a : null,
+    date: dateLabel(m.date), stage: stageLabel[m.stage] ?? m.stage,
+  };
+});
 
-// Featured hero base colour — FIXED by story kind (design), not by team.
-const HERO_BY_KIND: Record<string, string> = { Preview: '#11643f', Recap: '#9d2730', Feature: '#1f3fbf' };
-const featuredHero = featured ? (HERO_BY_KIND[kindOf(featured.data.tags).label] ?? '#16181d') : '#16181d';
-
-const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kickabout', url: Astro.site?.href };
+const outright = MARKET_OUTRIGHT.map((r) => ({ ...r, team: getTeam(r.id) })).filter((r) => r.team);
+const maxBook = Math.max(...outright.map((r) => r.book));
 ---
 
 <BaseLayout
-  title="Kickabout — World Cup 2026 Predictions, Analysis & Stories"
-  description="Follow the 2026 World Cup your way: today's matches and who-will-win votes, data-driven analysis, power rankings, and stories for every kind of fan."
+  title="Kickabout — Predict the 2026 World Cup"
+  description="Call every 2026 World Cup knockout tie and see how you stack up against a transparent model and the betting market — plus who the market backs to win it all."
   active=""
-  jsonLd={jsonLd}
+  canonical="/"
 >
   <div class="kb-route">
-    {/* header row + direction toggle */}
-    <div class="mb-1.5 flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <div class="font-display text-[13px] font-extrabold uppercase tracking-[1.5px]" style="color:var(--color-royal)">
-          World Cup 2026 · USA · Canada · Mexico
-        </div>
-        <div class="mt-[3px] text-[14px]" style="color:var(--color-ink-2)">Pick how you like to follow along.</div>
-      </div>
-      <div id="home-tabs" class="flex gap-1 rounded-[12px] border p-1" style="background:#fff;border-color:var(--color-line)">
-        {[['stories', 'Stories'], ['today', 'Today']].map(([k, label], i) => (
-          <button data-tab={k} class="kb-tab cursor-pointer rounded-[9px] px-3.5 py-2 text-[13.5px] font-bold" style={i === 0 ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2);background:transparent'}>{label}</button>
-        ))}
-      </div>
+    <h1 class="font-display" style="font-size:38px;font-weight:900;letter-spacing:-1.2px;line-height:1.02">Predict the World Cup</h1>
+    <p style="color:#6f6655;font-size:15px;max-width:52ch">Call every knockout tie, then see the model's forecast and the market's, right in the same card. Can you beat them both?</p>
+
+    <div style="margin-top:22px">
+      <PredictBoard client:load ties={ties} />
+      <p style="margin-top:8px;font-size:12px;color:var(--color-ink-3)">Model: transparent Elo forecast. Market: live bookmaker consensus. Not betting advice. · <a href="/articles" style="color:var(--color-royal);font-weight:700">Read the stories →</a></p>
     </div>
 
-    {/* ============ STORIES-FIRST (default) ============ */}
-    <section data-panel="stories">
-      {featured && (() => {
-        const fm = storyMatch(featured.data.tags);
-        const fk = kindOf(featured.data.tags);
-        return (
-          <a href={`/articles/${featured.id}/`} class="kb-card-hover relative mt-3.5 mb-6 block overflow-hidden rounded-[20px] p-7 text-white sm:p-[34px]" style={`background:${featuredHero};min-height:248px;box-shadow:0 16px 38px -24px rgba(0,0,0,.55)`}>
-            <div class="absolute inset-0" style="background:linear-gradient(90deg,rgba(16,18,24,.78) 0%,rgba(16,18,24,.5) 52%,rgba(16,18,24,.18) 100%)"></div>
-            <div class="pointer-events-none absolute -right-[30px] -top-[30px] h-[280px] w-[280px] opacity-50" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
-            <div class="relative z-[2]">
-              <div class="font-display inline-flex items-center gap-1.5 rounded border-[1.5px] px-[11px] py-[5px] text-[11.5px] font-extrabold uppercase tracking-[1.4px]" style="border-color:rgba(255,255,255,.5)">{fk.label}</div>
-              <div class="font-display mt-4 mb-2.5 max-w-[680px] text-[30px] font-black leading-[1.02] tracking-[-1px] text-balance sm:text-[40px]">{featured.data.title}</div>
-              <div class="max-w-[600px] text-[16px] leading-relaxed sm:text-[18px]" style="font-family:var(--font-serif);opacity:.93">{featured.data.description}</div>
-              <div class="mt-[18px] text-[13px] font-bold tracking-[.3px]" style="color:var(--color-gold)">{fm ? `${fm.a.shortCode} vs ${fm.b.shortCode}` : 'Kickabout'} · READ THE STORY →</div>
-            </div>
-          </a>
-        );
-      })()}
-
-      <div class="mb-3 flex items-baseline justify-between">
-        <h2 class="font-display text-[22px] font-extrabold">Latest stories</h2>
-        <a href="/articles" class="text-[14px] font-bold" style="color:var(--color-royal)">All stories →</a>
-      </div>
-      {rest.length === 0 ? (
-        <p style="color:var(--color-ink-2)">More stories on the way — check back soon.</p>
-      ) : (
-        <div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(290px,1fr))">
-          {rest.map((s) => {
-            const sm = storyMatch(s.data.tags);
-            const sk = kindOf(s.data.tags);
-            return (
-              <a href={`/articles/${s.id}/`} class="kb-card-hover flex flex-col overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
-                <div class="flex flex-1 flex-col gap-2 px-[17px] pb-[18px] pt-4">
-                  <div class="flex items-center gap-2">
-                    <span class="font-display inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[.8px]" style={`color:${sk.accent}`}><span class="h-[9px] w-[9px] rounded-[2px]" style={`background:${sk.accent}`}></span>{sk.label}</span>
-                    <span class="text-[12px]" style="color:#b3a890">· {dateLabel(s.data.publishDate.toISOString())}</span>
-                  </div>
-                  <div class="font-display text-[18.5px] font-extrabold leading-[1.12] tracking-[-.4px] text-balance">{s.data.title}</div>
-                  <div class="flex-1 text-[14px] leading-[1.4]" style="color:var(--color-ink-2)">{s.data.description}</div>
-                  {sm && (
-                    <div class="mt-0.5 flex items-center gap-[7px] border-t pt-[11px]" style="border-color:#f1ebdf">
-                      <span class="flex gap-[3px]">
-                        <Flag team={sm.a.id} w={22} />
-                        <Flag team={sm.b.id} w={22} />
-                      </span>
-                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:#8a7f6a">{sm.a.shortCode} vs {sm.b.shortCode}</span>
-                    </div>
-                  )}
+    <div style="margin-top:34px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px">
+      <h2 class="font-display" style="font-size:20px;font-weight:800;letter-spacing:-.5px">The market's call — who lifts the trophy?</h2>
+      <span style="font-size:12px;color:var(--color-ink-3)">implied odds · snapshot {MARKET_ASOF}</span>
+    </div>
+    <div style="margin-top:10px;border:1px solid var(--color-line);border-radius:16px;overflow:hidden;background:#fff">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead>
+          <tr style="text-align:left;border-bottom:1px solid var(--color-line);color:var(--color-ink-3)">
+            <th class="font-display" style="padding:11px 16px;font-size:12px;text-transform:uppercase;letter-spacing:.4px">Team</th>
+            <th class="font-display" style="padding:11px 12px;text-align:right;font-size:12px;text-transform:uppercase;letter-spacing:.4px">Bookmakers</th>
+            <th class="font-display" style="padding:11px 12px;text-align:right;font-size:12px;text-transform:uppercase;letter-spacing:.4px">Polymarket</th>
+            <th class="font-display" style="padding:11px 12px;text-align:right;font-size:12px;text-transform:uppercase;letter-spacing:.4px">Kalshi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {outright.map((r) => (
+            <tr style="border-bottom:1px solid var(--color-line)">
+              <td style="padding:9px 16px">
+                <a href={`/teams/${r.id}`} class="font-display" style="display:flex;align-items:center;gap:10px;font-weight:700"><Flag team={r.id} w={22} /> {r.team!.name}</a>
+              </td>
+              <td style="padding:9px 12px">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                  <span style={`display:inline-block;height:6px;border-radius:3px;background:var(--color-gold);width:${Math.round((r.book / maxBook) * 90)}px`}></span>
+                  <b class="font-display" style="width:44px;text-align:right;display:inline-block">{r.book}%</b>
                 </div>
-              </a>
-            );
-          })}
-        </div>
-      )}
-
-      {upcoming.length > 0 && (
-        <div class="mt-[26px] rounded-[16px] border px-5 py-[18px]" style="background:#fff;border-color:#e9e1d2">
-          <div class="mb-2.5 flex items-baseline justify-between">
-            <h2 class="font-display text-[18px] font-extrabold">Coming up</h2>
-            <a href="/matches" class="text-[13.5px] font-bold" style="color:var(--color-royal)">All matches →</a>
-          </div>
-          <div class="flex gap-3 overflow-x-auto pb-1">
-            {upcoming.map((m) => {
-              const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
-              return (
-                <a href={matchHref(m)} class="kb-card-hover flex-none rounded-[13px] border p-[13px]" style="width:215px;background:#faf6ee;border-color:#ece4d4">
-                  <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
-                  <div class="mt-[9px] flex items-center gap-[7px]"><Flag team={h.id} w={24} /><b class="text-[14px]">{h.name}</b></div>
-                  <div class="mt-[6px] flex items-center gap-[7px]"><Flag team={a.id} w={24} /><b class="text-[14px]">{a.name}</b></div>
-                  <div class="mt-2.5 text-[12px] font-bold" style="color:var(--color-royal)">{favLine(h.id, a.id)}</div>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </section>
-
-    {/* ============ TODAY / MATCHDAY ============ */}
-    <section data-panel="today" style="display:none">
-      <div class="my-3.5 grid gap-[18px] lg:grid-cols-[1.4fr_1fr]">
-        {todayMatch && (() => {
-          const h = getTeam(todayMatch.homeTeamId), a = getTeam(todayMatch.awayTeamId);
-          const hc = teamColors(h.id), ac = teamColors(a.id);
-          return (
-            <div class="relative overflow-hidden rounded-[20px] p-[26px] text-white" style="background:var(--color-night)">
-              <div class="pointer-events-none absolute -bottom-[40px] left-1/2 h-[240px] w-[340px] -translate-x-1/2 opacity-50" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
-              <div class="relative z-[2]">
-                <div class="font-display text-[12px] font-extrabold uppercase tracking-[1.2px]" style="color:var(--color-gold)">Next up · {dateLabel(todayMatch.date)}</div>
-                <div class="mb-1.5 mt-5 flex items-center justify-between gap-3.5">
-                  <div class="flex-1 text-center">
-                    <div class="mx-auto mb-[9px] w-fit"><Flag team={h.id} w={62} class="!ring-1 !ring-white/40" /></div>
-                    <div class="font-display text-[17px] font-extrabold">{h.name}</div>
-                  </div>
-                  <div class="font-display text-[22px] font-black" style="color:#6f6655">VS</div>
-                  <div class="flex-1 text-center">
-                    <div class="mx-auto mb-[9px] w-fit"><Flag team={a.id} w={62} class="!ring-1 !ring-white/40" /></div>
-                    <div class="font-display text-[17px] font-extrabold">{a.name}</div>
-                  </div>
-                </div>
-                <div class="mb-[18px] text-center text-[13px]" style="color:#a59a85">{stageLabel[todayMatch.stage]}{todayMatch.venue ? ` · ${todayMatch.venue}` : ''}</div>
-                <div class="font-display mb-2.5 text-center text-[14px] font-extrabold tracking-[.5px]">WHO DO YOU THINK WINS?</div>
-                <div class="flex gap-2.5">
-                  <a href={matchHref(todayMatch)} class="font-display flex-1 rounded-[11px] py-[13px] text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${hc.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{h.shortCode}</a>
-                  <a href={matchHref(todayMatch)} class="flex-none self-center px-1.5 text-[12px] font-bold" style="color:#6f6655">draw</a>
-                  <a href={matchHref(todayMatch)} class="font-display flex-1 rounded-[11px] py-[13px] text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${ac.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{a.shortCode}</a>
-                </div>
-                <div class="mt-3 text-center"><a href={matchHref(todayMatch)} class="text-[13px] font-bold" style="color:var(--color-gold)">Vote & see our prediction →</a></div>
-              </div>
-            </div>
-          );
-        })()}
-        {featured && (
-          <a href={`/articles/${featured.id}/`} class="kb-card-hover relative flex min-h-[230px] flex-col justify-end overflow-hidden rounded-[20px] p-[22px] text-white" style={`background:${featuredHero}`}>
-            <div class="pointer-events-none absolute -bottom-[44px] -right-[30px] h-[200px] w-[240px] opacity-[.45]" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
-            <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(16,18,24,.55) 0%,rgba(16,18,24,.12) 70%,transparent 100%)"></div>
-            <div class="relative z-[2]">
-              <div class="font-display inline-flex rounded border-[1.5px] px-[9px] py-1 text-[11px] font-extrabold uppercase tracking-[1.2px]" style="border-color:rgba(255,255,255,.5)">{kindOf(featured.data.tags).label}</div>
-              <div class="font-display mt-2.5 mb-2 text-[25px] font-black leading-[1.05] tracking-[-.6px] text-balance">{featured.data.title}</div>
-              <div class="text-[14.5px] leading-[1.4]" style="font-family:var(--font-serif);opacity:.92">{featured.data.description}</div>
-              <div class="mt-3 text-[12px] font-bold tracking-[.3px]" style="color:var(--color-gold)">READ THE STORY →</div>
-            </div>
-          </a>
-        )}
-      </div>
-
-      <h2 class="font-display mb-3 text-[20px] font-extrabold">More ties this weekend</h2>
-      <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
-        {upcoming.map((m) => {
-          const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
-          const p = pct(h.id, a.id);
-          return (
-            <a href={matchHref(m)} class="kb-card-hover block rounded-[14px] border p-[15px]" style="background:#fff;border-color:#e9e1d2">
-              <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
-              <div class="mt-[11px] flex items-center justify-between">
-                <div class="flex items-center gap-[7px]"><Flag team={h.id} w={26} /><b>{h.shortCode}</b></div>
-                <span class="text-[12px] font-bold" style="color:#b3a890">vs</span>
-                <div class="flex items-center gap-[7px]"><b>{a.shortCode}</b><Flag team={a.id} w={26} /></div>
-              </div>
-              <div class="mt-[11px] flex h-[9px] overflow-hidden rounded-[6px]">
-                <span style={`width:${p.win}%;background:var(--color-royal)`}></span><span style={`width:${p.draw}%;background:#d8cfbf`}></span><span style={`width:${p.lose}%;background:#2b2e36`}></span>
-              </div>
-              <div class="mt-2 text-[12px] font-bold" style="color:var(--color-ink-2)">{favLine(h.id, a.id)}</div>
-            </a>
-          );
-        })}
-      </div>
-
-      <h2 class="font-display mb-3 mt-[26px] text-[20px] font-extrabold">Title contenders</h2>
-      <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
-        {contenders.map((t) => (
-          <a href={`/teams/${t.id}/`} class="kb-card-hover block rounded-[13px] border p-3.5" style="background:#fff;border-color:#e9e1d2">
-            <div class="flex items-center gap-[9px]"><Flag team={t.id} w={30} /><b class="text-[15px]">{t.name}</b></div>
-            <div class="mt-[9px] flex items-center gap-[7px]"><span class="font-display text-[18px] font-black" style="color:var(--color-royal)">{t.strength}</span><span class="text-[12px]" style="color:#a59a85">power · #{t.fifaRank} world</span></div>
-          </a>
-        ))}
-      </div>
-    </section>
+              </td>
+              <td style="padding:9px 12px;text-align:right;color:var(--color-ink-2)">{r.polymarket != null ? r.polymarket + '%' : '—'}</td>
+              <td style="padding:9px 12px;text-align:right;color:var(--color-ink-2)">{r.kalshi != null ? r.kalshi + '%' : '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:8px;font-size:12px;color:var(--color-ink-3)">Bookmaker consensus vs prediction markets (Polymarket, Kalshi). Outright snapshot — a live feed can replace it later.</p>
   </div>
-
-  <script is:inline>
-    (() => {
-      const tabs = document.querySelectorAll('#home-tabs .kb-tab');
-      const panels = document.querySelectorAll('[data-panel]');
-      function show(name) {
-        panels.forEach((p) => (p.style.display = p.getAttribute('data-panel') === name ? '' : 'none'));
-        tabs.forEach((t) => {
-          const on = t.getAttribute('data-tab') === name;
-          t.style.color = on ? '#fff' : 'var(--color-ink-2)';
-          t.style.background = on ? 'var(--color-night)' : 'transparent';
-        });
-      }
-      tabs.forEach((t) => t.addEventListener('click', () => show(t.getAttribute('data-tab'))));
-    })();
-  </script>
 </BaseLayout>
