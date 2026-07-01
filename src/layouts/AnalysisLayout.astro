@@ -1,14 +1,13 @@
 ---
-// The analysis zone's shell — a dark analytics dashboard look, distinct from the
-// light blog. Theme is scoped to this layout via CSS variables on .analysis so it
-// never leaks into the rest of the site. Ported from the original prototype theme.
+// Analysis zone shell. Now shares the site-wide Kickabout header (via SiteHeader)
+// and Kickabout tokens, with a secondary sub-nav for the analysis sections.
 import '../styles/global.css';
 import Seo from '../components/Seo.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 
 interface Props {
   title: string;
   description: string;
-  /** active nav key */
   active?: string;
   canonical?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
@@ -33,41 +32,35 @@ const href = (key: string) => (key ? `/analysis/${key}/` : '/analysis/');
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <Seo title={title} description={description} canonical={canonical} jsonLd={jsonLd} />
   </head>
-  <body class="analysis min-h-screen">
-    <header
-      class="sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur"
-    >
-      <div class="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
-        <a href="/" class="text-[15px] font-extrabold tracking-tight whitespace-nowrap">
-          WC<span class="text-[var(--accent)]">26</span>
-          <span class="text-[var(--muted)]">· Analysis</span>
-        </a>
-        <nav class="flex flex-1 flex-wrap gap-1">
-          {NAV.map(([key, label]) => (
-            <a
-              href={href(key)}
-              class:list={[
-                'rounded-lg px-3 py-1.5 text-[13.5px] font-semibold',
-                active === key
-                  ? 'bg-[var(--accent)] text-[#04130b]'
-                  : 'text-[var(--muted)] hover:bg-[var(--panel2)] hover:text-[var(--text)]',
-              ]}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-        <a href="/articles" class="text-[13px] text-[var(--muted)] hover:text-[var(--text)]"
-          >← Blog</a
-        >
-      </div>
-    </header>
+  <body class="analysis min-h-screen antialiased">
+    <SiteHeader active="analysis" />
+    <div class="sticky top-[57px] z-20 border-b border-line bg-bg/90 backdrop-blur">
+      <nav class="mx-auto flex max-w-5xl flex-wrap gap-1 px-4 py-2">
+        {NAV.map(([key, label]) => (
+          <a
+            href={href(key)}
+            class:list={[
+              'rounded-lg px-3 py-1.5 text-[13.5px] font-semibold',
+              active === key
+                ? 'bg-ball text-[#241c00]'
+                : 'text-muted hover:bg-panel2 hover:text-ink',
+            ]}
+          >{label}</a>
+        ))}
+      </nav>
+    </div>
 
     <div class="mx-auto max-w-5xl px-4 pb-20">
       <slot />
-      <footer class="pt-10 pb-3 text-center text-xs text-[var(--muted)]">
+      <footer class="pt-10 pb-3 text-center text-xs text-muted">
         Real data to late June 2026 (Wikipedia, NBC Sports, SI, eloratings.net, FIFA ranking).<br />
         Forecasts are a transparent model (Elo + tournament form + squad + host advantage), not
         betting advice.
@@ -76,16 +69,9 @@ const href = (key: string) => (key ? `/analysis/${key}/` : '/analysis/');
 
     <style>
       .analysis {
-        --bg: #0c1118;
-        --panel: #141b26;
-        --panel2: #1b2533;
-        --line: #26324a;
-        --text: #e8eef7;
-        --muted: #93a2bd;
-        --accent: #28d17c;
-        --accent2: #3da5ff;
-        --warn: #ffb020;
-        --danger: #ff5d5d;
+        --bg: #16181d; --panel: #1e2129; --panel2: #242833; --line: #31353f;
+        --text: #f4f2ec; --muted: #9a9ba4;
+        --accent: #ffd23f; --accent2: #e8482b; --warn: #ffd23f; --danger: #e8482b;
         background: var(--bg);
         color: var(--text);
       }
