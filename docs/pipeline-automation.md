@@ -13,14 +13,10 @@ Fetch (REFRESH=1) → build warehouse → export JSON → commit JSON → publis
 
 ## One-time setup
 
-### 1. Create the D1 database
+### 1. D1 database (done)
 
-```sh
-npx wrangler d1 create kickabout-warehouse
-```
-
-Copy the printed `database_id` into `wrangler.toml` (replace `PLACEHOLDER_RUN_wrangler_d1_create`).
-Commit that change.
+Already created: **`worldcup-site`** (`fa7b603e-53e3-450f-adc4-a1e3133adaaa`), wired in
+`wrangler.toml`. The pipeline publishes to it via `npm run publish:d1` (full replace).
 
 ### 2. Add the GitHub Actions secrets
 
