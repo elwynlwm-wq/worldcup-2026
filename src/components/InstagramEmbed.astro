@@ -3,7 +3,7 @@
 // Video stays hosted on Instagram (no copying); attribution built in.
 // Usage:  <InstagramEmbed url="https://www.instagram.com/reel/CODE/" caption="..." />
 interface Props { url: string; caption?: string; label?: string }
-const { url, caption, label = 'Match reel' } = Astro.props;
+const { url, caption, label = 'Animated highlights' } = Astro.props;
 const permalink = url.split('?')[0].replace(/\/+$/, '') + '/';
 ---
 <figure class="ig-embed">
@@ -33,9 +33,9 @@ const permalink = url.split('?')[0].replace(/\/+$/, '') + '/';
     letter-spacing: .15em; text-transform: uppercase; color: var(--color-ink-2);
   }
   .ig-embed .instagram-media {
-    margin: 0 !important; width: 100% !important; min-width: 0 !important;
+    margin: 0 auto !important;
     border: 1px solid var(--color-line) !important; border-radius: 16px !important;
-    box-shadow: 0 8px 28px rgba(20,24,29,.12) !important; overflow: hidden;
+    box-shadow: 0 8px 28px rgba(20,24,29,.12) !important;
   }
   .ig-embed__cap {
     text-align: center; font-size: 12.5px; color: var(--color-ink-3);
