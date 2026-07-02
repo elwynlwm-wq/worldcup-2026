@@ -1,0 +1,62 @@
+---
+// Branded poster that links out to an Instagram reel (no live player, no re-hosting).
+// Usage: <InstagramReelCard url="..." home="brazil" away="japan" note="via @leonrdewa" />
+import Flag from './Flag.astro';
+interface Props { url: string; home: string; away: string; label?: string; note?: string }
+const { url, home, away, label = 'Animated highlights', note } = Astro.props;
+const permalink = url.split('?')[0].replace(/\/+$/, '') + '/';
+---
+<figure class="ig-card">
+  <a class="ig-card__link" href={permalink} target="_blank" rel="noopener" aria-label={`${label} — watch on Instagram`}>
+    <div class="ig-card__poster">
+      <div class="ig-card__flags">
+        <Flag team={home} w={40} shape="circle" />
+        <span class="ig-card__play" aria-hidden="true">▶</span>
+        <Flag team={away} w={40} shape="circle" />
+      </div>
+      <div class="ig-card__label">{label}</div>
+    </div>
+    <div class="ig-card__bar">
+      <span class="ig-card__ig">Watch on Instagram</span>
+      <span class="ig-card__arr" aria-hidden="true">↗</span>
+    </div>
+  </a>
+  {note && <figcaption class="ig-card__cap">{note}</figcaption>}
+</figure>
+
+<style>
+  .ig-card { margin: 1.75rem auto; max-width: 440px; }
+  .ig-card__link {
+    display: block; text-decoration: none; border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--color-line); box-shadow: 0 8px 28px rgba(20,24,29,.14);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .ig-card__link:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(20,24,29,.20); }
+  .ig-card__poster {
+    background:
+      radial-gradient(120% 120% at 50% 0%, rgba(201,162,39,.20), transparent 55%),
+      linear-gradient(160deg, #1c2230 0%, var(--color-night) 70%);
+    padding: 30px 22px 26px; text-align: center;
+  }
+  .ig-card__flags { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .ig-card__play {
+    display: inline-flex; width: 46px; height: 46px; border-radius: 50%;
+    background: var(--color-gold); color: var(--color-night);
+    align-items: center; justify-content: center; font-size: 16px; padding-left: 3px;
+    box-shadow: 0 4px 14px rgba(201,162,39,.5);
+  }
+  .ig-card__label {
+    margin-top: 16px; font-family: var(--font-display); font-weight: 800;
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--color-gold);
+  }
+  .ig-card__bar {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #fff; padding: 12px; font-family: var(--font-display); font-weight: 700;
+    font-size: 13px; color: var(--color-royal); border-top: 1px solid var(--color-line);
+  }
+  .ig-card__arr { color: var(--color-ink-3); }
+  .ig-card__cap {
+    text-align: center; font-size: 12.5px; color: var(--color-ink-3);
+    margin-top: .6rem; font-style: italic;
+  }
+</style>
