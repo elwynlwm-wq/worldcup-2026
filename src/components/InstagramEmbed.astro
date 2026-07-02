@@ -1,21 +1,48 @@
 ---
-// Official Instagram embed for a single public post/reel.
-// The video stays hosted on Instagram (no copying); attribution is built in.
-// Usage in MDX:  <InstagramEmbed url="https://www.instagram.com/reel/CODE/" />
-interface Props { url: string; caption?: string }
-const { url, caption } = Astro.props;
+// Official Instagram embed for a single public post/reel, styled as a media insert.
+// Video stays hosted on Instagram (no copying); attribution built in.
+// Usage:  <InstagramEmbed url="https://www.instagram.com/reel/CODE/" caption="..." />
+interface Props { url: string; caption?: string; label?: string }
+const { url, caption, label = 'Match reel' } = Astro.props;
 const permalink = url.split('?')[0].replace(/\/+$/, '') + '/';
 ---
-<figure style="margin:1.6rem 0;">
+<figure class="ig-embed">
+  <div class="ig-embed__eyebrow">
+    <span class="ig-embed__dot" aria-hidden="true">▶</span>
+    <span class="ig-embed__label">{label}</span>
+  </div>
   <blockquote
     class="instagram-media"
     data-instgrm-permalink={permalink}
-    data-instgrm-version="14"
-    style="background:#fff;border:0;border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);margin:0 auto;max-width:540px;width:100%;">
+    data-instgrm-version="14">
     <a href={permalink} target="_blank" rel="noopener">View this reel on Instagram</a>
   </blockquote>
-  {caption && <figcaption style="text-align:center;font-size:12.5px;color:var(--color-ink-3);margin-top:.5rem;">{caption}</figcaption>}
+  {caption && <figcaption class="ig-embed__cap">{caption}</figcaption>}
 </figure>
+
+<style>
+  .ig-embed { margin: 1.75rem auto; max-width: 460px; }
+  .ig-embed__eyebrow { display: flex; align-items: center; gap: 8px; margin: 0 0 .55rem 2px; }
+  .ig-embed__dot {
+    display: inline-flex; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--color-night); color: var(--color-gold);
+    align-items: center; justify-content: center; font-size: 10px; padding-left: 2px;
+  }
+  .ig-embed__label {
+    font-family: var(--font-display); font-weight: 800; font-size: 11.5px;
+    letter-spacing: .15em; text-transform: uppercase; color: var(--color-ink-2);
+  }
+  .ig-embed .instagram-media {
+    margin: 0 !important; width: 100% !important; min-width: 0 !important;
+    border: 1px solid var(--color-line) !important; border-radius: 16px !important;
+    box-shadow: 0 8px 28px rgba(20,24,29,.12) !important; overflow: hidden;
+  }
+  .ig-embed__cap {
+    text-align: center; font-size: 12.5px; color: var(--color-ink-3);
+    margin-top: .6rem; font-style: italic;
+  }
+</style>
+
 <script is:inline>
   (function () {
     if (!document.getElementById('ig-embed-js')) {
