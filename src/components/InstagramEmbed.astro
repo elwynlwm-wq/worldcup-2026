@@ -1,0 +1,29 @@
+---
+// Official Instagram embed for a single public post/reel.
+// The video stays hosted on Instagram (no copying); attribution is built in.
+// Usage in MDX:  <InstagramEmbed url="https://www.instagram.com/reel/CODE/" />
+interface Props { url: string; caption?: string }
+const { url, caption } = Astro.props;
+const permalink = url.split('?')[0].replace(/\/+$/, '') + '/';
+---
+<figure style="margin:1.6rem 0;">
+  <blockquote
+    class="instagram-media"
+    data-instgrm-permalink={permalink}
+    data-instgrm-version="14"
+    style="background:#fff;border:0;border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);margin:0 auto;max-width:540px;width:100%;">
+    <a href={permalink} target="_blank" rel="noopener">View this reel on Instagram</a>
+  </blockquote>
+  {caption && <figcaption style="text-align:center;font-size:12.5px;color:var(--color-ink-3);margin-top:.5rem;">{caption}</figcaption>}
+</figure>
+<script is:inline>
+  (function () {
+    if (!document.getElementById('ig-embed-js')) {
+      var s = document.createElement('script');
+      s.id = 'ig-embed-js'; s.async = true; s.src = 'https://www.instagram.com/embed.js';
+      document.body.appendChild(s);
+    } else if (window.instgrm) {
+      window.instgrm.Embeds.process();
+    }
+  })();
+</script>
