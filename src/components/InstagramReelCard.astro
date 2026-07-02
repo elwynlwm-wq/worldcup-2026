@@ -1,62 +1,107 @@
 ---
-// Branded poster that links out to an Instagram reel (no live player, no re-hosting).
-// Usage: <InstagramReelCard url="..." home="brazil" away="japan" note="via @leonrdewa" />
+// Poster card that opens the reel in an on-page modal (no redirect, no re-hosting).
+// Optional `poster` prop: path to a real still (e.g. /reels/brazil-japan.jpg) to
+// use as the thumbnail; without it, a branded flags poster is shown.
+// Usage: <InstagramReelCard url="..." home="brazil" away="japan" poster="/reels/x.jpg" note="via @leonrdewa" />
 import Flag from './Flag.astro';
-interface Props { url: string; home: string; away: string; label?: string; note?: string }
-const { url, home, away, label = 'Animated highlights', note } = Astro.props;
+interface Props { url: string; home: string; away: string; label?: string; note?: string; poster?: string }
+const { url, home, away, label = 'Animated highlights', note, poster } = Astro.props;
 const permalink = url.split('?')[0].replace(/\/+$/, '') + '/';
+const code = permalink.split('/').filter(Boolean).pop();
+const id = `reel-${code}`;
 ---
 <figure class="ig-card">
-  <a class="ig-card__link" href={permalink} target="_blank" rel="noopener" aria-label={`${label} — watch on Instagram`}>
-    <div class="ig-card__poster">
-      <div class="ig-card__flags">
-        <Flag team={home} w={40} shape="circle" />
-        <span class="ig-card__play" aria-hidden="true">▶</span>
-        <Flag team={away} w={40} shape="circle" />
-      </div>
+  <button class="ig-card__link" type="button" data-reel-open={id}>
+    <div class={`ig-card__poster${poster ? ' ig-card__poster--img' : ''}`} style={poster ? `background-image:linear-gradient(180deg,rgba(20,24,29,.15),rgba(20,24,29,.55)),url(${poster})` : ''}>
+      {!poster && (
+        <div class="ig-card__flags">
+          <Flag team={home} w={40} shape="circle" />
+          <Flag team={away} w={40} shape="circle" />
+        </div>
+      )}
+      <span class="ig-card__play" aria-hidden="true">▶</span>
       <div class="ig-card__label">{label}</div>
     </div>
-    <div class="ig-card__bar">
-      <span class="ig-card__ig">Watch on Instagram</span>
-      <span class="ig-card__arr" aria-hidden="true">↗</span>
-    </div>
-  </a>
+    <div class="ig-card__bar"><span>Watch highlights</span></div>
+  </button>
   {note && <figcaption class="ig-card__cap">{note}</figcaption>}
 </figure>
+
+<div class="ig-modal" id={id} hidden>
+  <div class="ig-modal__backdrop" data-reel-close></div>
+  <div class="ig-modal__body" role="dialog" aria-modal="true" aria-label={label}>
+    <button class="ig-modal__close" type="button" data-reel-close aria-label="Close">✕</button>
+    <blockquote class="instagram-media" data-instgrm-permalink={permalink} data-instgrm-version="14">
+      <a href={permalink} target="_blank" rel="noopener">View this reel on Instagram</a>
+    </blockquote>
+  </div>
+</div>
 
 <style>
   .ig-card { margin: 1.75rem auto; max-width: 440px; }
   .ig-card__link {
-    display: block; text-decoration: none; border-radius: 16px; overflow: hidden;
-    border: 1px solid var(--color-line); box-shadow: 0 8px 28px rgba(20,24,29,.14);
-    transition: transform .15s ease, box-shadow .15s ease;
+    display: block; width: 100%; padding: 0; cursor: pointer; text-align: center;
+    background: none; border: 1px solid var(--color-line); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 28px rgba(20,24,29,.14); transition: transform .15s ease, box-shadow .15s ease;
   }
   .ig-card__link:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(20,24,29,.20); }
   .ig-card__poster {
+    position: relative;
     background:
       radial-gradient(120% 120% at 50% 0%, rgba(201,162,39,.20), transparent 55%),
       linear-gradient(160deg, #1c2230 0%, var(--color-night) 70%);
     padding: 30px 22px 26px; text-align: center;
   }
-  .ig-card__flags { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .ig-card__poster--img { background-size: cover !important; background-position: center !important; padding: 46px 22px; min-height: 200px; }
+  .ig-card__flags { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 14px; }
   .ig-card__play {
-    display: inline-flex; width: 46px; height: 46px; border-radius: 50%;
+    display: inline-flex; width: 52px; height: 52px; border-radius: 50%;
     background: var(--color-gold); color: var(--color-night);
-    align-items: center; justify-content: center; font-size: 16px; padding-left: 3px;
-    box-shadow: 0 4px 14px rgba(201,162,39,.5);
+    align-items: center; justify-content: center; font-size: 18px; padding-left: 3px;
+    box-shadow: 0 4px 16px rgba(201,162,39,.55);
   }
   .ig-card__label {
-    margin-top: 16px; font-family: var(--font-display); font-weight: 800;
+    margin-top: 14px; font-family: var(--font-display); font-weight: 800;
     font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--color-gold);
+    text-shadow: 0 1px 6px rgba(0,0,0,.5);
   }
   .ig-card__bar {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
     background: #fff; padding: 12px; font-family: var(--font-display); font-weight: 700;
     font-size: 13px; color: var(--color-royal); border-top: 1px solid var(--color-line);
   }
-  .ig-card__arr { color: var(--color-ink-3); }
-  .ig-card__cap {
-    text-align: center; font-size: 12.5px; color: var(--color-ink-3);
-    margin-top: .6rem; font-style: italic;
+  .ig-card__cap { text-align: center; font-size: 12.5px; color: var(--color-ink-3); margin-top: .6rem; font-style: italic; }
+
+  .ig-modal[hidden] { display: none; }
+  .ig-modal { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .ig-modal__backdrop { position: absolute; inset: 0; background: rgba(12,14,18,.82); backdrop-filter: blur(2px); }
+  .ig-modal__body { position: relative; z-index: 1; width: 100%; max-width: 420px; }
+  .ig-modal__close {
+    position: absolute; top: -42px; right: 0; width: 34px; height: 34px; border-radius: 50%;
+    border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 15px; cursor: pointer;
   }
+  .ig-modal__close:hover { background: rgba(255,255,255,.28); }
+  .ig-modal .instagram-media { margin: 0 auto !important; border-radius: 14px !important; }
 </style>
+
+<script is:inline define:vars={{ id }}>
+  (function () {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+    var loaded = false;
+    function ensureEmbed() {
+      if (loaded) { if (window.instgrm) window.instgrm.Embeds.process(); return; }
+      loaded = true;
+      if (window.instgrm) { window.instgrm.Embeds.process(); return; }
+      if (!document.getElementById('ig-embed-js')) {
+        var s = document.createElement('script');
+        s.id = 'ig-embed-js'; s.async = true; s.src = 'https://www.instagram.com/embed.js';
+        document.body.appendChild(s);
+      }
+    }
+    function open() { modal.hidden = false; document.body.style.overflow = 'hidden'; ensureEmbed(); }
+    function close() { modal.hidden = true; document.body.style.overflow = ''; }
+    document.querySelectorAll('[data-reel-open="' + id + '"]').forEach(function (b) { b.addEventListener('click', open); });
+    modal.querySelectorAll('[data-reel-close]').forEach(function (b) { b.addEventListener('click', close); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
+  })();
+</script>
