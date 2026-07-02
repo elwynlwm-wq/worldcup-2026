@@ -1,0 +1,71 @@
+---
+// Self-hosted video card: real poster frame, opens the clip in an on-page modal.
+// Usage: <VideoReelCard src="/reels/x.mp4" poster="/reels/x.jpg" note="via @..." />
+interface Props { src: string; poster: string; label?: string; note?: string }
+const { src, poster, label = 'Animated highlights', note } = Astro.props;
+const id = 'vr-' + src.replace(/\W+/g, '');
+---
+<figure class="vr">
+  <button class="vr__btn" type="button" data-vr-open={id}
+    style={`background-image:linear-gradient(180deg,rgba(20,24,29,.10),rgba(20,24,29,.60)),url(${poster})`}>
+    <span class="vr__play" aria-hidden="true">▶</span>
+    <span class="vr__label">{label}</span>
+  </button>
+  {note && <figcaption class="vr__cap">{note}</figcaption>}
+</figure>
+
+<div class="vr-modal" id={id} hidden>
+  <div class="vr-modal__bd" data-vr-close></div>
+  <div class="vr-modal__body">
+    <button class="vr-modal__x" type="button" data-vr-close aria-label="Close">✕</button>
+    <video class="vr-modal__video" controls playsinline preload="none" poster={poster}>
+      <source src={src} type="video/mp4" />
+    </video>
+  </div>
+</div>
+
+<style>
+  .vr { margin: 1.75rem auto; max-width: 560px; }
+  .vr__btn {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; aspect-ratio: 16 / 9; padding: 0; cursor: pointer; border: 1px solid var(--color-line);
+    border-radius: 16px; overflow: hidden; background-size: cover; background-position: center;
+    box-shadow: 0 8px 28px rgba(20,24,29,.16); transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .vr__btn:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(20,24,29,.24); }
+  .vr__play {
+    display: inline-flex; width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(201,162,39,.95); color: var(--color-night);
+    align-items: center; justify-content: center; font-size: 22px; padding-left: 4px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.4);
+  }
+  .vr__label {
+    margin-top: 14px; font-family: var(--font-display); font-weight: 800; font-size: 12px;
+    letter-spacing: .18em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.6);
+  }
+  .vr__cap { text-align: center; font-size: 12.5px; color: var(--color-ink-3); margin-top: .6rem; font-style: italic; }
+
+  .vr-modal[hidden] { display: none; }
+  .vr-modal { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .vr-modal__bd { position: absolute; inset: 0; background: rgba(12,14,18,.85); backdrop-filter: blur(2px); }
+  .vr-modal__body { position: relative; z-index: 1; width: 100%; max-width: 900px; }
+  .vr-modal__x {
+    position: absolute; top: -42px; right: 0; width: 34px; height: 34px; border-radius: 50%;
+    border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 15px; cursor: pointer;
+  }
+  .vr-modal__x:hover { background: rgba(255,255,255,.28); }
+  .vr-modal__video { width: 100%; max-height: 82vh; border-radius: 14px; background: #000; display: block; }
+</style>
+
+<script is:inline define:vars={{ id }}>
+  (function () {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+    var video = modal.querySelector('video');
+    function open() { modal.hidden = false; document.body.style.overflow = 'hidden'; if (video) { try { video.play(); } catch (e) {} } }
+    function close() { modal.hidden = true; document.body.style.overflow = ''; if (video) { video.pause(); } }
+    document.querySelectorAll('[data-vr-open="' + id + '"]').forEach(function (b) { b.addEventListener('click', open); });
+    modal.querySelectorAll('[data-vr-close]').forEach(function (b) { b.addEventListener('click', close); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
+  })();
+</script>
