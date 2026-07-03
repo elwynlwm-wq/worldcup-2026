@@ -3,6 +3,13 @@
 // from src/lib/model.ts. If the weightings in model.ts change, update this
 // page in the same commit (see AGENTS.md).
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ModelPlayground from '../components/ModelPlayground.tsx';
+import { provider } from '../lib/provider';
+
+const playTeams = provider.getTeams().map((t) => ({
+  id: t.id, name: t.name,
+  elo: t.elo, formAdj: t.formAdj, squadAdj: t.squadAdj, hostAdj: t.hostAdj, adjRating: t.adjRating,
+}));
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -87,6 +94,16 @@ const jsonLd = {
             forecast you can't interrogate is just an opinion with decimals.
           </p>
         </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Try it yourself</h2>
+        <p class="mt-2 mb-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+          Don't take our word for it — run the model. Pick any two of the 48 teams and watch the full
+          calculation happen: the Elo base, all three adjustments, and the exact probabilities we'd
+          publish for that fixture. Then drag the slider to feel how the curve behaves.
+        </p>
+        <ModelPlayground client:load teams={playTeams} />
       </section>
 
       <section>

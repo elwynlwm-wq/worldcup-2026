@@ -22,7 +22,40 @@ const DESK = [
   },
 ];
 
-const jsonLd = {
+const FAQ = [
+  {
+    q: 'Do you take bets or sell tips?',
+    a: "No. World Cup Analytics is not a bookmaker, has no affiliate deals with bookmakers, and sells nothing. Our forecasts are probabilities from a published model, not betting advice.",
+  },
+  {
+    q: 'How do the forecasts actually work?',
+    a: "Each team gets an Elo rating adjusted for tournament form, squad firepower and host advantage. The gap between two teams' ratings becomes win, draw and loss probabilities. The full formula — with the exact weightings — is on our how-it-works page, where you can also run it yourself.",
+  },
+  {
+    q: 'Where does your data come from?',
+    a: 'Results, expected goals, lineups, injuries and odds live in our own data warehouse, refreshed hourly during the tournament. We never invent scorelines, injuries or quotes, and derived estimates are labelled as ours.',
+  },
+  {
+    q: 'Why do you write under pen names?',
+    a: "We're a small group of friends doing this out of love for the World Cup, and we'd rather the football did the talking. Judge us on the method and the record: every forecast we publish stays up, right or wrong.",
+  },
+  {
+    q: 'The model got a match badly wrong. What gives?',
+    a: "A 70% favourite loses three times in ten — probabilities aren't promises. What we owe you is a model that's honest and consistent over the whole tournament, not one that's right every night.",
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+  {
   '@context': 'https://schema.org',
   '@type': 'AboutPage',
   name: 'About World Cup Analytics',
@@ -33,7 +66,8 @@ const jsonLd = {
     description:
       'A free, fan-made World Cup 2026 predictions and analysis site. Transparent model forecasts, not betting advice.',
   },
-};
+  },
+];
 ---
 
 <BaseLayout
@@ -95,8 +129,24 @@ const jsonLd = {
         The forecast is a transparent rating model: an Elo base adjusted for tournament form, squad
         firepower and host advantage, turned into win, draw and loss probabilities. No black box, no vibes
         dressed up as maths. The full formula, including the exact weightings, is on our
-        <a href="/how-it-works/" class="font-bold" style="color:var(--color-royal)">how it works</a> page.
+        <a href="/how-it-works/" class="font-bold" style="color:var(--color-royal)">how it works</a> page —
+        where you can pick any two teams and run the model yourself.
       </p>
+    </section>
+
+    <section class="mt-7 max-w-[680px]">
+      <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Fair questions</h2>
+      <div class="mt-3 overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
+        {FAQ.map((f) => (
+          <details class="faq-item border-b" style="border-color:#f1ebdf">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-[15px] font-bold select-none">
+              {f.q}
+              <span class="faq-chev flex-none text-[13px] transition-transform" style="color:var(--color-royal)">▾</span>
+            </summary>
+            <p class="px-4 pb-4 text-[14px] leading-[1.6]" style="color:var(--color-ink-2)">{f.a}</p>
+          </details>
+        ))}
+      </div>
     </section>
 
     <section class="mt-7 max-w-[680px] rounded-[16px] border p-5" style="background:#fff;border-color:#e9e1d2">
@@ -112,4 +162,10 @@ const jsonLd = {
       </p>
     </section>
   </div>
+
+  <style>
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item[open] .faq-chev { transform: rotate(180deg); }
+  </style>
 </BaseLayout>
