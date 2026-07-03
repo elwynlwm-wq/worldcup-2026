@@ -1,5 +1,5 @@
 ---
-// About page — the humans (well, pen names) behind Kickabout. Exists for
+// About page — the humans (well, pen names) behind World Cup Analytics. Exists for
 // readers first, and for E-E-A-T / ads-verification second: who we are, why
 // we do this, how to reach us, and the not-a-bookmaker line in plain sight.
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -25,10 +25,10 @@ const DESK = [
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'AboutPage',
-  name: 'About Kickabout',
+  name: 'About World Cup Analytics',
   mainEntity: {
     '@type': 'Organization',
-    name: 'Kickabout',
+    name: 'World Cup Analytics',
     url: 'https://worldcup-site-ten.vercel.app',
     description:
       'A free, fan-made World Cup 2026 predictions and analysis site. Transparent model forecasts, not betting advice.',
@@ -37,15 +37,15 @@ const jsonLd = {
 ---
 
 <BaseLayout
-  title="About us — Kickabout | World Cup 2026"
-  description="Who's behind Kickabout, why we built a free World Cup 2026 predictions site, and the rules we hold ourselves to. Fan-made, data-first, not a bookmaker."
+  title="About us — World Cup Analytics | World Cup 2026"
+  description="Who's behind World Cup Analytics, why we built a free World Cup 2026 predictions site, and the rules we hold ourselves to. Fan-made, data-first, not a bookmaker."
   canonical="/about/"
   jsonLd={jsonLd}
 >
   <div class="kb-route">
     <h1 class="font-display text-[34px] font-black tracking-[-1px]">Built out of love for the World Cup</h1>
     <p class="mt-1 max-w-[640px] text-[15.5px]" style="color:#6f6655">
-      Kickabout is a free, fan-made site. Nobody pays us, nothing is sponsored, and we don't take bets.
+      World Cup Analytics is a free, fan-made site. Nobody pays us, nothing is sponsored, and we don't take bets.
       We do this because the World Cup is the best thing in sport and we wanted a place that treats it that way.
     </p>
 
@@ -59,7 +59,7 @@ const jsonLd = {
           So we built one.
         </p>
         <p>
-          Every match on Kickabout gets a model call — win, draw and loss probabilities from a formula we
+          Every match on World Cup Analytics gets a model call — win, draw and loss probabilities from a formula we
           publish in full — shown next to what the betting market thinks, so you can see where we agree and
           where we're being brave. Around that we write previews, post-match analytics and a data profile
           of all 48 teams.
@@ -102,7 +102,7 @@ const jsonLd = {
     <section class="mt-7 max-w-[680px] rounded-[16px] border p-5" style="background:#fff;border-color:#e9e1d2">
       <h2 class="font-display text-[18px] font-black tracking-[-0.5px]">The small print that isn't small</h2>
       <p class="mt-2 text-[14.5px] leading-[1.6]" style="color:var(--color-ink-2)">
-        Kickabout is not a bookmaker and is not affiliated with one. We don't take bets, sell tips or earn
+        World Cup Analytics is not a bookmaker and is not affiliated with one. We don't take bets, sell tips or earn
         commission from gambling operators. Our forecasts are probabilities, not promises, and they are not
         betting advice. If you gamble, please do it responsibly.
       </p>

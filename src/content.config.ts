@@ -22,7 +22,7 @@ const articles = defineCollection({
       // --- Publishing ---
       publishDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
-      author: z.string().default('World Cup 2026 Staff'),
+      author: z.string().default('World Cup Analytics desk'),
       draft: z.boolean().default(false),
 
       // --- Taxonomy & presentation ---

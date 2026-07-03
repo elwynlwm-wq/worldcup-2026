@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 
-// Interactive pick board (Preact island), light Kickabout theme. The market's
+// Interactive pick board (Preact island), light World Cup Analytics theme. The market's
 // sentiment shows in every tile up front; committing a pick reveals the model
 // (Elo) and how you + the market compare. Picks persist in localStorage.
 interface Side { id: string; name: string; code: string }

@@ -58,11 +58,11 @@ const kindOf = (tags: string[] = []) => {
 const HERO_BY_KIND: Record<string, string> = { Preview: '#11643f', Recap: '#9d2730', Feature: '#1f3fbf' };
 const featuredHero = featured ? (HERO_BY_KIND[kindOf(featured.data.tags).label] ?? '#16181d') : '#16181d';
 
-const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kickabout', url: Astro.site?.href };
+const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'World Cup Analytics', url: Astro.site?.href };
 ---
 
 <BaseLayout
-  title="Kickabout — World Cup 2026 Predictions, Analysis & Stories"
+  title="World Cup Analytics — World Cup 2026 Predictions, Analysis & Stories"
   description="Follow the 2026 World Cup your way: today's matches and who-will-win votes, data-driven analysis, power rankings, and stories for every kind of fan."
   active="today"
   jsonLd={jsonLd}
@@ -96,7 +96,7 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Ki
               <div class="font-display inline-flex items-center gap-1.5 rounded border-[1.5px] px-[11px] py-[5px] text-[11.5px] font-extrabold uppercase tracking-[1.4px]" style="border-color:rgba(255,255,255,.5)">{fk.label}</div>
               <div class="font-display mt-4 mb-2.5 max-w-[680px] text-[30px] font-black leading-[1.02] tracking-[-1px] text-balance sm:text-[40px]">{featured.data.title}</div>
               <div class="max-w-[600px] text-[16px] leading-relaxed sm:text-[18px]" style="font-family:var(--font-serif);opacity:.93">{featured.data.description}</div>
-              <div class="mt-[18px] text-[13px] font-bold tracking-[.3px]" style="color:var(--color-gold)">{fm ? `${fm.a.shortCode} vs ${fm.b.shortCode}` : 'Kickabout'} · READ THE STORY →</div>
+              <div class="mt-[18px] text-[13px] font-bold tracking-[.3px]" style="color:var(--color-gold)">{fm ? `${fm.a.shortCode} vs ${fm.b.shortCode}` : 'World Cup Analytics'} · READ THE STORY →</div>
             </div>
           </a>
         );
