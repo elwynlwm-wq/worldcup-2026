@@ -10,16 +10,18 @@
 // runs best from a residential IP (datacenter IPs get rate-limited/challenged).
 //
 // Requires on the machine that runs it:
-//   - yt-dlp and ffmpeg on PATH
+//   - yt-dlp, ffmpeg, and the aws CLI on PATH
 //   - an Instagram cookies file (Netscape format) — path in IG_COOKIES
-//   - Cloudflare auth for R2 write: either `wrangler login`, or
-//     CLOUDFLARE_API_TOKEN (+ CLOUDFLARE_ACCOUNT_ID) with R2 Object R/W on the bucket
+//   - R2 S3 credentials (access-key pair + endpoint) in env — see below
 //
 // Env (see .env.example):
-//   IG_COOKIES        path to Netscape cookies.txt for a (burner) IG account
-//   R2_BUCKET         R2 bucket name            (default: worldcup-2026)
-//   R2_PREFIX         key prefix / folder       (default: post-media)
-//   R2_PUBLIC_BASE    public base URL of bucket (default: the worldcup-2026 pub-*.r2.dev)
+//   IG_COOKIES                    path to Netscape cookies.txt for a (burner) IG account
+//   CLOUDFLARE_R2_ACCESS_KEY_ID   R2 S3 access key id
+//   CLOUDFLARE_R2_SECRET_KEY      R2 S3 secret key
+//   CLOUDFLARE_R2_ACCESS_POINT    R2 S3 endpoint (https://<acct>.r2.cloudflarestorage.com)
+//   R2_BUCKET                     R2 bucket name            (default: worldcup-2026)
+//   R2_PREFIX                     key prefix / folder       (default: post-media)
+//   R2_PUBLIC_BASE                public base URL of bucket (default: the worldcup-2026 pub-*.r2.dev)
 //
 // Run:
 //   npm run reel -- --slug france-sweden --url https://www.instagram.com/p/XXXX/
@@ -38,8 +40,13 @@ const R2_PREFIX = process.env.R2_PREFIX || 'post-media';
 const R2_PUBLIC_BASE =
   process.env.R2_PUBLIC_BASE || 'https://pub-53b6937ac1564b65a7bb62986f6253ce.r2.dev';
 
+// R2 is written via its S3-compatible API (NOT a wrangler Bearer token — that
+// auths D1/Pages, not R2). Needs the S3 access-key pair + endpoint, all in env.
+const R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+const R2_SECRET_KEY = process.env.CLOUDFLARE_R2_SECRET_KEY;
+const R2_ENDPOINT = process.env.CLOUDFLARE_R2_ACCESS_POINT;
+
 const POSTERS_DIR = join(ROOT, '..', 'public', 'reels'); // posters stay in-repo
-const WRANGLER_CONFIG = join(ROOT, '..', 'wrangler.toml');
 
 interface Args {
   slug: string;
@@ -88,10 +95,18 @@ function main() {
 
   requireBinary('yt-dlp');
   requireBinary('ffmpeg');
+  requireBinary('aws'); // S3-compatible client for the R2 upload
 
   const cookies = process.env.IG_COOKIES;
   if (!cookies) die('IG_COOKIES is not set — path to the Instagram cookies.txt (Netscape format).');
   if (!existsSync(cookies)) die(`IG_COOKIES points at a missing file: ${cookies}`);
+
+  if (!R2_ACCESS_KEY_ID || !R2_SECRET_KEY || !R2_ENDPOINT) {
+    die(
+      'R2 S3 credentials missing. Set CLOUDFLARE_R2_ACCESS_KEY_ID, ' +
+        'CLOUDFLARE_R2_SECRET_KEY and CLOUDFLARE_R2_ACCESS_POINT in .env.',
+    );
+  }
 
   ensureDir(POSTERS_DIR);
   const work = mkdtempSync(join(tmpdir(), `reel-${slug}-`));
@@ -121,16 +136,27 @@ function main() {
     if (!existsSync(posterTmp)) die('ffmpeg did not produce a poster frame.');
     copyFileSync(posterTmp, posterFinal);
 
-    // 3. Upload the video to R2. --remote = the real bucket, not local.
+    // 3. Upload the video to R2 via its S3-compatible API.
     console.log(`☁ Uploading video → r2://${R2_BUCKET}/${key}`);
     execFileSync(
-      'npx',
+      'aws',
       [
-        'wrangler', 'r2', 'object', 'put', `${R2_BUCKET}/${key}`,
-        '--file', mp4, '--content-type', 'video/mp4', '--remote',
-        `--config=${WRANGLER_CONFIG}`,
+        's3api', 'put-object',
+        '--bucket', R2_BUCKET,
+        '--key', key,
+        '--body', mp4,
+        '--content-type', 'video/mp4',
+        '--endpoint-url', R2_ENDPOINT,
+        '--region', 'auto',
       ],
-      { stdio: 'inherit', cwd: ROOT },
+      {
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          AWS_ACCESS_KEY_ID: R2_ACCESS_KEY_ID,
+          AWS_SECRET_ACCESS_KEY: R2_SECRET_KEY,
+        },
+      },
     );
   } finally {
     rmSync(work, { recursive: true, force: true });
