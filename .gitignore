@@ -27,3 +27,8 @@ npm-debug.log*
 
 # Dev banner copies (binaries; real serving via R2 later)
 public/banners/
+
+tmp/
+
+# Reel videos are served from R2 (post-media/), not committed. Posters (*.jpg) stay.
+public/reels/*.mp4
