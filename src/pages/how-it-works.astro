@@ -1,0 +1,132 @@
+---
+// Methodology page — the full model, in plain English, with the real numbers
+// from src/lib/model.ts. If the weightings in model.ts change, update this
+// page in the same commit (see AGENTS.md).
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'How our World Cup 2026 forecast model works',
+  description:
+    'The complete methodology behind Kickabout match forecasts: Elo base rating, form, squad and host adjustments, and how ratings become win/draw/loss probabilities.',
+};
+---
+
+<BaseLayout
+  title="How it works — our forecast model | Kickabout"
+  description="The full methodology behind our World Cup 2026 match forecasts: Elo ratings, form, squad and host adjustments, and how a rating gap becomes win, draw and loss probabilities."
+  canonical="/how-it-works/"
+  jsonLd={jsonLd}
+>
+  <div class="kb-route">
+    <h1 class="font-display text-[34px] font-black tracking-[-1px]">How our forecasts work</h1>
+    <p class="mt-1 max-w-[640px] text-[15.5px]" style="color:#6f6655">
+      Every number below is the actual model, not a simplified version of it. If we change a weighting,
+      we change this page in the same breath.
+    </p>
+
+    <div class="mt-6 max-w-[680px] space-y-7">
+      <section>
+        <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Start with a rating</h2>
+        <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+          <p>
+            Each team starts from its <b>Elo rating</b> — the chess-derived system that has become the
+            standard way to rate national football teams. Elo rewards beating strong opponents and barely
+            moves for thrashing weak ones, which makes it a much better strength measure than the FIFA
+            ranking. A typical gap: a top side sits around 2000, a longshot around 1600.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Adjust it for the tournament</h2>
+        <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+          <p>Elo is a long-run measure, so we nudge it with three tournament-specific adjustments:</p>
+        </div>
+        <div class="mt-3 overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
+          <div class="border-b px-4 py-3" style="border-color:#f1ebdf">
+            <b class="text-[15px]">Form here, not form in general</b>
+            <p class="mt-1 text-[14px] leading-[1.55]" style="color:var(--color-ink-2)">
+              Points and goal difference at this World Cup, worth up to <b>±35 rating points</b>.
+              A team cruising through its group gets a push; a team stumbling gets docked.
+            </p>
+          </div>
+          <div class="border-b px-4 py-3" style="border-color:#f1ebdf">
+            <b class="text-[15px]">Squad firepower</b>
+            <p class="mt-1 text-[14px] leading-[1.55]" style="color:var(--color-ink-2)">
+              How the squad's international goal output compares with the rest of the field, worth up to
+              <b>±20 points</b>. A squad stacked with proven scorers rates above one that relies on hope.
+            </p>
+          </div>
+          <div class="px-4 py-3">
+            <b class="text-[15px]">Host advantage</b>
+            <p class="mt-1 text-[14px] leading-[1.55]" style="color:var(--color-ink-2)">
+              The USA, Mexico and Canada each get a flat <b>+40 points</b>. Hosts have historically
+              outperformed their rating, and this tournament has three of them.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Turn the gap into probabilities</h2>
+        <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+          <p>
+            For any fixture we take the difference between the two adjusted ratings and run it through the
+            standard Elo expectation curve: a 0-point gap means a coin flip, a 100-point gap means roughly
+            64-36, a 400-point gap roughly 91-9.
+          </p>
+          <p>
+            Football needs a draw, so we add one: the draw probability starts at <b>28% for a dead-even
+            match</b> and shrinks as the rating gap grows — mismatches produce fewer draws. The three
+            numbers are then normalised so they always sum to 100%.
+          </p>
+          <p>
+            That's the whole model. It's deliberately simple enough to explain on one page, because a
+            forecast you can't interrogate is just an opinion with decimals.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">The market bar</h2>
+        <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+          <p>
+            Next to our call you'll often see what the betting market thinks, taken from published match
+            odds. We show it for contrast and never blend it into our model — the interesting matches are
+            exactly the ones where the two disagree.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Where the data comes from</h2>
+        <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+          <p>
+            Results, expected goals, lineups, player stats, injuries and odds live in our own data
+            warehouse, refreshed hourly throughout the tournament. Articles are written from that
+            warehouse: we don't invent scorelines, injuries or quotes, and where a stat is our own derived
+            estimate we label it as ours.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">What the model doesn't know</h2>
+        <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+          <p>
+            Plenty. It can't see a dressing-room row, a keeper's confidence, 35°C in Monterrey or a
+            red card in the 12th minute. A 70% favourite loses three times in ten — that's not the model
+            failing, that's football. Treat every forecast as a considered starting point, not a verdict.
+          </p>
+          <p>
+            And to say it plainly: none of this is betting advice. We're not a bookmaker and we don't
+            take a cut from anyone who is. More on that on our
+            <a href="/about/" class="font-bold" style="color:var(--color-royal)">about page</a>.
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

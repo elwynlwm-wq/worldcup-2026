@@ -1,0 +1,115 @@
+---
+// About page — the humans (well, pen names) behind Kickabout. Exists for
+// readers first, and for E-E-A-T / ads-verification second: who we are, why
+// we do this, how to reach us, and the not-a-bookmaker line in plain sight.
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const DESK = [
+  {
+    name: 'Sonny Panenka',
+    role: 'Editor',
+    bio: 'Decides what gets covered and writes most of the pre-match calls. Has backed a doomed dark horse at every World Cup since 2006 and sees no reason to stop.',
+  },
+  {
+    name: 'Ada Trivela',
+    role: 'The numbers',
+    bio: 'Built the forecast model and keeps the data pipeline honest. Believes a spreadsheet can love football too, and that xG is a description, not an excuse.',
+  },
+  {
+    name: 'Marco Rabona',
+    role: 'Teams & players',
+    bio: 'Writes the team analytics and player deep dives. Watches the full 90 of games nobody else will, then tells you which full-back quietly won it.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'About Kickabout',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Kickabout',
+    url: 'https://worldcup-site-ten.vercel.app',
+    description:
+      'A free, fan-made World Cup 2026 predictions and analysis site. Transparent model forecasts, not betting advice.',
+  },
+};
+---
+
+<BaseLayout
+  title="About us — Kickabout | World Cup 2026"
+  description="Who's behind Kickabout, why we built a free World Cup 2026 predictions site, and the rules we hold ourselves to. Fan-made, data-first, not a bookmaker."
+  canonical="/about/"
+  jsonLd={jsonLd}
+>
+  <div class="kb-route">
+    <h1 class="font-display text-[34px] font-black tracking-[-1px]">Built out of love for the World Cup</h1>
+    <p class="mt-1 max-w-[640px] text-[15.5px]" style="color:#6f6655">
+      Kickabout is a free, fan-made site. Nobody pays us, nothing is sponsored, and we don't take bets.
+      We do this because the World Cup is the best thing in sport and we wanted a place that treats it that way.
+    </p>
+
+    <section class="mt-6 max-w-[680px]">
+      <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">The story</h2>
+      <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+        <p>
+          This started as a group chat argument. The first 48-team World Cup was coming, one of us had a
+          rating model, one of us had opinions about Morocco's midfield, and none of us could find a site
+          that showed an honest forecast for every fixture without trying to sell a betting slip on the way.
+          So we built one.
+        </p>
+        <p>
+          Every match on Kickabout gets a model call — win, draw and loss probabilities from a formula we
+          publish in full — shown next to what the betting market thinks, so you can see where we agree and
+          where we're being brave. Around that we write previews, post-match analytics and a data profile
+          of all 48 teams.
+        </p>
+        <p>
+          The rule we hold ourselves to: facts come from our data warehouse, colour comes from watching the
+          games. We never invent scorelines, injuries or quotes, and when a number is our own estimate
+          (like a rating tier) we say so rather than passing it off as fact.
+        </p>
+      </div>
+    </section>
+
+    <section class="mt-7 max-w-[680px]">
+      <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">The desk</h2>
+      <p class="mt-1 text-[14px]" style="color:#6f6655">
+        We write under pen names — we're a small group of friends who'd rather the football did the talking.
+        The work is ours; the names are borrowed from the game.
+      </p>
+      <div class="mt-3 grid gap-3 sm:grid-cols-3">
+        {DESK.map((p) => (
+          <div class="rounded-[16px] border p-4" style="background:#fff;border-color:#e9e1d2">
+            <div class="font-display text-[17px] font-black">{p.name}</div>
+            <div class="text-[12px] font-bold uppercase tracking-[0.4px]" style="color:var(--color-royal)">{p.role}</div>
+            <p class="mt-2 text-[13.5px] leading-[1.55]" style="color:var(--color-ink-2)">{p.bio}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-7 max-w-[680px]">
+      <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">How we make our calls</h2>
+      <p class="mt-2 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
+        The forecast is a transparent rating model: an Elo base adjusted for tournament form, squad
+        firepower and host advantage, turned into win, draw and loss probabilities. No black box, no vibes
+        dressed up as maths. The full formula, including the exact weightings, is on our
+        <a href="/how-it-works/" class="font-bold" style="color:var(--color-royal)">how it works</a> page.
+      </p>
+    </section>
+
+    <section class="mt-7 max-w-[680px] rounded-[16px] border p-5" style="background:#fff;border-color:#e9e1d2">
+      <h2 class="font-display text-[18px] font-black tracking-[-0.5px]">The small print that isn't small</h2>
+      <p class="mt-2 text-[14.5px] leading-[1.6]" style="color:var(--color-ink-2)">
+        Kickabout is not a bookmaker and is not affiliated with one. We don't take bets, sell tips or earn
+        commission from gambling operators. Our forecasts are probabilities, not promises, and they are not
+        betting advice. If you gamble, please do it responsibly.
+      </p>
+      <p class="mt-3 text-[14.5px]" style="color:var(--color-ink-2)">
+        Spotted a mistake? We correct errors quickly and visibly — the fastest way to flag one is to
+        vote against us on the fixture and feel smug later.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
