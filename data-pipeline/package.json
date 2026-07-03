@@ -9,7 +9,6 @@
     "build:warehouse": "tsx build/index.ts",
     "export": "tsx build/export.ts",
     "flags": "tsx fetch/flags.ts",
-    "flags:figma": "tsx fetch/figmaflags.ts",
     "all": "npm run fetch && npm run build:warehouse && npm run export",
     "publish:d1": "tsx build/publish-d1.ts",
     "reel": "tsx build/reel.ts"
