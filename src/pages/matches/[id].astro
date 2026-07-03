@@ -12,20 +12,15 @@ import ShowdownPanel from '../../components/ShowdownPanel.astro';
 import MatchPitch from '../../components/MatchPitch.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
-import { getAfFixtures, getSsPair, getH2H, getMatchDetail, getOddsPair, getActualLineups } from '../../lib/warehouse';
+import { getAfFixtures, getSsPair, getH2H, getMatchDetail, getOddsPair, getActualLineups, lifecycle, FINISHED_STATUSES } from '../../lib/warehouse';
 import Flag from '../../components/Flag.astro';
 import { storyForMatch, KIND_META } from '../../lib/stories';
 import PlayerModal from '../../components/PlayerModal.astro';
 import CommunityCTA from '../../components/CommunityCTA.astro';
 import { getCollection } from 'astro:content';
 
-const FINISHED = new Set(['FT', 'AET', 'PEN']);
-const LIVE = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE']);
-function lifecycle(status: string): 'upcoming' | 'live' | 'ended' {
-  if (FINISHED.has(status)) return 'ended';
-  if (LIVE.has(status)) return 'live';
-  return 'upcoming';
-}
+// Status taxonomy is shared with the bracket via warehouse.ts (single source).
+const FINISHED = FINISHED_STATUSES;
 
 export function getStaticPaths() {
   // One page per AF fixture with both teams mapped — every game, any status.

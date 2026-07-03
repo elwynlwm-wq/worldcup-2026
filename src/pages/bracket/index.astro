@@ -2,7 +2,7 @@
 // Bracket & groups — knockout columns (from AF fixtures) + real group tables.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
-import { getAfFixtures } from '../../lib/warehouse';
+import { getAfFixtures, lifecycle, liveLabel } from '../../lib/warehouse';
 import standingsData from '../../../data-pipeline/warehouse/export/standings.json';
 import Flag from '../../components/Flag.astro';
 
@@ -71,10 +71,15 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
                   );
                 }
                 const h = getTeam(m.homeTeamId)!, a = getTeam(m.awayTeamId)!;
+                const isLive = lifecycle(m.status) === 'live';
                 return (
                   <div class="kb-tie">
-                    <a href={matchHref(m)} class="kb-tie-card kb-card-hover rounded-[11px] border px-[11px] py-[9px]" style="background:#fff;border-color:#e9e1d2">
-                      <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:#b3a890">{dateLabel(m.date)}</div>
+                    <a href={matchHref(m)} class="kb-tie-card kb-card-hover rounded-[11px] border px-[11px] py-[9px]" style={`background:#fff;border-color:${isLive ? 'var(--color-clay)' : '#e9e1d2'}`}>
+                      {isLive ? (
+                        <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-clay)">● {liveLabel(m.status, m.elapsed)}</div>
+                      ) : (
+                        <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:#b3a890">{dateLabel(m.date)}</div>
+                      )}
                       <div class="flex items-center gap-[7px]"><Flag team={h.id} w={22} /><b class="flex-1 text-[13px]">{h.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.homeScore ?? ''}</span></div>
                       <div class="my-1.5 h-px" style="background:#f1ebdf"></div>
                       <div class="flex items-center gap-[7px]"><Flag team={a.id} w={22} /><b class="flex-1 text-[13px]">{a.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.awayScore ?? ''}</span></div>

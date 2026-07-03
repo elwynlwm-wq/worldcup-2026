@@ -61,6 +61,21 @@ export interface AfFixture {
   awayScore: number | null;
 }
 
+// Single source of truth for API-Football fixture status → lifecycle, shared by
+// the match page and the bracket so the two views can't disagree on what's live.
+export const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
+export const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE']);
+export function lifecycle(status: string): 'upcoming' | 'live' | 'ended' {
+  if (FINISHED_STATUSES.has(status)) return 'ended';
+  if (LIVE_STATUSES.has(status)) return 'live';
+  return 'upcoming';
+}
+/** Short live label for a badge: "HT" at the break, else "Live · 46'". */
+export function liveLabel(status: string, elapsed: number | null): string {
+  if (status === 'HT') return 'HT';
+  return elapsed ? `Live · ${elapsed}'` : 'Live';
+}
+
 export interface MatchGoal {
   side: 'home' | 'away';
   teamId: string | null;
