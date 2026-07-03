@@ -1,7 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-  <circle cx="20" cy="20" r="19" fill="#16181d" />
-  <rect x="10" y="21" width="5" height="9" rx="1.5" fill="#6b7fd6" />
-  <rect x="17.5" y="16" width="5" height="14" rx="1.5" fill="#f3b50a" />
-  <rect x="25" y="11" width="5" height="19" rx="1.5" fill="#ffffff" />
-  <path d="M6.5 13.5 A17 17 0 0 1 33.5 13.5" fill="none" stroke="#f3b50a" stroke-width="2.5" stroke-linecap="round" />
+  <circle cx="20" cy="20" r="14" fill="none" stroke="#3a3d45" stroke-width="8" />
+  <circle cx="20" cy="20" r="14" fill="none" stroke="#1f3fbf" stroke-width="8" stroke-dasharray="48 88" transform="rotate(-90 20 20)" />
+  <circle cx="20" cy="20" r="14" fill="none" stroke="#f3b50a" stroke-width="8" stroke-dasharray="22 88" stroke-dashoffset="-48" transform="rotate(-90 20 20)" />
+  <circle cx="20" cy="20" r="9.6" fill="#ffffff" />
+  <g stroke="#16181d" stroke-width="1.6" stroke-linecap="round">
+    <line x1="20" y1="15.5" x2="20" y2="10.9" /><line x1="24.28" y1="18.61" x2="28.6" y2="17.2" />
+    <line x1="22.65" y1="23.64" x2="25.3" y2="27.3" /><line x1="17.35" y1="23.64" x2="14.7" y2="27.3" />
+    <line x1="15.72" y1="18.61" x2="11.4" y2="17.2" />
+  </g>
+  <polygon points="20,15.5 24.28,18.61 22.65,23.64 17.35,23.64 15.72,18.61" fill="#16181d" />
 </svg>
