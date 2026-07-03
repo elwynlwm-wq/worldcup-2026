@@ -1,0 +1,114 @@
+---
+// Animated founder figures for the About page. Original flat illustrations in
+// the site palette; gentle CSS animation (blink + one signature motion each),
+// disabled under prefers-reduced-motion.
+interface Props {
+  who: 'sonny' | 'ada' | 'marco';
+  size?: number;
+}
+const { who, size = 112 } = Astro.props;
+---
+
+{who === 'sonny' && (
+  <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" class="founder">
+    <clipPath id="fa-clip-s"><circle cx="60" cy="60" r="56" /></clipPath>
+    <circle cx="60" cy="60" r="56" fill="#ece5d2" />
+    <g clip-path="url(#fa-clip-s)">
+      <path d="M26 122 Q28 86 60 86 Q92 86 94 122 Z" fill="var(--color-royal)" />
+      <rect x="50" y="80" width="20" height="10" rx="3" fill="#17307f" />
+      <rect x="53" y="70" width="14" height="14" fill="#d9a172" />
+      <circle cx="37.5" cy="54" r="4" fill="#e8b083" />
+      <circle cx="82.5" cy="54" r="4" fill="#e8b083" />
+      <circle cx="60" cy="52" r="23" fill="#e8b083" />
+      <path d="M38 44 A22 22 0 0 1 82 44 L82 48 Q60 41 38 48 Z" fill="var(--color-night)" />
+      <path d="M58 43 Q78 40 88 46 Q88 50 84 50 Q70 46 58 48 Z" fill="#101216" />
+      <rect x="45.5" y="46.5" width="9" height="2.6" rx="1.3" fill="#6b4a2f" />
+      <rect x="65.5" y="46.5" width="9" height="2.6" rx="1.3" fill="#6b4a2f" />
+      <ellipse class="eye" cx="51" cy="54" rx="2.5" ry="3" fill="var(--color-night)" />
+      <ellipse class="eye" cx="69" cy="54" rx="2.5" ry="3" fill="var(--color-night)" />
+      <path d="M60 56 q2 5 -1 7" fill="none" stroke="#d09468" stroke-width="2" stroke-linecap="round" />
+      <path d="M49 65 Q60 71 71 65 Q66 72.5 60 72 Q54 72.5 49 65 Z" fill="#6b4a2f" />
+      <path d="M55 75.5 Q60 78 65 75.5" fill="none" stroke="#b97e55" stroke-width="2" stroke-linecap="round" />
+      <g class="ball">
+        <circle cx="96" cy="96" r="10" fill="#fff" stroke="var(--color-night)" stroke-width="1.6" />
+        <polygon points="96,91.5 100.3,94.6 98.7,99.7 93.3,99.7 91.7,94.6" fill="var(--color-night)" />
+        <path d="M88 91 A10 10 0 0 1 96 86 M104 91 A10 10 0 0 0 96 86" fill="none" stroke="var(--color-night)" stroke-width="1.2" />
+      </g>
+    </g>
+  </svg>
+)}
+
+{who === 'ada' && (
+  <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" class="founder">
+    <clipPath id="fa-clip-a"><circle cx="60" cy="60" r="56" /></clipPath>
+    <circle cx="60" cy="60" r="56" fill="#efe7d8" />
+    <g clip-path="url(#fa-clip-a)">
+      <polyline class="chartline" points="16,86 34,64 48,72 68,44 84,56 106,30"
+        fill="none" stroke="var(--color-royal)" stroke-width="2.5" stroke-linecap="round" opacity=".55" />
+      <path d="M26 122 Q28 86 60 86 Q92 86 94 122 Z" fill="var(--color-night)" />
+      <rect x="50" y="82" width="20" height="6" rx="3" fill="var(--color-gold)" />
+      <rect x="53" y="72" width="14" height="13" fill="#74492e" />
+      <circle cx="60" cy="46" r="27" fill="#241d18" />
+      <circle cx="38" cy="58" r="4" fill="#8a5a3b" />
+      <circle cx="82" cy="58" r="4" fill="#8a5a3b" />
+      <circle cx="60" cy="54" r="22" fill="#8a5a3b" />
+      <path d="M38 50 Q40 30 60 30 Q80 30 82 50 Q76 37 60 37 Q44 37 38 50 Z" fill="#241d18" />
+      <circle cx="38" cy="63" r="2.2" fill="var(--color-gold)" />
+      <circle cx="82" cy="63" r="2.2" fill="var(--color-gold)" />
+      <rect x="46" y="44" width="9" height="2.6" rx="1.3" fill="#241d18" />
+      <rect x="65" y="44" width="9" height="2.6" rx="1.3" fill="#241d18" />
+      <circle class="eye" cx="51" cy="55.5" r="2.3" fill="#16181d" />
+      <circle class="eye" cx="69" cy="55.5" r="2.3" fill="#16181d" />
+      <circle cx="51" cy="55" r="7" fill="none" stroke="var(--color-gold)" stroke-width="2" />
+      <circle cx="69" cy="55" r="7" fill="none" stroke="var(--color-gold)" stroke-width="2" />
+      <path d="M58 55 L62 55 M44 54 L40 52 M76 54 L80 52" stroke="var(--color-gold)" stroke-width="2" stroke-linecap="round" />
+      <path d="M60 58 q1.8 4.5 -1 6.5" fill="none" stroke="#74492e" stroke-width="2" stroke-linecap="round" />
+      <path d="M54 69 Q60 73 66 69" fill="none" stroke="#5d3a24" stroke-width="2" stroke-linecap="round" />
+    </g>
+  </svg>
+)}
+
+{who === 'marco' && (
+  <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" class="founder">
+    <clipPath id="fa-clip-m"><circle cx="60" cy="60" r="56" /></clipPath>
+    <circle cx="60" cy="60" r="56" fill="#ece8da" />
+    <g clip-path="url(#fa-clip-m)">
+      <path d="M26 122 Q28 86 60 86 Q92 86 94 122 Z" fill="var(--color-pitch)" />
+      <rect x="53" y="70" width="14" height="14" fill="#b57c4e" />
+      <circle cx="37.5" cy="55" r="4" fill="#c68e5e" />
+      <circle cx="82.5" cy="55" r="4" fill="#c68e5e" />
+      <circle cx="60" cy="53" r="23" fill="#c68e5e" />
+      <ellipse cx="60" cy="68" rx="15" ry="8.5" fill="#8a5a3b" opacity=".28" />
+      <circle cx="60" cy="27" r="4.5" fill="var(--color-night)" />
+      <path d="M37 46 A23 23 0 0 1 83 46 Z" fill="var(--color-gold)" />
+      <rect x="37" y="43" width="46" height="6.5" rx="3.2" fill="#d99f04" />
+      <rect x="45" y="47" width="10" height="3" rx="1.5" fill="#4a3418" />
+      <rect x="65" y="47" width="10" height="3" rx="1.5" fill="#4a3418" />
+      <ellipse class="eye" cx="51" cy="56" rx="2.5" ry="3" fill="var(--color-night)" />
+      <ellipse class="eye" cx="69" cy="56" rx="2.5" ry="3" fill="var(--color-night)" />
+      <path d="M60 58 q2 5 -1 7" fill="none" stroke="#a06f42" stroke-width="2" stroke-linecap="round" />
+      <path d="M53 69 Q60 74 67 69" fill="none" stroke="#7c4a26" stroke-width="2.2" stroke-linecap="round" />
+      <g class="scarf">
+        <rect x="48" y="85" width="9" height="24" rx="3" fill="var(--color-night)" />
+        <rect x="48" y="96" width="9" height="3.2" fill="var(--color-gold)" />
+        <rect x="48" y="102" width="9" height="3.2" fill="var(--color-gold)" />
+      </g>
+      <rect x="45" y="77" width="30" height="10" rx="5" fill="var(--color-night)" />
+      <rect x="45" y="80" width="30" height="2.4" fill="var(--color-gold)" opacity=".9" />
+    </g>
+  </svg>
+)}
+
+<style>
+  .founder .eye { animation: fa-blink 4.6s infinite; transform-box: fill-box; transform-origin: center; }
+  .founder .ball { animation: fa-bounce 1.7s ease-in-out infinite; }
+  .founder .chartline { stroke-dasharray: 130; animation: fa-draw 4.5s linear infinite; }
+  .founder .scarf { animation: fa-sway 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 0%; }
+  @keyframes fa-blink { 0%, 91%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.12); } }
+  @keyframes fa-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  @keyframes fa-draw { 0% { stroke-dashoffset: 130; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
+  @keyframes fa-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .founder .eye, .founder .ball, .founder .chartline, .founder .scarf { animation: none; }
+  }
+</style>
