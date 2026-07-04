@@ -88,12 +88,13 @@ const jsonLd = [
 >
   <div class="kb-route">
     <h1 class="font-display text-[34px] font-black tracking-[-1px]">Built out of love for the World Cup</h1>
-    <p class="mt-1 max-w-[640px] text-[15.5px]" style="color:#6f6655">
+    <p class="mt-1 max-w-[820px] text-[15.5px]" style="color:#6f6655">
       World Cup Analytics is a free, fan-made site. Nobody pays us, nothing is sponsored, and we don't take bets.
       We do this because the World Cup is the best thing in sport and we wanted a place that treats it that way.
     </p>
 
-    <section class="mt-6 max-w-[680px]">
+    <div class="mt-6 grid items-start gap-x-8 gap-y-7 md:grid-cols-2">
+    <section>
       <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">The story</h2>
       <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
         <p>
@@ -116,7 +117,7 @@ const jsonLd = [
       </div>
     </section>
 
-    <section class="mt-7 max-w-[680px]">
+    <section class="mt-7">
       <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">The desk</h2>
       <p class="mt-1 text-[14px]" style="color:#6f6655">
         We're a small crew of friends in Southeast Asia, which for this World Cup means alarms at 3am
@@ -142,7 +143,8 @@ const jsonLd = [
       </div>
     </section>
 
-    <section class="mt-7 max-w-[680px]">
+    <div class="space-y-7">
+    <section>
       <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">How we make our calls</h2>
       <p class="mt-2 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
         The forecast is a transparent rating model: an Elo base adjusted for tournament form, squad
@@ -153,7 +155,7 @@ const jsonLd = [
       </p>
     </section>
 
-    <section class="mt-7 max-w-[680px]">
+    <section class="mt-7">
       <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Fair questions</h2>
       <div class="mt-3 overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
         {FAQ.map((f) => (
@@ -168,7 +170,7 @@ const jsonLd = [
       </div>
     </section>
 
-    <section class="mt-7 max-w-[680px] rounded-[16px] border p-5" style="background:#fff;border-color:#e9e1d2">
+    <section class="rounded-[16px] border p-5" style="background:#fff;border-color:#e9e1d2">
       <h2 class="font-display text-[18px] font-black tracking-[-0.5px]">The small print that isn't small</h2>
       <p class="mt-2 text-[14.5px] leading-[1.6]" style="color:var(--color-ink-2)">
         World Cup Analytics is not a bookmaker and is not affiliated with one. We don't take bets, sell tips or earn
@@ -180,6 +182,8 @@ const jsonLd = [
         vote against us on the fixture and feel smug later.
       </p>
     </section>
+    </div>
+    </div>
   </div>
 
   <style>
