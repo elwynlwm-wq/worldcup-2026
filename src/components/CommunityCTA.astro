@@ -6,7 +6,7 @@ interface Props {
   variant?: 'story' | 'match';
   href?: string;
 }
-const { variant = 'story', href = 'https://sportifylive.io/' } = Astro.props;
+const { variant = 'story', href = 'https://sportifylive.io/chat' } = Astro.props;
 // External link → open in a new tab, and keep the opener/referrer safe.
 const isExternal = /^https?:\/\//.test(href);
 const copy = variant === 'match'
