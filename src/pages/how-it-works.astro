@@ -31,7 +31,7 @@ const jsonLd = {
 >
   <div class="kb-route">
     <span class="relative block"><MarginDoodle variant="pencil" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">How our forecasts work</h1></span>
-    <p class="mt-1 text-[15.5px]" style="color:#6f6655">
+    <p class="mt-1 text-[15.5px]" style="color:var(--color-ink-2)">
       Every number below is the actual model, not a simplified version of it. If we change a weighting,
       we change this page in the same breath.
     </p>
@@ -54,15 +54,15 @@ const jsonLd = {
         <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
           <p>Elo is a long-run measure, so we nudge it with three tournament-specific adjustments:</p>
         </div>
-        <div class="mt-3 overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
-          <div class="border-b px-4 py-3" style="border-color:#f1ebdf">
+        <div class="mt-3 overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
+          <div class="border-b px-4 py-3" style="border-color:var(--color-line-2)">
             <b class="text-[15px]">Form here, not form in general</b>
             <p class="mt-1 text-[14px] leading-[1.55]" style="color:var(--color-ink-2)">
               Points and goal difference at this World Cup, worth up to <b>±35 rating points</b>.
               A team cruising through its group gets a push; a team stumbling gets docked.
             </p>
           </div>
-          <div class="border-b px-4 py-3" style="border-color:#f1ebdf">
+          <div class="border-b px-4 py-3" style="border-color:var(--color-line-2)">
             <b class="text-[15px]">Squad firepower</b>
             <p class="mt-1 text-[14px] leading-[1.55]" style="color:var(--color-ink-2)">
               How the squad's international goal output compares with the rest of the field, worth up to
@@ -145,6 +145,11 @@ const jsonLd = {
             Plenty. It can't see a dressing-room row, a keeper's confidence, 35°C in Monterrey or a
             red card in the 12th minute. A 70% favourite loses three times in ten — that's not the model
             failing, that's football. Treat every forecast as a considered starting point, not a verdict.
+          </p>
+          <p>
+            We grade ourselves in public: every finished fixture is scored against the model and
+            the market on <a href="/record/" class="font-bold" style="color:var(--color-royal)">the record page</a>,
+            including our worst miss.
           </p>
           <p>
             And to say it plainly: none of this is betting advice. We're not a bookmaker and we don't

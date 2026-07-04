@@ -31,12 +31,12 @@ const posColor: Record<string, string> = { GK: '#e0a200', DF: '#1f3fbf', MF: '#1
 >
   <div class="kb-route">
     <span class="relative block"><MarginDoodle variant="ball" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">Players</h1></span>
-    <p class="mt-0.5 mb-4 text-[15px]" style="color:#6f6655">The biggest names across every squad, by international goals.</p>
+    <p class="mt-0.5 mb-4 text-[15px]" style="color:var(--color-ink-2)">The biggest names across every squad, by international goals.</p>
 
     <div id="pos-filter" class="mb-[18px] flex flex-wrap gap-2">
       {[['all', 'All'], ['GK', 'Goalkeepers'], ['DF', 'Defenders'], ['MF', 'Midfielders'], ['FW', 'Forwards']].map(([k, label], i) => (
         <button data-pos={k} class="kb-pos cursor-pointer rounded-full border px-[15px] py-[7px] text-[13.5px] font-bold"
-          style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:#fff;border-color:var(--color-line)'}>{label}</button>
+          style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:var(--color-surface);border-color:var(--color-line)'}>{label}</button>
       ))}
     </div>
 
@@ -44,11 +44,11 @@ const posColor: Record<string, string> = { GK: '#e0a200', DF: '#1f3fbf', MF: '#1
       {players.map((p) => {
         const t = teamById.get(p.teamId);
         return (
-          <button {...playerTriggerAttrs(p)} data-pos={p.pos} class="kb-prow kb-card-hover flex w-full cursor-pointer items-center gap-3 rounded-[13px] border px-[14px] py-[11px] text-left" style="background:#fff;border-color:#e9e1d2">
+          <button {...playerTriggerAttrs(p)} data-pos={p.pos} class="kb-prow kb-card-hover flex w-full cursor-pointer items-center gap-3 rounded-[13px] border px-[14px] py-[11px] text-left" style="background:var(--color-surface);border-color:var(--color-line-2)">
             <Avatar name={p.name} position={p.pos} photo={p.photo} size={40} />
             <Flag team={p.teamId} w={26} />
-            <div class="min-w-0 flex-1"><b class="block truncate text-[14.5px]">{p.name}</b><div class="text-[12px]" style="color:#a59a85">{posName[p.pos] ?? p.pos} · {t?.shortCode ?? ''} · {p.club}</div></div>
-            <div class="flex-none text-right"><div class="font-display text-[15px] font-black" style="color:var(--color-royal)">{p.goals}</div><div class="text-[10.5px]" style="color:#a59a85">goals</div></div>
+            <div class="min-w-0 flex-1"><b class="block truncate text-[14.5px]">{p.name}</b><div class="text-[12px]" style="color:var(--color-ink-3)">{posName[p.pos] ?? p.pos} · {t?.shortCode ?? ''} · {p.club}</div></div>
+            <div class="flex-none text-right"><div class="font-display text-[15px] font-black" style="color:var(--color-royal)">{p.goals}</div><div class="text-[10.5px]" style="color:var(--color-ink-3)">goals</div></div>
           </button>
         );
       })}

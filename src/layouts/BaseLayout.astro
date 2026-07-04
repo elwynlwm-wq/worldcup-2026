@@ -25,13 +25,10 @@ const { active = '', ...seoProps } = Astro.props;
 
 const NAV: [string, string][] = [
   ['', 'Predict'],
-  ['today', 'Today'],
   ['matches', 'Matches'],
   ['stories', 'Stories'],
   ['teams', 'Teams'],
   ['bracket', 'Bracket'],
-  ['how-it-works', 'Method'],
-  ['about', 'About'],
 ];
 const href = (key: string) =>
   key === '' ? '/' : key === 'stories' ? '/articles' : `/${key}`;
@@ -41,6 +38,15 @@ const href = (key: string) =>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      (() => {
+        try {
+          const pref = localStorage.getItem('wca-theme');
+          const night = new Date().getHours() >= 19 || new Date().getHours() < 7;
+          if (pref === 'dark' || (!pref && night)) document.documentElement.classList.add('dark');
+        } catch {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
@@ -49,7 +55,7 @@ const href = (key: string) =>
   <body class="min-h-screen" style="display:flex;flex-direction:column">
     <header
       class="sticky top-0 z-40 border-b backdrop-blur"
-      style="background:rgba(231,226,212,.86);border-color:var(--color-line-2)"
+      style="background:var(--header-glass);border-color:var(--color-line-2)"
     >
       <div class="mx-auto flex max-w-[1080px] items-center gap-3 px-5 py-3">
         <a href="/" class="font-display flex flex-none items-center gap-2 text-[18px] font-black tracking-tight">
@@ -81,14 +87,17 @@ const href = (key: string) =>
         </nav>
         {/* desktop search */}
         <form action="/search" method="get" class="ml-auto hidden items-center gap-2 rounded-[11px] border px-3 py-2 lg:flex"
-          style="background:#fff;border-color:var(--color-line)">
+          style="background:var(--color-surface);border-color:var(--color-line)">
           <span style="color:var(--color-ink-3)">⌕</span>
           <input name="q" placeholder="Search…" class="w-[90px] border-none bg-transparent text-sm outline-none" style="font-family:inherit;color:var(--color-ink)" />
         </form>
-        {/* mobile actions: search toggle (below lg, fills the md–lg search gap) + hamburger (below md, when inline nav is hidden) */}
-        <div class="ml-auto flex items-center gap-2 lg:hidden">
-          <button id="m-search-btn" aria-label="Search" class="flex h-9 w-9 items-center justify-center rounded-[10px] border" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">⌕</button>
-          <button id="m-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="m-menu" class="flex h-9 w-9 items-center justify-center rounded-[10px] border md:hidden" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">
+        {/* mobile actions: theme + search toggle + hamburger (below md) */}
+        <button id="theme-btn" aria-label="Toggle floodlight mode" title="Floodlight mode"
+          class="ml-auto flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border text-[15px] lg:ml-3"
+          style="background:var(--color-surface);border-color:var(--color-line);color:var(--color-ink-2)">☾</button>
+        <div class="flex items-center gap-2 lg:hidden">
+          <button id="m-search-btn" aria-label="Search" class="flex h-9 w-9 items-center justify-center rounded-[10px] border" style="background:var(--color-surface);border-color:var(--color-line);color:var(--color-ink-2)">⌕</button>
+          <button id="m-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="m-menu" class="flex h-9 w-9 items-center justify-center rounded-[10px] border md:hidden" style="background:var(--color-surface);border-color:var(--color-line);color:var(--color-ink-2)">
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <line x1="2.5" y1="5" x2="15.5" y2="5" /><line x1="2.5" y1="9" x2="15.5" y2="9" /><line x1="2.5" y1="13" x2="15.5" y2="13" />
             </svg>
@@ -98,7 +107,7 @@ const href = (key: string) =>
 
       {/* mobile search dropdown */}
       <div id="m-search" class="mx-auto hidden max-w-[1080px] px-5 pb-3 lg:!hidden">
-        <form action="/search" method="get" class="flex items-center gap-2 rounded-[11px] border px-3 py-2.5" style="background:#fff;border-color:var(--color-line)">
+        <form action="/search" method="get" class="flex items-center gap-2 rounded-[11px] border px-3 py-2.5" style="background:var(--color-surface);border-color:var(--color-line)">
           <span style="color:var(--color-ink-3)">⌕</span>
           <input name="q" placeholder="Search teams, players…" class="w-full border-none bg-transparent text-sm outline-none" style="font-family:inherit;color:var(--color-ink)" />
         </form>
@@ -122,6 +131,15 @@ const href = (key: string) =>
     </header>
     <script is:inline>
       (() => {
+        const btn = document.getElementById('theme-btn');
+        const sync = () => { if (btn) btn.textContent = document.documentElement.classList.contains('dark') ? '☀' : '☾'; };
+        sync();
+        btn?.addEventListener('click', () => {
+          const el = document.documentElement;
+          el.classList.toggle('dark');
+          try { localStorage.setItem('wca-theme', el.classList.contains('dark') ? 'dark' : 'light'); } catch {}
+          sync();
+        });
         const search = document.getElementById('m-search');
         const menu = document.getElementById('m-menu');
         const menuBtn = document.getElementById('m-menu-btn');
@@ -155,6 +173,17 @@ const href = (key: string) =>
       <slot />
     </main>
 
+    <div aria-hidden="true" style="background:var(--color-pitch);overflow:hidden">
+      <svg viewBox="0 0 1080 52" preserveAspectRatio="xMidYMid slice" class="mx-auto block h-[52px] w-full max-w-[1400px]" style="opacity:.22">
+        <g fill="none" stroke="#fff" stroke-width="2">
+          <line x1="0" y1="4" x2="1080" y2="4" />
+          <line x1="540" y1="4" x2="540" y2="52" />
+          <circle cx="540" cy="52" r="34" />
+          <rect x="150" y="4" width="120" height="34" />
+          <rect x="810" y="4" width="120" height="34" />
+        </g>
+      </svg>
+    </div>
     <footer class="border-t" style="border-color:var(--color-line)">
       <div class="mx-auto max-w-[1080px] px-5 py-8 text-sm" style="color:var(--color-ink-3)">
         <p>
@@ -162,8 +191,10 @@ const href = (key: string) =>
           Forecasts are a transparent model, not betting advice.
         </p>
         <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-bold">
-          <a href="/about/" style="color:var(--color-ink-2)">About us</a>
+          <a href="/today/" style="color:var(--color-ink-2)">Today's games</a>
+          <a href="/record/" style="color:var(--color-ink-2)">Model record</a>
           <a href="/how-it-works/" style="color:var(--color-ink-2)">How our forecasts work</a>
+          <a href="/about/" style="color:var(--color-ink-2)">About us</a>
         </p>
       </div>
     </footer>

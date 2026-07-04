@@ -1,0 +1,150 @@
+---
+// The model's public scorecard — every finished fixture, graded. The site's
+// thesis is "transparent model vs the market", so we keep score on ourselves.
+// Data: af_fixture (reliable results per docs) + frozen odds pairs + predict().
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MarginDoodle from '../components/MarginDoodle.astro';
+import Flag from '../components/Flag.astro';
+import { provider } from '../lib/provider';
+import { predict } from '../lib/model';
+import { getAfFixtures, getOddsPair, FINISHED_STATUSES } from '../lib/warehouse';
+
+type Graded = {
+  h: ReturnType<typeof provider.getTeam>; a: ReturnType<typeof provider.getTeam>;
+  hs: number; as: number; date: string; stage: string;
+  modelFavId: string; modelPct: number; modelWinnerPct: number | null;
+  marketFavId: string | null; marketPct: number | null;
+  winnerId: string | null; modelRight: boolean | null; marketRight: boolean | null;
+  slug: string;
+};
+
+const rows: Graded[] = getAfFixtures()
+  .filter((m) => FINISHED_STATUSES.has(m.status) && m.homeScore != null && m.awayScore != null)
+  .filter((m) => provider.getTeam(m.homeTeamId) && provider.getTeam(m.awayTeamId))
+  .sort((x, y) => (x.date < y.date ? 1 : -1))
+  .map((m) => {
+    const h = provider.getTeam(m.homeTeamId)!;
+    const a = provider.getTeam(m.awayTeamId)!;
+    const pr = predict(h, a);
+    const modelFavHome = pr.win >= pr.lose;
+    const modelFavId = modelFavHome ? h.id : a.id;
+    const modelPct = Math.round(Math.max(pr.win, pr.lose) * 100);
+
+    let marketFavId: string | null = null;
+    let marketPct: number | null = null;
+    const op = getOddsPair(h.id, a.id);
+    if (op && op.books.length) {
+      const flip = op.homeId !== h.id;
+      const imp = (sel: 'home' | 'away') =>
+        op.books.reduce((s, b) => s + 1 / (flip ? (sel === 'home' ? b.away : b.home) : b[sel]), 0) / op.books.length;
+      const ih = imp('home'), ia = imp('away');
+      marketFavId = ih >= ia ? h.id : a.id;
+      marketPct = Math.round((Math.max(ih, ia) / (ih + ia + op.books.reduce((s, b) => s + 1 / b.draw, 0) / op.books.length)) * 100);
+    }
+
+    const winnerId = m.homeScore! > m.awayScore! ? h.id : m.awayScore! > m.homeScore! ? a.id : null;
+    const modelWinnerPct = winnerId ? Math.round((winnerId === h.id ? pr.win : pr.lose) * 100) : null;
+    return {
+      h, a, hs: m.homeScore!, as: m.awayScore!, date: m.date.slice(0, 10), stage: m.stage,
+      modelFavId, modelPct, modelWinnerPct,
+      marketFavId, marketPct,
+      winnerId,
+      modelRight: winnerId ? winnerId === modelFavId : null,
+      marketRight: winnerId && marketFavId ? winnerId === marketFavId : null,
+      slug: `/matches/${h.id}-vs-${a.id}-${m.stage}/`,
+    };
+  });
+
+const decided = rows.filter((r) => r.winnerId);
+const draws = rows.length - decided.length;
+const modelWins = decided.filter((r) => r.modelRight).length;
+const withMarket = decided.filter((r) => r.marketFavId);
+const marketWins = withMarket.filter((r) => r.marketRight).length;
+const disagreements = withMarket.filter((r) => r.modelFavId !== r.marketFavId);
+const disModel = disagreements.filter((r) => r.modelRight).length;
+const disMarket = disagreements.filter((r) => r.marketRight).length;
+
+const worst = decided.slice().sort((x, y) => (x.modelWinnerPct ?? 100) - (y.modelWinnerPct ?? 100))[0];
+const pctOf = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
+const name = (id: string | null) => (id ? provider.getTeam(id)!.name : 'Draw');
+---
+
+<BaseLayout
+  title="The model's record — graded in public | World Cup Analytics"
+  description="Every finished World Cup 2026 fixture, graded against our forecast and the betting market. Favourites called right, where we beat the bookmakers, and our worst miss."
+  canonical="/record/"
+>
+  <div class="kb-route">
+    <span class="relative block"><MarginDoodle variant="star" class="absolute right-0 top-[-6px]" />
+      <h1 class="font-display text-[34px] font-black tracking-[-1px]">The model's record</h1>
+    </span>
+    <p class="mt-1 max-w-[720px] text-[15.5px]" style="color:var(--color-ink-2)">
+      A forecast site should be brave enough to grade itself. Every finished fixture below is scored
+      against what our model said before kickoff, and what the betting market said. No deletions, no
+      excuses — the misses stay up.
+    </p>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-[16px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <div class="text-[11px] font-bold uppercase tracking-[0.5px]" style="color:var(--color-ink-3)">Matches graded</div>
+        <div class="font-display mt-1 text-[30px] font-black">{rows.length}</div>
+        <div class="text-[12px]" style="color:var(--color-ink-3)">{draws} ended level</div>
+      </div>
+      <div class="rounded-[16px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <div class="text-[11px] font-bold uppercase tracking-[0.5px]" style="color:var(--color-royal)">Model favourite won</div>
+        <div class="font-display mt-1 text-[30px] font-black">{modelWins}<span class="text-[17px]" style="color:var(--color-ink-3)">/{decided.length}</span></div>
+        <div class="text-[12px]" style="color:var(--color-ink-3)">{pctOf(modelWins, decided.length)}% of decided games</div>
+      </div>
+      <div class="rounded-[16px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <div class="text-[11px] font-bold uppercase tracking-[0.5px]" style="color:var(--color-gold)">Market favourite won</div>
+        <div class="font-display mt-1 text-[30px] font-black">{marketWins}<span class="text-[17px]" style="color:var(--color-ink-3)">/{withMarket.length}</span></div>
+        <div class="text-[12px]" style="color:var(--color-ink-3)">{pctOf(marketWins, withMarket.length)}% where odds existed</div>
+      </div>
+      <div class="rounded-[16px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <div class="text-[11px] font-bold uppercase tracking-[0.5px]" style="color:var(--color-pitch)">When we disagreed</div>
+        <div class="font-display mt-1 text-[30px] font-black">{disModel}<span class="text-[17px]" style="color:var(--color-ink-3)">–{disMarket}</span></div>
+        <div class="text-[12px]" style="color:var(--color-ink-3)">model vs market, {disagreements.length} splits</div>
+      </div>
+    </div>
+
+    {worst && (
+      <div class="mt-5 rounded-[16px] border p-4" style="background:var(--color-surface);border-color:var(--color-line-2)">
+        <div class="text-[11px] font-bold uppercase tracking-[0.5px]" style="color:var(--color-clay)">Our worst miss so far</div>
+        <p class="mt-1 text-[14.5px]" style="color:var(--color-ink-2)">
+          We gave <b style="color:var(--color-ink)">{name(worst.winnerId)}</b> just a
+          <b style="color:var(--color-clay)"> {worst.modelWinnerPct}% chance</b> against {name(worst.winnerId === worst.h!.id ? worst.a!.id : worst.h!.id)} —
+          they won {worst.winnerId === worst.h!.id ? `${worst.hs}–${worst.as}` : `${worst.as}–${worst.hs}`}.
+          <a href={worst.slug} class="font-bold" style="color:var(--color-royal)"> The receipt →</a>
+        </p>
+      </div>
+    )}
+
+    <div class="mt-6 overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
+      <div class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 border-b px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.4px]" style="border-color:var(--color-line);color:var(--color-ink-3)">
+        <span>Fixture</span><span class="w-[86px] text-right">Model said</span><span class="hidden w-[86px] text-right sm:block">Market said</span><span class="w-[46px] text-right">Score</span>
+      </div>
+      {rows.map((r) => (
+        <a href={r.slug} class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 border-b px-4 py-[10px] text-[13.5px]" style="border-color:var(--color-line)">
+          <span class="flex min-w-0 items-center gap-2 font-bold">
+            <Flag team={r.h!.id} w={20} /> <span class="truncate">{r.h!.name}</span>
+            <span style="color:var(--color-ink-4)">v</span>
+            <Flag team={r.a!.id} w={20} /> <span class="truncate">{r.a!.name}</span>
+          </span>
+          <span class="w-[86px] text-right">
+            <b>{provider.getTeam(r.modelFavId)!.shortCode}</b> {r.modelPct}%
+            {r.modelRight == null ? <span style="color:var(--color-ink-4)"> ·</span> : r.modelRight
+              ? <b style="color:var(--color-pitch)"> ✓</b> : <b style="color:var(--color-clay)"> ✗</b>}
+          </span>
+          <span class="hidden w-[86px] text-right sm:block" style="color:var(--color-ink-2)">
+            {r.marketFavId ? <>{provider.getTeam(r.marketFavId)!.shortCode} {r.marketPct}%{r.marketRight == null ? <span style="color:var(--color-ink-4)"> ·</span> : r.marketRight ? <b style="color:var(--color-pitch)"> ✓</b> : <b style="color:var(--color-clay)"> ✗</b>}</> : '—'}
+          </span>
+          <b class="font-display w-[46px] text-right text-[15px]">{r.hs}–{r.as}</b>
+        </a>
+      ))}
+    </div>
+    <p class="mt-2 text-[12px]" style="color:var(--color-ink-3)">
+      ✓/✗ grades the pre-match favourite against the result; draws grade neither. Market = average
+      bookmaker implied probability, normalised. Full method on <a href="/how-it-works/" class="font-bold" style="color:var(--color-royal)">how it works</a>.
+    </p>
+  </div>
+</BaseLayout>

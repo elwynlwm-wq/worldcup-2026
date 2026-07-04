@@ -10,7 +10,7 @@ interface Props {
 const { variant, tilt = '0deg', caption } = Astro.props;
 ---
 
-<figure class="m-0 rounded-[14px] border p-3 pb-2" style={`background:#fff;border-color:#e9e1d2;transform:rotate(${tilt})`}>
+<figure class="m-0 rounded-[14px] border p-3 pb-2" style={`background:var(--color-surface);border-color:var(--color-line-2);transform:rotate(${tilt})`}>
   <div class="relative">
     <div class="absolute left-1/2 top-[-14px] h-[13px] w-[34px] -translate-x-1/2 rotate-[-2deg]" style="background:#e8dfc6;opacity:.85"></div>
 

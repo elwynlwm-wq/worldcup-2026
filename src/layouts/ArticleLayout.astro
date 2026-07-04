@@ -59,10 +59,10 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
   jsonLd={jsonLd}
 >
   <article class="kb-article mx-auto max-w-[680px] py-8">
-    <a href="/articles" class="text-[13.5px] font-bold" style="color:#a59a85">← All stories</a>
+    <a href="/articles" class="text-[13.5px] font-bold" style="color:var(--color-ink-3)">← All stories</a>
     <div class="mt-[18px] flex items-center gap-2">
       <span class="font-display text-[11px] font-extrabold uppercase tracking-[1px]" style={`color:${kind.accent}`}>{kind.label}</span>
-      <span class="text-[13px]" style="color:#b3a890">· {dateMed.format(publishDate)} · {readMins} min read</span>
+      <span class="text-[13px]" style="color:var(--color-ink-4)">· {dateMed.format(publishDate)} · {readMins} min read</span>
     </div>
     <h1 class="font-display mt-3 mb-3 text-[38px] font-black leading-[1.03] tracking-[-1px] text-balance">{title}</h1>
     <p class="mb-[22px] text-[20px] font-medium leading-[1.45]" style="font-family:var(--font-serif);color:#3f3a30">{description}</p>
@@ -87,7 +87,7 @@ const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
       <slot />
     </div>
 
-    <div class="mt-3.5 border-t pt-4 text-[13px]" style="border-color:#e4dccd;color:#a59a85">
+    <div class="mt-3.5 border-t pt-4 text-[13px]" style="border-color:var(--color-line);color:var(--color-ink-3)">
       {author}. Built on real squads, standings and our prediction model — not betting advice.
     </div>
 

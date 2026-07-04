@@ -76,7 +76,7 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wo
         </div>
         <div class="mt-[3px] text-[14px]" style="color:var(--color-ink-2)">Pick how you like to follow along.</div>
       </div>
-      <div id="home-tabs" class="flex gap-1 rounded-[12px] border p-1" style="background:#fff;border-color:var(--color-line)">
+      <div id="home-tabs" class="flex gap-1 rounded-[12px] border p-1" style="background:var(--color-surface);border-color:var(--color-line)">
         {[['stories', 'Stories'], ['today', 'Today']].map(([k, label], i) => (
           <button data-tab={k} class="kb-tab cursor-pointer rounded-[9px] px-3.5 py-2 text-[13.5px] font-bold" style={i === 0 ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2);background:transparent'}>{label}</button>
         ))}
@@ -114,21 +114,21 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wo
             const sm = storyMatch(s.data.tags);
             const sk = kindOf(s.data.tags);
             return (
-              <a href={`/articles/${s.id}/`} class="kb-card-hover flex flex-col overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
+              <a href={`/articles/${s.id}/`} class="kb-card-hover flex flex-col overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
                 <div class="flex flex-1 flex-col gap-2 px-[17px] pb-[18px] pt-4">
                   <div class="flex items-center gap-2">
                     <span class="font-display inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[.8px]" style={`color:${sk.accent}`}><span class="h-[9px] w-[9px] rounded-[2px]" style={`background:${sk.accent}`}></span>{sk.label}</span>
-                    <span class="text-[12px]" style="color:#b3a890">· {dateLabel(s.data.publishDate.toISOString())}</span>
+                    <span class="text-[12px]" style="color:var(--color-ink-4)">· {dateLabel(s.data.publishDate.toISOString())}</span>
                   </div>
                   <div class="font-display text-[18.5px] font-extrabold leading-[1.12] tracking-[-.4px] text-balance">{s.data.title}</div>
                   <div class="flex-1 text-[14px] leading-[1.4]" style="color:var(--color-ink-2)">{s.data.description}</div>
                   {sm && (
-                    <div class="mt-0.5 flex items-center gap-[7px] border-t pt-[11px]" style="border-color:#f1ebdf">
+                    <div class="mt-0.5 flex items-center gap-[7px] border-t pt-[11px]" style="border-color:var(--color-line-2)">
                       <span class="flex gap-[3px]">
                         <Flag team={sm.a.id} w={22} />
                         <Flag team={sm.b.id} w={22} />
                       </span>
-                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:#8a7f6a">{sm.a.shortCode} vs {sm.b.shortCode}</span>
+                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:var(--color-ink-3)">{sm.a.shortCode} vs {sm.b.shortCode}</span>
                     </div>
                   )}
                 </div>
@@ -139,7 +139,7 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wo
       )}
 
       {upcoming.length > 0 && (
-        <div class="mt-[26px] rounded-[16px] border px-5 py-[18px]" style="background:#fff;border-color:#e9e1d2">
+        <div class="mt-[26px] rounded-[16px] border px-5 py-[18px]" style="background:var(--color-surface);border-color:var(--color-line-2)">
           <div class="mb-2.5 flex items-baseline justify-between">
             <h2 class="font-display text-[18px] font-extrabold">Coming up</h2>
             <a href="/matches" class="text-[13.5px] font-bold" style="color:var(--color-royal)">All matches →</a>
@@ -148,8 +148,8 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wo
             {upcoming.map((m) => {
               const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
               return (
-                <a href={matchHref(m)} class="kb-card-hover flex-none rounded-[13px] border p-[13px]" style="width:215px;background:#faf6ee;border-color:#ece4d4">
-                  <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
+                <a href={matchHref(m)} class="kb-card-hover flex-none rounded-[13px] border p-[13px]" style="width:215px;background:var(--color-surface-2);border-color:#ece4d4">
+                  <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:var(--color-ink-3)">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
                   <div class="mt-[9px] flex items-center gap-[7px]"><Flag team={h.id} w={24} /><b class="text-[14px]">{h.name}</b></div>
                   <div class="mt-[6px] flex items-center gap-[7px]"><Flag team={a.id} w={24} /><b class="text-[14px]">{a.name}</b></div>
                   <div class="mt-2.5 text-[12px] font-bold" style="color:var(--color-royal)">{favLine(h.id, a.id)}</div>
@@ -177,17 +177,17 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wo
                     <div class="mx-auto mb-[9px] w-fit"><Flag team={h.id} w={62} class="!ring-1 !ring-white/40" /></div>
                     <div class="font-display text-[17px] font-extrabold">{h.name}</div>
                   </div>
-                  <div class="font-display text-[22px] font-black" style="color:#6f6655">VS</div>
+                  <div class="font-display text-[22px] font-black" style="color:var(--color-ink-2)">VS</div>
                   <div class="flex-1 text-center">
                     <div class="mx-auto mb-[9px] w-fit"><Flag team={a.id} w={62} class="!ring-1 !ring-white/40" /></div>
                     <div class="font-display text-[17px] font-extrabold">{a.name}</div>
                   </div>
                 </div>
-                <div class="mb-[18px] text-center text-[13px]" style="color:#a59a85">{stageLabel[todayMatch.stage]}{todayMatch.venue ? ` · ${todayMatch.venue}` : ''}</div>
+                <div class="mb-[18px] text-center text-[13px]" style="color:var(--color-ink-3)">{stageLabel[todayMatch.stage]}{todayMatch.venue ? ` · ${todayMatch.venue}` : ''}</div>
                 <div class="font-display mb-2.5 text-center text-[14px] font-extrabold tracking-[.5px]">WHO DO YOU THINK WINS?</div>
                 <div class="flex gap-2.5">
                   <a href={matchHref(todayMatch)} class="font-display flex-1 rounded-[11px] py-[13px] text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${hc.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{h.shortCode}</a>
-                  <a href={matchHref(todayMatch)} class="flex-none self-center px-1.5 text-[12px] font-bold" style="color:#6f6655">draw</a>
+                  <a href={matchHref(todayMatch)} class="flex-none self-center px-1.5 text-[12px] font-bold" style="color:var(--color-ink-2)">draw</a>
                   <a href={matchHref(todayMatch)} class="font-display flex-1 rounded-[11px] py-[13px] text-center font-extrabold text-white" style={`background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.28)), ${ac.c1};text-shadow:0 1px 3px rgba(0,0,0,.5)`}>{a.shortCode}</a>
                 </div>
                 <div class="mt-3 text-center"><a href={matchHref(todayMatch)} class="text-[13px] font-bold" style="color:var(--color-gold)">Vote & see our prediction →</a></div>
@@ -215,11 +215,11 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wo
           const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
           const p = pct(h.id, a.id);
           return (
-            <a href={matchHref(m)} class="kb-card-hover block rounded-[14px] border p-[15px]" style="background:#fff;border-color:#e9e1d2">
-              <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:#a59a85">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
+            <a href={matchHref(m)} class="kb-card-hover block rounded-[14px] border p-[15px]" style="background:var(--color-surface);border-color:var(--color-line-2)">
+              <div class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:var(--color-ink-3)">{dateLabel(m.date)} · {stageLabel[m.stage]}</div>
               <div class="mt-[11px] flex items-center justify-between">
                 <div class="flex items-center gap-[7px]"><Flag team={h.id} w={26} /><b>{h.shortCode}</b></div>
-                <span class="text-[12px] font-bold" style="color:#b3a890">vs</span>
+                <span class="text-[12px] font-bold" style="color:var(--color-ink-4)">vs</span>
                 <div class="flex items-center gap-[7px]"><b>{a.shortCode}</b><Flag team={a.id} w={26} /></div>
               </div>
               <div class="mt-[11px] flex h-[9px] overflow-hidden rounded-[6px]">
@@ -234,9 +234,9 @@ const jsonLd = { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Wo
       <h2 class="font-display mb-3 mt-[26px] text-[20px] font-extrabold">Title contenders</h2>
       <div class="grid gap-3" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
         {contenders.map((t) => (
-          <a href={`/teams/${t.id}/`} class="kb-card-hover block rounded-[13px] border p-3.5" style="background:#fff;border-color:#e9e1d2">
+          <a href={`/teams/${t.id}/`} class="kb-card-hover block rounded-[13px] border p-3.5" style="background:var(--color-surface);border-color:var(--color-line-2)">
             <div class="flex items-center gap-[9px]"><Flag team={t.id} w={30} /><b class="text-[15px]">{t.name}</b></div>
-            <div class="mt-[9px] flex items-center gap-[7px]"><span class="font-display text-[18px] font-black" style="color:var(--color-royal)">{t.strength}</span><span class="text-[12px]" style="color:#a59a85">power · #{t.fifaRank} world</span></div>
+            <div class="mt-[9px] flex items-center gap-[7px]"><span class="font-display text-[18px] font-black" style="color:var(--color-royal)">{t.strength}</span><span class="text-[12px]" style="color:var(--color-ink-3)">power · #{t.fifaRank} world</span></div>
           </a>
         ))}
       </div>

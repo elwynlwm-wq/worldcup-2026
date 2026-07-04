@@ -49,19 +49,33 @@ const maxBook = Math.max(...outright.map((r) => r.book));
   canonical="/"
 >
   <div class="kb-route">
-    <h1 class="font-display" style="font-size:38px;font-weight:900;letter-spacing:-1.2px;line-height:1.02">Predict the World Cup</h1>
-    <p style="color:#6f6655;font-size:15px;max-width:52ch">Call every knockout tie, then see the model's forecast and the market's, right in the same card. Can you beat them both?</p>
+    <div class="relative overflow-hidden rounded-[18px] px-6 py-7 sm:px-8" style="background:var(--color-pitch)">
+      <svg class="absolute inset-0 h-full w-full" viewBox="0 0 1040 190" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="opacity:.17">
+        <g fill="none" stroke="#fff" stroke-width="2.5">
+          <rect x="8" y="8" width="1024" height="174" rx="4" />
+          <line x1="520" y1="8" x2="520" y2="182" />
+          <circle cx="520" cy="95" r="52" />
+          <circle cx="520" cy="95" r="4" fill="#fff" />
+          <rect x="8" y="43" width="86" height="104" />
+          <rect x="946" y="43" width="86" height="104" />
+          <path d="M94 65 a40 40 0 0 1 0 60 M946 65 a40 40 0 0 0 0 60" />
+        </g>
+      </svg>
+      <h1 class="font-display relative" style="font-size:38px;font-weight:900;letter-spacing:-1.2px;line-height:1.02;color:#fff">Predict the World Cup</h1>
+      <p class="relative" style="color:rgba(255,255,255,.88);font-size:15px;max-width:52ch;margin-top:6px">Call every knockout tie, then see the model's forecast and the market's, right in the same card. Can you beat them both?</p>
+    </div>
 
     <div style="margin-top:22px">
       <PredictBoard client:load ties={ties} />
       <p style="margin-top:8px;font-size:12px;color:var(--color-ink-3)">Model: transparent Elo forecast. Market: live bookmaker consensus. Not betting advice. · <a href="/articles" style="color:var(--color-royal);font-weight:700">Read the stories →</a></p>
     </div>
 
-    <div style="margin-top:34px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px">
+    <div class="kb-halfway" aria-hidden="true"></div>
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px">
       <h2 class="font-display" style="font-size:20px;font-weight:800;letter-spacing:-.5px">The market's call — who lifts the trophy?</h2>
       <span style="font-size:12px;color:var(--color-ink-3)">implied odds · snapshot {MARKET_ASOF}</span>
     </div>
-    <div style="margin-top:10px;border:1px solid var(--color-line);border-radius:16px;overflow:hidden;background:#fff">
+    <div style="margin-top:10px;border:1px solid var(--color-line);border-radius:16px;overflow:hidden;background:var(--color-surface)">
       <table style="width:100%;border-collapse:collapse;font-size:14px">
         <thead>
           <tr style="text-align:left;border-bottom:1px solid var(--color-line);color:var(--color-ink-3)">

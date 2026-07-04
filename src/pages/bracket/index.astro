@@ -55,18 +55,18 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
           <div class="kb-round">
             <div class="kb-round-head flex items-baseline gap-[7px]">
               <span class="font-display text-[11.5px] font-extrabold uppercase tracking-[.5px]">{title}</span>
-              <span class="text-[10.5px] font-semibold" style="color:#a59a85">{confirmed ? `${confirmed} ties` : `${slots} ties`}</span>
+              <span class="text-[10.5px] font-semibold" style="color:var(--color-ink-3)">{confirmed ? `${confirmed} ties` : `${slots} ties`}</span>
             </div>
             <div class="kb-ties">
               {slotsFor(stage, slots).map((m) => {
                 if (!m) {
                   return (
                     <div class="kb-tie">
-                      <div class="kb-tie-card rounded-[11px] border border-dashed px-[11px] py-[9px]" style="border-color:#e4dccd;background:#faf6ee">
+                      <div class="kb-tie-card rounded-[11px] border border-dashed px-[11px] py-[9px]" style="border-color:var(--color-line);background:var(--color-surface-2)">
                         <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:#cabfa9"></div>
-                        <div class="flex items-center gap-[7px]"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style="background:#ece4d4"></span><span class="flex-1 text-[13px] font-bold" style="color:#b3a890">TBD</span></div>
-                        <div class="my-1.5 h-px" style="background:#f1ebdf"></div>
-                        <div class="flex items-center gap-[7px]"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style="background:#ece4d4"></span><span class="flex-1 text-[13px] font-bold" style="color:#b3a890">TBD</span></div>
+                        <div class="flex items-center gap-[7px]"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style="background:#ece4d4"></span><span class="flex-1 text-[13px] font-bold" style="color:var(--color-ink-4)">TBD</span></div>
+                        <div class="my-1.5 h-px" style="background:var(--color-surface-3)"></div>
+                        <div class="flex items-center gap-[7px]"><span class="h-[15px] w-[22px] flex-none rounded-[3px]" style="background:#ece4d4"></span><span class="flex-1 text-[13px] font-bold" style="color:var(--color-ink-4)">TBD</span></div>
                       </div>
                     </div>
                   );
@@ -75,14 +75,14 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
                 const isLive = lifecycle(m.status) === 'live';
                 return (
                   <div class="kb-tie">
-                    <a href={matchHref(m)} class="kb-tie-card kb-card-hover rounded-[11px] border px-[11px] py-[9px]" style={`background:#fff;border-color:${isLive ? 'var(--color-clay)' : '#e9e1d2'}`}>
+                    <a href={matchHref(m)} class="kb-tie-card kb-card-hover rounded-[11px] border px-[11px] py-[9px]" style={`background:var(--color-surface);border-color:${isLive ? 'var(--color-clay)' : '#e9e1d2'}`}>
                       {isLive ? (
                         <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-clay)">● {liveLabel(m.status, m.elapsed)}</div>
                       ) : (
-                        <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:#b3a890">{dateLabel(m.date)}</div>
+                        <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-ink-4)">{dateLabel(m.date)}</div>
                       )}
                       <div class="flex items-center gap-[7px]"><Flag team={h.id} w={22} /><b class="flex-1 text-[13px]">{h.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.homeScore ?? ''}</span></div>
-                      <div class="my-1.5 h-px" style="background:#f1ebdf"></div>
+                      <div class="my-1.5 h-px" style="background:var(--color-surface-3)"></div>
                       <div class="flex items-center gap-[7px]"><Flag team={a.id} w={22} /><b class="flex-1 text-[13px]">{a.shortCode}</b><span class="font-display text-[12px] font-extrabold">{m.awayScore ?? ''}</span></div>
                     </a>
                   </div>
@@ -96,7 +96,7 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
 
     <div class="mb-3 mt-7 flex flex-wrap items-baseline justify-between gap-2">
       <h2 class="font-display text-[20px] font-extrabold">Groups</h2>
-      <div class="flex gap-3.5 text-[12px] font-bold" style="color:#6f6655">
+      <div class="flex gap-3.5 text-[12px] font-bold" style="color:var(--color-ink-2)">
         <span class="inline-flex items-center gap-[5px]"><span class="h-[9px] w-[9px] rounded-full" style="background:#138a5e"></span>Through</span>
         <span class="inline-flex items-center gap-[5px]"><span class="h-[9px] w-[9px] rounded-full" style="background:#f3b50a"></span>In contention</span>
         <span class="inline-flex items-center gap-[5px]"><span class="h-[9px] w-[9px] rounded-full" style="background:#d8cfbf"></span>Out</span>
@@ -104,10 +104,10 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
     </div>
     <div class="grid gap-3.5" style="grid-template-columns:repeat(auto-fill,minmax(310px,1fr))">
       {groupNames.map((gname) => (
-        <div class="overflow-hidden rounded-[15px] border" style="background:#fff;border-color:#e9e1d2">
+        <div class="overflow-hidden rounded-[15px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
           <div class="flex items-center justify-between px-[15px] pb-[9px] pt-3">
             <span class="font-display text-[15px] font-extrabold">{gname}</span>
-            <span class="text-[10px] font-bold tracking-[.5px]" style="color:#b3a890">P GD PTS</span>
+            <span class="text-[10px] font-bold tracking-[.5px]" style="color:var(--color-ink-4)">P GD PTS</span>
           </div>
           {standings[gname].map((row) => {
             const t = getTeam(row.teamId);
@@ -117,11 +117,11 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
             return (
               <a href={t ? `/teams/${t.id}/` : '#'} class="flex items-center gap-[9px] border-t px-[15px] py-[9px]" style="border-color:#f4eee1">
                 <span class="h-[6px] w-[6px] flex-none rounded-full" style={`background:${accent}`}></span>
-                <span class="font-display w-[10px] text-[12px] font-extrabold" style="color:#a59a85">{row.rank}</span>
+                <span class="font-display w-[10px] text-[12px] font-extrabold" style="color:var(--color-ink-3)">{row.rank}</span>
                 <Flag team={row.teamId} w={26} />
                 <b class="flex-1 truncate text-[13.5px]">{t?.name ?? row.teamId}</b>
-                <span class="w-4 text-center text-[12.5px] tabular-nums" style="color:#b3a890">{row.played}</span>
-                <span class="w-[30px] text-center text-[12.5px] tabular-nums" style="color:#6f6655">{gd > 0 ? `+${gd}` : gd}</span>
+                <span class="w-4 text-center text-[12.5px] tabular-nums" style="color:var(--color-ink-4)">{row.played}</span>
+                <span class="w-[30px] text-center text-[12.5px] tabular-nums" style="color:var(--color-ink-2)">{gd > 0 ? `+${gd}` : gd}</span>
                 <b class="font-display w-5 text-right text-[14px] tabular-nums">{row.points}</b>
               </a>
             );

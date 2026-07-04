@@ -45,8 +45,8 @@ const playerIndex = provider.getAllPlayers()
       <div id="players-results" class="grid gap-2.5" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))"></div>
     </div>
 
-    <p id="empty-msg" class="text-[15px]" style="color:#6f6655;display:none">No teams or players match that search.</p>
-    <p id="prompt-msg" class="text-[15px]" style="color:#6f6655">Type in the search box above to find teams and players.</p>
+    <p id="empty-msg" class="text-[15px]" style="color:var(--color-ink-2);display:none">No teams or players match that search.</p>
+    <p id="prompt-msg" class="text-[15px]" style="color:var(--color-ink-2)">Type in the search box above to find teams and players.</p>
   </div>
 
   <script is:inline define:vars={{ teamIndex, playerIndex }}>
@@ -72,13 +72,13 @@ const playerIndex = provider.getAllPlayers()
       if (teams.length) {
         document.getElementById('teams-block').style.display = '';
         document.getElementById('teams-results').innerHTML = teams.map((t) =>
-          `<a href="${t.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #e9e1d2;border-radius:12px;padding:12px 14px">${flag(t.f, 30)}<b>${t.n}</b></a>`).join('');
+          `<a href="${t.h}" class="kb-card-hover" style="display:flex;align-items:center;gap:9px;background:var(--color-surface);border:1px solid #e9e1d2;border-radius:12px;padding:12px 14px">${flag(t.f, 30)}<b>${t.n}</b></a>`).join('');
       }
       if (players.length) {
         const escAttr = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
         document.getElementById('players-block').style.display = '';
         document.getElementById('players-results').innerHTML = players.map((p) =>
-          `<button data-player="${escAttr(JSON.stringify(p.d))}" class="kb-card-hover" style="cursor:pointer;text-align:left;display:flex;align-items:center;gap:11px;width:100%;background:#fff;border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">${flag(p.f, 26)}<span style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</b><span style="color:#a59a85;font-size:12px">${p.m}</span></span></button>`).join('');
+          `<button data-player="${escAttr(JSON.stringify(p.d))}" class="kb-card-hover" style="cursor:pointer;text-align:left;display:flex;align-items:center;gap:11px;width:100%;background:var(--color-surface);border:1px solid #e9e1d2;border-radius:13px;padding:11px 14px">${flag(p.f, 26)}<span style="flex:1;min-width:0"><b style="font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.n}</b><span style="color:var(--color-ink-3);font-size:12px">${p.m}</span></span></button>`).join('');
       }
       if (!teams.length && !players.length) empty.style.display = '';
     })();

@@ -22,18 +22,18 @@ const statusLabel: Record<string, string> = {
 >
   <div class="kb-route">
     <span class="relative block"><MarginDoodle variant="star" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">Power ranking</h1></span>
-    <p class="mt-0.5 mb-1.5 max-w-[620px] text-[15px]" style="color:#6f6655">
+    <p class="mt-0.5 mb-1.5 max-w-[620px] text-[15px]" style="color:var(--color-ink-2)">
       All 48 teams, strongest first. Our <b style="color:var(--color-ink)">power score</b> blends each team's
       rating, world ranking, how they've played here and squad firepower — higher is stronger.
     </p>
     <a href="/teams" class="text-[13.5px] font-bold" style="color:var(--color-royal)">Browse teams →</a>
 
-    <div class="mt-4 overflow-hidden rounded-[16px] border" style="background:#fff;border-color:#e9e1d2">
+    <div class="mt-4 overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
       {teams.map((t, i) => (
-        <a href={`/teams/${t.id}/`} class="flex items-center gap-[13px] border-b px-4 py-[11px]" style="border-color:#f1ebdf">
-          <span class="font-display w-[26px] text-center text-[16px] font-black" style="color:#b3a890">{i + 1}</span>
+        <a href={`/teams/${t.id}/`} class="flex items-center gap-[13px] border-b px-4 py-[11px]" style="border-color:var(--color-line-2)">
+          <span class="font-display w-[26px] text-center text-[16px] font-black" style="color:var(--color-ink-4)">{i + 1}</span>
           <Flag team={t.id} w={34} />
-          <span class="min-w-0 flex-1"><b class="text-[15px]">{t.name}</b><span class="ml-2 text-[12px]" style="color:#a59a85">{statusLabel[t.status] ?? ''}</span></span>
+          <span class="min-w-0 flex-1"><b class="text-[15px]">{t.name}</b><span class="ml-2 text-[12px]" style="color:var(--color-ink-3)">{statusLabel[t.status] ?? ''}</span></span>
           <span class="hidden flex-none sm:block" style="width:120px">
             <span class="block h-[8px] overflow-hidden rounded-[5px]" style="background:#f0e9db"><span class="block h-full rounded-[5px]" style={`width:${t.strength}%;background:linear-gradient(90deg,#1f3fbf,#f3b50a)`}></span></span>
           </span>

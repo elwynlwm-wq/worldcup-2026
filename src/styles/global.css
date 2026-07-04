@@ -32,6 +32,7 @@
 
   /* dark panels used inside the light theme (hero match card, etc.) */
   --color-night: #16181d;
+  --header-glass: rgba(231,226,212,.86);
 
   /* fonts */
   --font-display: "Archivo", system-ui, sans-serif;
@@ -92,4 +93,37 @@ main h1 {
   background-repeat: repeat-x;
   background-position: 0 100%;
   background-size: 120px 8px;
+}
+
+
+/* Floodlight mode — dark theme for 3am kickoffs. Toggled via html.dark
+   (auto after 19:00 local, manual override persisted in localStorage). */
+html.dark {
+  --color-bg: #101216;
+  --color-surface: #1a1d24;
+  --color-surface-2: #21252d;
+  --color-surface-3: #282d36;
+  --color-line: #2d323c;
+  --color-line-2: #2d323c;
+  --color-ink: #ece7d9;
+  --color-ink-2: #b9b1a1;
+  --color-ink-3: #8d8574;
+  --color-ink-4: #6e675a;
+  --color-royal: #7288ee;
+  --color-pitch: #2fae7d;
+  --color-clay: #d4574a;
+  --header-glass: rgba(16,18,22,.88);
+}
+html.dark img[src^='/flags-country/'] { filter: brightness(.92); }
+
+
+/* Halfway-line section divider — a pitch centre mark. */
+.kb-halfway { position: relative; height: 0; border-top: 2px solid var(--color-line); margin: 40px 0 26px; }
+.kb-halfway::after {
+  content: ''; position: absolute; left: 50%; top: -19px; width: 36px; height: 36px;
+  border: 2px solid var(--color-line); border-radius: 50%; transform: translateX(-50%);
+}
+.kb-halfway::before {
+  content: ''; position: absolute; left: 50%; top: -3px; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--color-line); transform: translate(-50%);
 }

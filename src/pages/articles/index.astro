@@ -53,7 +53,7 @@ const fMeta = featured ? meta(featured) : null;
     <div id="story-filters" class="mb-5 flex flex-wrap gap-2">
       {[['all', 'All'], ['preview', 'Pre-match predictions'], ['postmatch', 'Post-match analytics'], ['teamanalytics', 'Team analytics'], ['feature', 'Features']].map(([k, label], i) => (
         <button data-sfilter={k} class="kb-sfilter cursor-pointer rounded-full border px-[15px] py-[7px] text-[13.5px] font-bold"
-          style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:#fff;border-color:var(--color-line)'}>{label}</button>
+          style={i === 0 ? 'color:#fff;background:var(--color-night);border-color:var(--color-night)' : 'color:var(--color-ink-2);background:var(--color-surface);border-color:var(--color-line)'}>{label}</button>
       ))}
     </div>
 
@@ -104,12 +104,12 @@ const fMeta = featured ? meta(featured) : null;
                   <div class="font-display text-[18.5px] font-extrabold leading-tight tracking-tight text-balance">{s.data.title}</div>
                   <div class="flex-1 text-[14px] leading-snug" style="color:var(--color-ink-2)">{s.data.description}</div>
                   {ta && tb && (
-                    <div class="mt-0.5 flex items-center gap-[7px] border-t pt-[11px]" style="border-color:#f1ebdf">
+                    <div class="mt-0.5 flex items-center gap-[7px] border-t pt-[11px]" style="border-color:var(--color-line-2)">
                       <span class="flex gap-[3px]">
                         <Flag team={ta.id} w={22} />
                         <Flag team={tb.id} w={22} />
                       </span>
-                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:#8a7f6a">{ta.shortCode} vs {tb.shortCode}</span>
+                      <span class="text-[12px] font-bold tracking-[.3px]" style="color:var(--color-ink-3)">{ta.shortCode} vs {tb.shortCode}</span>
                     </div>
                   )}
                 </div>

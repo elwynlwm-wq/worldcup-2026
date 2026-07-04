@@ -21,7 +21,7 @@ const statusStyle: Record<string, { color: string; bg: string; label: string }> 
   contention: { color: '#8a6d10', bg: 'rgba(243,181,10,.18)', label: 'Still alive' },
   eliminated: { color: '#9d2730', bg: 'rgba(157,39,48,.12)', label: 'Eliminated' },
 };
-const selStyle = 'font-family:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:11px;border:1px solid #e4dccd;background:#fff';
+const selStyle = 'font-family:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:11px;border:1px solid #e4dccd;background:var(--color-surface)';
 ---
 
 <BaseLayout
@@ -32,7 +32,7 @@ const selStyle = 'font-family:inherit;font-size:14px;font-weight:600;padding:9px
 >
   <div class="kb-route">
     <span class="relative block"><MarginDoodle variant="ball" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">Teams</h1></span>
-    <p class="mt-0.5 mb-4 text-[15px]" style="color:#6f6655">All 48 nations. Tap a flag to dive into the squad.</p>
+    <p class="mt-0.5 mb-4 text-[15px]" style="color:var(--color-ink-2)">All 48 nations. Tap a flag to dive into the squad.</p>
 
     <div class="mb-[18px] flex flex-wrap items-center gap-2.5">
       <select id="conf-filter" style={selStyle}>
@@ -43,7 +43,7 @@ const selStyle = 'font-family:inherit;font-size:14px;font-weight:600;padding:9px
         <option value="all">All groups</option>
         {groupLetters.map((g) => <option value={g}>Group {g}</option>)}
       </select>
-      <span id="team-count" class="text-[13px] font-semibold" style="color:#a59a85">{teams.length} teams</span>
+      <span id="team-count" class="text-[13px] font-semibold" style="color:var(--color-ink-3)">{teams.length} teams</span>
       <a href="/power" class="ml-auto text-[13.5px] font-bold" style="color:var(--color-royal)">Power ranking →</a>
     </div>
 
@@ -52,11 +52,11 @@ const selStyle = 'font-family:inherit;font-size:14px;font-weight:600;padding:9px
         const st = statusStyle[t.status] ?? statusStyle.contention;
         return (
           <a href={`/teams/${t.id}/`} data-conf={t.confederation} data-group={t.groupLetter}
-            class="kb-team kb-card-hover block overflow-hidden rounded-[15px] border" style="background:#fff;border-color:#e9e1d2">
+            class="kb-team kb-card-hover block overflow-hidden rounded-[15px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
             <div style={`height:46px;background:${teamGrad(t.id)}`}></div>
             <div class="px-[15px] pb-[15px] pt-[13px]">
               <b class="block text-[15.5px] tracking-[-.2px]">{t.name}</b>
-              <div class="mt-0.5 text-[12px]" style="color:#a59a85">Group {t.groupLetter} · {t.confederation}</div>
+              <div class="mt-0.5 text-[12px]" style="color:var(--color-ink-3)">Group {t.groupLetter} · {t.confederation}</div>
               <div class="mt-[9px] inline-block rounded-full px-[9px] py-[3px] text-[11px] font-extrabold" style={`color:${st.color};background:${st.bg}`}>{st.label}</div>
             </div>
           </a>

@@ -146,14 +146,14 @@ const jsonLd = {
             const oa = meta.a ? provider.getTeam(meta.a) : null;
             const ob = meta.b ? provider.getTeam(meta.b) : null;
             return (
-              <a href={`/articles/${entry.id}/`} class="kb-card-hover flex flex-col rounded-[14px] border p-[15px]" style="background:#fff;border-color:#e9e1d2">
+              <a href={`/articles/${entry.id}/`} class="kb-card-hover flex flex-col rounded-[14px] border p-[15px]" style="background:var(--color-surface);border-color:var(--color-line-2)">
                 <span class="font-display inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[.8px]" style={`color:${km.accent}`}><span class="h-[9px] w-[9px] rounded-[2px]" style={`background:${km.accent}`}></span>{km.label}</span>
                 <div class="font-display my-[6px] mt-2 text-[17px] font-extrabold leading-[1.15] text-balance">{entry.data.title}</div>
-                <div class="flex-1 text-[13.5px] leading-[1.4]" style="color:#6f6655">{entry.data.description}</div>
+                <div class="flex-1 text-[13.5px] leading-[1.4]" style="color:var(--color-ink-2)">{entry.data.description}</div>
                 {oa && ob && (
-                  <div class="mt-[11px] flex items-center gap-[7px] border-t pt-[11px]" style="border-color:#f1ebdf">
+                  <div class="mt-[11px] flex items-center gap-[7px] border-t pt-[11px]" style="border-color:var(--color-line-2)">
                     <span class="flex gap-[3px]"><Flag team={oa.id} w={22} /><Flag team={ob.id} w={22} /></span>
-                    <span class="text-[12px] font-bold" style="color:#8a7f6a">{oa.shortCode} vs {ob.shortCode}</span>
+                    <span class="text-[12px] font-bold" style="color:var(--color-ink-3)">{oa.shortCode} vs {ob.shortCode}</span>
                   </div>
                 )}
               </a>
