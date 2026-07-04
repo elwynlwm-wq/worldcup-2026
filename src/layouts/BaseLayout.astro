@@ -68,7 +68,7 @@ const href = (key: string) =>
           World&nbsp;Cup&nbsp;<span style="color:var(--color-royal)">Analytics</span>
         </a>
         {/* desktop nav */}
-        <nav class="hidden flex-1 flex-nowrap gap-0.5 lg:flex">
+        <nav class="hidden flex-1 flex-nowrap gap-0.5 overflow-x-auto md:flex" style="scrollbar-width:none">
           {NAV.map(([key, label]) => (
             <a
               href={href(key)}
@@ -88,7 +88,6 @@ const href = (key: string) =>
         {/* mobile actions: search toggle + hamburger */}
         <div class="ml-auto flex items-center gap-2 lg:hidden">
           <button id="m-search-btn" aria-label="Search" class="flex h-9 w-9 items-center justify-center rounded-[10px] border" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">⌕</button>
-          <button id="m-nav-btn" aria-label="Menu" class="flex h-9 w-9 items-center justify-center rounded-[10px] border text-[15px]" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">☰</button>
         </div>
       </div>
 
@@ -100,13 +99,13 @@ const href = (key: string) =>
         </form>
       </div>
 
-      {/* mobile nav dropdown */}
-      <nav id="m-nav" class="mx-auto hidden max-w-[1080px] flex-col gap-1 px-5 pb-3 lg:!hidden">
+      {/* phone nav — always visible, scrolls sideways */}
+      <nav class="mx-auto flex max-w-[1080px] gap-1 overflow-x-auto px-5 pb-2.5 md:hidden" style="scrollbar-width:none">
         {NAV.map(([key, label]) => (
           <a
             href={href(key)}
-            class="rounded-[10px] px-3 py-2.5 text-[15px] font-bold"
-            style={active === key ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2)'}
+            class="rounded-[10px] px-3 py-1.5 text-[13.5px] font-bold whitespace-nowrap"
+            style={active === key ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2);background:var(--color-surface-3)'}
           >
             {label}
           </a>
@@ -115,11 +114,12 @@ const href = (key: string) =>
     </header>
     <script is:inline>
       (() => {
-        const tgl = (el) => { if (el) el.style.display = el.style.display === 'flex' ? 'none' : 'flex'; };
-        const nav = document.getElementById('m-nav');
         const search = document.getElementById('m-search');
-        document.getElementById('m-nav-btn')?.addEventListener('click', () => { if (search) search.style.display = 'none'; tgl(nav); });
-        document.getElementById('m-search-btn')?.addEventListener('click', () => { if (nav) nav.style.display = 'none'; tgl(search); const i = search?.querySelector('input'); if (search?.style.display === 'flex') setTimeout(() => i?.focus(), 30); });
+        document.getElementById('m-search-btn')?.addEventListener('click', () => {
+          if (!search) return;
+          search.style.display = search.style.display === 'block' ? 'none' : 'block';
+          if (search.style.display === 'block') setTimeout(() => search.querySelector('input')?.focus(), 30);
+        });
       })();
     </script>
 
