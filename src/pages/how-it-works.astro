@@ -4,6 +4,7 @@
 // page in the same commit (see AGENTS.md).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ModelPlayground from '../components/ModelPlayground.tsx';
+import WhiteboardDoodle from '../components/WhiteboardDoodle.astro';
 import { provider } from '../lib/provider';
 
 const playTeams = provider.getTeams().map((t) => ({
@@ -95,6 +96,12 @@ const jsonLd = {
           </p>
         </div>
       </section>
+
+      <div class="grid gap-5 pt-2 sm:grid-cols-3">
+        <WhiteboardDoodle variant="sums" tilt="-1deg" caption="The whole model, one whiteboard" />
+        <WhiteboardDoodle variant="curve" tilt="0.8deg" caption="The curve, as first sketched" />
+        <WhiteboardDoodle variant="tactics" tilt="-0.6deg" caption="What the model can't see" />
+      </div>
 
       <section>
         <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">Try it yourself</h2>
