@@ -85,9 +85,14 @@ const href = (key: string) =>
           <span style="color:var(--color-ink-3)">⌕</span>
           <input name="q" placeholder="Search…" class="w-[90px] border-none bg-transparent text-sm outline-none" style="font-family:inherit;color:var(--color-ink)" />
         </form>
-        {/* mobile actions: search toggle + hamburger */}
+        {/* mobile actions: search toggle (below lg, fills the md–lg search gap) + hamburger (below md, when inline nav is hidden) */}
         <div class="ml-auto flex items-center gap-2 lg:hidden">
           <button id="m-search-btn" aria-label="Search" class="flex h-9 w-9 items-center justify-center rounded-[10px] border" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">⌕</button>
+          <button id="m-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="m-menu" class="flex h-9 w-9 items-center justify-center rounded-[10px] border md:hidden" style="background:#fff;border-color:var(--color-line);color:var(--color-ink-2)">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="2.5" y1="5" x2="15.5" y2="5" /><line x1="2.5" y1="9" x2="15.5" y2="9" /><line x1="2.5" y1="13" x2="15.5" y2="13" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -99,26 +104,49 @@ const href = (key: string) =>
         </form>
       </div>
 
-      {/* phone nav — always visible, scrolls sideways */}
-      <nav class="mx-auto flex max-w-[1080px] gap-1 overflow-x-auto px-5 pb-2.5 md:hidden" style="scrollbar-width:none">
-        {NAV.map(([key, label]) => (
-          <a
-            href={href(key)}
-            class="rounded-[10px] px-3 py-1.5 text-[13.5px] font-bold whitespace-nowrap"
-            style={active === key ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2);background:var(--color-surface-3)'}
-          >
-            {label}
-          </a>
-        ))}
+      {/* phone nav — hamburger drawer: hidden until toggled, full vertical list */}
+      <nav id="m-menu" class="mx-auto hidden max-w-[1080px] px-5 pb-3 md:!hidden" aria-label="Primary">
+        <div class="flex flex-col gap-1 rounded-[13px] border p-1.5" style="background:#fff;border-color:var(--color-line)">
+          {NAV.map(([key, label]) => (
+            <a
+              href={href(key)}
+              aria-current={active === key ? 'page' : undefined}
+              class="rounded-[10px] px-3.5 py-2.5 text-[15px] font-bold"
+              style={active === key ? 'color:#fff;background:var(--color-night)' : 'color:var(--color-ink-2)'}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
       </nav>
     </header>
     <script is:inline>
       (() => {
         const search = document.getElementById('m-search');
-        document.getElementById('m-search-btn')?.addEventListener('click', () => {
+        const menu = document.getElementById('m-menu');
+        const menuBtn = document.getElementById('m-menu-btn');
+        const setMenu = (open) => {
+          if (!menu) return;
+          menu.style.display = open ? 'block' : 'none';
+          menuBtn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        const setSearch = (open) => {
           if (!search) return;
-          search.style.display = search.style.display === 'block' ? 'none' : 'block';
-          if (search.style.display === 'block') setTimeout(() => search.querySelector('input')?.focus(), 30);
+          search.style.display = open ? 'block' : 'none';
+          if (open) setTimeout(() => search.querySelector('input')?.focus(), 30);
+        };
+        document.getElementById('m-search-btn')?.addEventListener('click', () => {
+          const open = search?.style.display !== 'block';
+          setSearch(open);
+          if (open) setMenu(false); // only one panel at a time
+        });
+        menuBtn?.addEventListener('click', () => {
+          const open = menu?.style.display !== 'block';
+          setMenu(open);
+          if (open) setSearch(false);
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') { setMenu(false); setSearch(false); }
         });
       })();
     </script>
