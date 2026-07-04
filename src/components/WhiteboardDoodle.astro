@@ -1,0 +1,74 @@
+---
+// Hand-drawn "whiteboard" doodle cards for the About page — marker-style SVG
+// sketches (tactics board, 3am clock, wall chart) with a tape strip and a
+// slight pin-board tilt. Pure decoration, aria-hidden.
+interface Props {
+  variant: 'tactics' | 'clock' | 'bracket';
+  tilt?: string;
+  caption: string;
+}
+const { variant, tilt = '0deg', caption } = Astro.props;
+---
+
+<figure class="m-0 rounded-[14px] border p-3 pb-2" style={`background:#fff;border-color:#e9e1d2;transform:rotate(${tilt})`}>
+  <div class="relative">
+    <div class="absolute left-1/2 top-[-14px] h-[13px] w-[34px] -translate-x-1/2 rotate-[-2deg]" style="background:#e8dfc6;opacity:.85"></div>
+
+    {variant === 'tactics' && (
+      <svg viewBox="0 0 200 150" class="w-full" aria-hidden="true">
+        <rect x="14" y="18" width="172" height="114" rx="6" fill="none" stroke="var(--color-pitch)" stroke-width="2.5" />
+        <line x1="100" y1="18" x2="100" y2="132" stroke="var(--color-pitch)" stroke-width="2" />
+        <circle cx="100" cy="75" r="16" fill="none" stroke="var(--color-pitch)" stroke-width="2" />
+        <rect x="14" y="53" width="20" height="44" fill="none" stroke="var(--color-pitch)" stroke-width="2" />
+        <rect x="166" y="53" width="20" height="44" fill="none" stroke="var(--color-pitch)" stroke-width="2" />
+        <g stroke="var(--color-royal)" stroke-width="2.5" fill="none">
+          <circle cx="52" cy="45" r="6" /><circle cx="48" cy="75" r="6" /><circle cx="52" cy="105" r="6" /><circle cx="80" cy="60" r="6" />
+        </g>
+        <g stroke="var(--color-clay)" stroke-width="2.5" stroke-linecap="round">
+          <path d="M138 40 l10 10 M148 40 l-10 10" /><path d="M150 70 l10 10 M160 70 l-10 10" /><path d="M138 100 l10 10 M148 100 l-10 10" />
+        </g>
+        <path d="M86 58 Q120 42 152 58" fill="none" stroke="var(--color-night)" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" />
+        <path d="M148 54 L153 58 L147 61" fill="none" stroke="var(--color-night)" stroke-width="2" stroke-linecap="round" />
+        <text x="152" y="32" font-family="var(--font-display)" font-size="12" font-weight="900" fill="var(--color-night)" transform="rotate(-3 152 32)">4-3-3?!</text>
+      </svg>
+    )}
+
+    {variant === 'clock' && (
+      <svg viewBox="0 0 200 150" class="w-full" aria-hidden="true">
+        <circle cx="78" cy="78" r="36" fill="none" stroke="var(--color-night)" stroke-width="3" />
+        <g stroke="var(--color-night)" stroke-width="2.5" stroke-linecap="round">
+          <line x1="78" y1="46" x2="78" y2="52" /><line x1="110" y1="78" x2="104" y2="78" />
+          <line x1="78" y1="110" x2="78" y2="104" /><line x1="46" y1="78" x2="52" y2="78" />
+        </g>
+        <g stroke="var(--color-royal)" stroke-width="3" stroke-linecap="round">
+          <line x1="78" y1="78" x2="78" y2="58" /><line x1="78" y1="78" x2="96" y2="78" />
+        </g>
+        <path d="M52 44 A14 14 0 0 1 66 36 M104 44 A14 14 0 0 0 90 36" fill="none" stroke="var(--color-gold)" stroke-width="3" stroke-linecap="round" />
+        <g stroke="var(--color-clay)" stroke-width="2.5" fill="none" stroke-linecap="round">
+          <path d="M138 92 h30 v22 q0 6 -6 6 h-18 q-6 0 -6 -6 Z" />
+          <path d="M168 96 q10 2 0 12" />
+          <path d="M146 84 q3 -5 0 -9 M154 84 q3 -5 0 -9" />
+        </g>
+        <text x="130" y="66" font-family="var(--font-display)" font-size="13" font-weight="900" fill="var(--color-night)" transform="rotate(2 130 66)">KO 03:00</text>
+      </svg>
+    )}
+
+    {variant === 'bracket' && (
+      <svg viewBox="0 0 200 150" class="w-full" aria-hidden="true">
+        <g stroke="var(--color-gold)" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8">
+          <path d="M28 36 h22 v18 h24 v28 h26" />
+        </g>
+        <g stroke="var(--color-night)" stroke-width="2.5" fill="none" stroke-linecap="round">
+          <path d="M28 36 h22 M28 72 h22 M50 36 v36 M50 54 h24" />
+          <path d="M28 100 h22 M28 136 h22 M50 100 v36 M50 118 h24" />
+          <path d="M74 54 v64 M74 86 h26" />
+        </g>
+        <polygon points="122,74 126,84 137,85 129,92 131,103 122,97 113,103 115,92 107,85 118,84"
+          fill="var(--color-gold)" stroke="var(--color-night)" stroke-width="2" stroke-linejoin="round" />
+        <text x="146" y="92" font-family="var(--font-display)" font-size="14" font-weight="900" fill="var(--color-clay)" transform="rotate(-4 146 92)">?!</text>
+        <text x="146" y="46" font-family="var(--font-display)" font-size="11" font-weight="900" fill="var(--color-ink-3)" transform="rotate(3 146 46)">R32 →</text>
+      </svg>
+    )}
+  </div>
+  <figcaption class="mt-1.5 text-center text-[12px] font-bold" style="color:var(--color-ink-3)">{caption}</figcaption>
+</figure>
