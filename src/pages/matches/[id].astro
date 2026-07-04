@@ -149,7 +149,8 @@ const compareRows: CmpRow[] = (() => {
 const compareGames = aggHome && aggAway ? Math.min(aggHome.played, aggAway.played) : 0;
 
 // Bookmaker 1X2 odds, oriented to THIS match's home/away. Each book → {h,d,a}
-// decimal price; we also flag the best (highest) price per outcome to highlight.
+// decimal price. We show the spread of prices as evidence of who's backing the
+// forecast — NOT as betting guidance, so we deliberately don't flag "best" odds.
 const oddsPair = getOddsPair(h.id, a.id);
 type OddsBookRow = { bookmaker: string; h: number; d: number; a: number };
 const oddsBooks: OddsBookRow[] = (() => {
@@ -159,9 +160,6 @@ const oddsBooks: OddsBookRow[] = (() => {
     .map((b) => ({ bookmaker: b.bookmaker, h: flip ? b.away : b.home, d: b.draw, a: flip ? b.home : b.away }))
     .sort((x, y) => x.bookmaker.localeCompare(y.bookmaker));
 })();
-const bestH = oddsBooks.length ? Math.max(...oddsBooks.map((b) => b.h)) : 0;
-const bestD = oddsBooks.length ? Math.max(...oddsBooks.map((b) => b.d)) : 0;
-const bestA = oddsBooks.length ? Math.max(...oddsBooks.map((b) => b.a)) : 0;
 const oddsFrozen = !!oddsPair?.frozen;
 
 const stageLabel: Record<string, string> = { group: 'Group stage', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: 'Third place' };
@@ -253,13 +251,14 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
       )}
       <ShowdownPanel home={h} away={a} fans={fans} mode="prediction" frozen={ended || live} />
 
-      {/* Bookmaker odds — real 1X2 prices, best per outcome highlighted. Only
-          shown when the API has priced this fixture. */}
+      {/* Bookmaker odds — real 1X2 prices as market context for the forecast (no
+          "best price" flagging; we're not a betting tipster). Only shown when the
+          API has priced this fixture. */}
       {oddsBooks.length > 0 && (
         <>
           <h2 class="font-display mt-7 mb-1 text-[21px] font-extrabold">{ended ? 'Pre-match odds' : 'Bookmaker odds'}</h2>
           <p class="mb-3 text-[14.5px]" style="color:var(--color-ink-2)">
-            {ended ? 'The bookmakers’ prices as they stood before kick-off.' : oddsFrozen ? 'Pre-match prices, frozen at kick-off.' : 'Compare the books — best price for each result is highlighted.'}
+            {ended ? 'The bookmakers’ prices as they stood before kick-off.' : oddsFrozen ? 'Pre-match prices, frozen at kick-off.' : 'What the bookmakers make of this tie — the market behind the forecast.'}
           </p>
           <div class="overflow-hidden rounded-[16px] border" style="background:var(--color-surface);border-color:var(--color-line-2)">
             <div class="flex items-center border-b px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide" style="border-color:var(--color-surface-3);background:var(--color-surface-2);color:var(--color-ink-3)">
@@ -271,9 +270,9 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
             {oddsBooks.map((b) => (
               <div class="flex items-center border-b px-4 py-3 last:border-b-0" style="border-color:var(--color-surface-3)">
                 <b class="flex-1 text-[14px]">{b.bookmaker}</b>
-                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style={`color:${b.h === bestH ? '#0d6b46' : 'var(--color-ink)'}`}>{b.h.toFixed(2)}</span>
-                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style={`color:${b.d === bestD ? '#0d6b46' : 'var(--color-ink-4)'}`}>{b.d.toFixed(2)}</span>
-                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style={`color:${b.a === bestA ? '#0d6b46' : 'var(--color-ink)'}`}>{b.a.toFixed(2)}</span>
+                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style="color:var(--color-ink)">{b.h.toFixed(2)}</span>
+                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style="color:var(--color-ink-4)">{b.d.toFixed(2)}</span>
+                <span class="font-display w-[64px] flex-none text-right text-[14px] font-extrabold" style="color:var(--color-ink)">{b.a.toFixed(2)}</span>
               </div>
             ))}
           </div>

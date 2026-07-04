@@ -39,7 +39,7 @@ const articles = (await getCollection('articles', ({ data }) => !data.draft)).so
   (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
 const featured = articles[0] ?? null;
-const rest = articles.slice(1, 5);
+const rest = articles.slice(1, 7);
 
 // A story's two-team matchup swatch pair, derived from its tags that map to teams.
 const storyMatch = (tags: string[] = []) => {
