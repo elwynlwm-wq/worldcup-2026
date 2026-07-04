@@ -3,6 +3,7 @@
 // model AND the market in the same tile, plus who the market backs to win it all.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Flag from '../components/Flag.astro';
+import CommunityCTA from '../components/CommunityCTA.astro';
 import PredictBoard from '../components/PredictBoard.tsx';
 import type { Tie } from '../components/PredictBoard.tsx';
 import { provider } from '../lib/provider';
@@ -90,5 +91,7 @@ const maxBook = Math.max(...outright.map((r) => r.book));
       </table>
     </div>
     <p style="margin-top:8px;font-size:12px;color:var(--color-ink-3)">Bookmaker consensus vs prediction markets (Polymarket, Kalshi). Outright snapshot — a live feed can replace it later.</p>
+
+    <CommunityCTA variant="match" />
   </div>
 </BaseLayout>
