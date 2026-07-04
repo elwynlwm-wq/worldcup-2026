@@ -3,6 +3,7 @@
 // readers first, and for E-E-A-T / ads-verification second: who we are, why
 // we do this, how to reach us, and the not-a-bookmaker line in plain sight.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MarginDoodle from '../components/MarginDoodle.astro';
 import FounderAvatar from '../components/FounderAvatar.astro';
 import WhiteboardDoodle from '../components/WhiteboardDoodle.astro';
 import Flag from '../components/Flag.astro';
@@ -95,7 +96,7 @@ const jsonLd = [
   jsonLd={jsonLd}
 >
   <div class="kb-route">
-    <h1 class="font-display text-[34px] font-black tracking-[-1px]">Built out of love for the World Cup</h1>
+    <span class="relative block"><MarginDoodle variant="ball" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">Built out of love for the World Cup</h1></span>
     <p class="mt-1 max-w-[820px] text-[15.5px]" style="color:#6f6655">
       World Cup Analytics is a free, fan-made site. Nobody pays us, nothing is sponsored, and we don't take bets.
       We do this because the World Cup is the best thing in sport and we wanted a place that treats it that way.

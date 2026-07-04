@@ -3,6 +3,7 @@
 // All 48 teams strongest first: rank, 2-tone swatch, name + status, a royal→gold
 // strength bar, and the score. No generated art.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
 import Flag from '../../components/Flag.astro';
 
@@ -20,7 +21,7 @@ const statusLabel: Record<string, string> = {
   canonical="/power/"
 >
   <div class="kb-route">
-    <h1 class="font-display text-[34px] font-black tracking-[-1px]">Power ranking</h1>
+    <span class="relative block"><MarginDoodle variant="star" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">Power ranking</h1></span>
     <p class="mt-0.5 mb-1.5 max-w-[620px] text-[15px]" style="color:#6f6655">
       All 48 teams, strongest first. Our <b style="color:var(--color-ink)">power score</b> blends each team's
       rating, world ranking, how they've played here and squad firepower — higher is stronger.

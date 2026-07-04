@@ -2,6 +2,7 @@
 // Matches — rebuilt pixel-faithfully from claude-design Kickabout.dc.html.
 // Upcoming ties (forecast bar) + recent results, 2-tone swatches throughout.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
 import { getUpcomingFixtures, getRecentResults } from '../../lib/warehouse';
@@ -33,7 +34,7 @@ const nextStage = upcoming[0] ? stageLabel[upcoming[0].stage] : 'Knockouts';
   <div class="kb-route">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 class="font-display text-[34px] font-black tracking-[-1px]">Matches</h1>
+        <span class="relative block"><MarginDoodle variant="whistle" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">Matches</h1></span>
         <p class="text-[15px]" style="color:#6f6655">What's next, what just happened, and who we think wins.</p>
       </div>
     </div>

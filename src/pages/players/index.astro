@@ -3,6 +3,7 @@
 // Every squad's players, biggest names by international goals. Position filter +
 // sort, client-side. Real photos via Avatar; 2-tone team swatch per row.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
 import { getPlayerTiers } from '../../lib/warehouse';
 import Avatar from '../../components/analysis/Avatar.astro';
@@ -29,7 +30,7 @@ const posColor: Record<string, string> = { GK: '#e0a200', DF: '#1f3fbf', MF: '#1
   canonical="/players/"
 >
   <div class="kb-route">
-    <h1 class="font-display text-[34px] font-black tracking-[-1px]">Players</h1>
+    <span class="relative block"><MarginDoodle variant="ball" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-[-1px]">Players</h1></span>
     <p class="mt-0.5 mb-4 text-[15px]" style="color:#6f6655">The biggest names across every squad, by international goals.</p>
 
     <div id="pos-filter" class="mb-[18px] flex flex-wrap gap-2">

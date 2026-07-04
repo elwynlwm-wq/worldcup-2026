@@ -82,3 +82,14 @@ h1, h2, h3, h4, .font-display {
 /* incoming line into each card from mid-gutter (all rounds except the first) */
 .kb-round:not(:first-child) .kb-tie > *::before { content: ""; position: absolute; right: 100%; top: 50%; width: 20px; height: 2px; background: #d2c8b4; }
 .kb-tie-card { display: block; }
+
+
+/* Doodle style: hand-drawn marker underline under page titles, site-wide. */
+main h1 {
+  width: fit-content;
+  padding-bottom: 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8'%3E%3Cpath d='M2 5 Q30 1.5 60 5 T118 3.5' stroke='%23f3b50a' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  background-size: 120px 8px;
+}

@@ -4,6 +4,7 @@
 // Story "kind" + matchup are derived from loose tags (pre-match/post-match +
 // team slugs) per the agreed tagging vocabulary.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import MarginDoodle from '../../components/MarginDoodle.astro';
 import { getCollection } from 'astro:content';
 import { provider } from '../../lib/provider';
 import Flag from '../../components/Flag.astro';
@@ -43,7 +44,7 @@ const fMeta = featured ? meta(featured) : null;
   canonical="/articles/"
 >
   <div class="kb-route">
-    <h1 class="font-display text-[34px] font-black tracking-tight">Stories</h1>
+    <span class="relative block"><MarginDoodle variant="pencil" class="absolute right-0 top-[-6px]" /><h1 class="font-display text-[34px] font-black tracking-tight">Stories</h1></span>
     <p class="mt-0.5 mb-4 max-w-[560px] text-[15px]" style="color:var(--color-ink-2)">
       Previews of what's coming and verdicts on what just happened — the data, in plain English.
     </p>
