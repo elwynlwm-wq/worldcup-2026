@@ -1,13 +1,14 @@
 ---
 // Community CTA — dark panel with pitch motif + gold button, from the Claude
 // Design. Two copy variants: 'story' (bottom of articles) and 'match' (bottom of
-// upcoming match pages). The link target is a placeholder until the community
-// page exists.
+// upcoming match pages). Links out to the community site (SportifyLive).
 interface Props {
   variant?: 'story' | 'match';
   href?: string;
 }
-const { variant = 'story', href = '/community' } = Astro.props;
+const { variant = 'story', href = 'https://sportifylive.io/' } = Astro.props;
+// External link → open in a new tab, and keep the opener/referrer safe.
+const isExternal = /^https?:\/\//.test(href);
 const copy = variant === 'match'
   ? {
       title: 'Got a call on this one? Stake your claim.',
@@ -19,7 +20,11 @@ const copy = variant === 'match'
     };
 ---
 
-<a href={href} class="kb-card-hover relative mt-[22px] block overflow-hidden rounded-[18px] px-7 py-6 text-white" style="background:#16181d">
+<a
+  href={href}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noopener' : undefined}
+  class="kb-card-hover relative mt-[22px] block overflow-hidden rounded-[18px] px-7 py-6 text-white" style="background:#16181d">
   <div class="pointer-events-none absolute -right-[20px] -top-[30px] h-[210px] w-[230px] opacity-50" style="background:url('/assets/pitch.svg') no-repeat center/contain"></div>
   <div class="relative z-[2]">
     <div class="font-display text-[11px] font-extrabold uppercase tracking-[1.4px]" style="color:var(--color-gold)">World Cup Analytics community</div>
