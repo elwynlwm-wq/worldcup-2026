@@ -3,32 +3,31 @@
 // the site palette; gentle CSS animation (blink + one signature motion each),
 // disabled under prefers-reduced-motion.
 interface Props {
-  who: 'sonny' | 'ada' | 'marco';
+  who: 'weijun' | 'aisyah' | 'hafiz';
   size?: number;
 }
 const { who, size = 112 } = Astro.props;
 ---
 
-{who === 'sonny' && (
+{who === 'weijun' && (
   <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" class="founder">
     <clipPath id="fa-clip-s"><circle cx="60" cy="60" r="56" /></clipPath>
     <circle cx="60" cy="60" r="56" fill="#ece5d2" />
     <g clip-path="url(#fa-clip-s)">
       <path d="M26 122 Q28 86 60 86 Q92 86 94 122 Z" fill="var(--color-royal)" />
       <rect x="50" y="80" width="20" height="10" rx="3" fill="#17307f" />
-      <rect x="53" y="70" width="14" height="14" fill="#d9a172" />
-      <circle cx="37.5" cy="54" r="4" fill="#e8b083" />
-      <circle cx="82.5" cy="54" r="4" fill="#e8b083" />
-      <circle cx="60" cy="52" r="23" fill="#e8b083" />
+      <rect x="53" y="70" width="14" height="14" fill="#e0a670" />
+      <circle cx="37.5" cy="54" r="4" fill="#f0be8d" />
+      <circle cx="82.5" cy="54" r="4" fill="#f0be8d" />
+      <circle cx="60" cy="52" r="23" fill="#f0be8d" />
       <path d="M38 44 A22 22 0 0 1 82 44 L82 48 Q60 41 38 48 Z" fill="var(--color-night)" />
       <path d="M58 43 Q78 40 88 46 Q88 50 84 50 Q70 46 58 48 Z" fill="#101216" />
-      <rect x="45.5" y="46.5" width="9" height="2.6" rx="1.3" fill="#6b4a2f" />
-      <rect x="65.5" y="46.5" width="9" height="2.6" rx="1.3" fill="#6b4a2f" />
+      <rect x="45.5" y="46.5" width="9" height="2.6" rx="1.3" fill="#2b2320" />
+      <rect x="65.5" y="46.5" width="9" height="2.6" rx="1.3" fill="#2b2320" />
       <ellipse class="eye" cx="51" cy="54" rx="2.5" ry="3" fill="var(--color-night)" />
       <ellipse class="eye" cx="69" cy="54" rx="2.5" ry="3" fill="var(--color-night)" />
-      <path d="M60 56 q2 5 -1 7" fill="none" stroke="#d09468" stroke-width="2" stroke-linecap="round" />
-      <path d="M49 65 Q60 71 71 65 Q66 72.5 60 72 Q54 72.5 49 65 Z" fill="#6b4a2f" />
-      <path d="M55 75.5 Q60 78 65 75.5" fill="none" stroke="#b97e55" stroke-width="2" stroke-linecap="round" />
+      <path d="M60 56 q2 5 -1 7" fill="none" stroke="#d69a62" stroke-width="2" stroke-linecap="round" />
+      <path d="M53 68 Q60 73.5 67 68" fill="none" stroke="#b97e55" stroke-width="2.2" stroke-linecap="round" />
       <g class="ball">
         <circle cx="96" cy="96" r="10" fill="#fff" stroke="var(--color-night)" stroke-width="1.6" />
         <polygon points="96,91.5 100.3,94.6 98.7,99.7 93.3,99.7 91.7,94.6" fill="var(--color-night)" />
@@ -38,7 +37,7 @@ const { who, size = 112 } = Astro.props;
   </svg>
 )}
 
-{who === 'ada' && (
+{who === 'aisyah' && (
   <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" class="founder">
     <clipPath id="fa-clip-a"><circle cx="60" cy="60" r="56" /></clipPath>
     <circle cx="60" cy="60" r="56" fill="#efe7d8" />
@@ -47,28 +46,30 @@ const { who, size = 112 } = Astro.props;
         fill="none" stroke="var(--color-royal)" stroke-width="2.5" stroke-linecap="round" opacity=".55" />
       <path d="M26 122 Q28 86 60 86 Q92 86 94 122 Z" fill="var(--color-night)" />
       <rect x="50" y="82" width="20" height="6" rx="3" fill="var(--color-gold)" />
-      <rect x="53" y="72" width="14" height="13" fill="#74492e" />
-      <circle cx="60" cy="46" r="27" fill="#241d18" />
-      <circle cx="38" cy="58" r="4" fill="#8a5a3b" />
-      <circle cx="82" cy="58" r="4" fill="#8a5a3b" />
-      <circle cx="60" cy="54" r="22" fill="#8a5a3b" />
-      <path d="M38 50 Q40 30 60 30 Q80 30 82 50 Q76 37 60 37 Q44 37 38 50 Z" fill="#241d18" />
+      <rect x="53" y="72" width="14" height="13" fill="#c08a52" />
+      <circle cx="60" cy="47" r="25" fill="#1c1713" />
+      <path d="M35 50 Q33 74 41 80 L47 80 Q40 68 42 50 Z" fill="#1c1713" />
+      <path d="M85 50 Q87 74 79 80 L73 80 Q80 68 78 50 Z" fill="#1c1713" />
+      <circle cx="38" cy="58" r="4" fill="#d9a066" />
+      <circle cx="82" cy="58" r="4" fill="#d9a066" />
+      <circle cx="60" cy="54" r="22" fill="#d9a066" />
+      <path d="M38 50 Q40 30 60 30 Q80 30 82 50 Q76 37 60 37 Q44 37 38 50 Z" fill="#1c1713" />
       <circle cx="38" cy="63" r="2.2" fill="var(--color-gold)" />
       <circle cx="82" cy="63" r="2.2" fill="var(--color-gold)" />
-      <rect x="46" y="44" width="9" height="2.6" rx="1.3" fill="#241d18" />
-      <rect x="65" y="44" width="9" height="2.6" rx="1.3" fill="#241d18" />
+      <rect x="46" y="44" width="9" height="2.6" rx="1.3" fill="#1c1713" />
+      <rect x="65" y="44" width="9" height="2.6" rx="1.3" fill="#1c1713" />
       <circle class="eye" cx="51" cy="55.5" r="2.3" fill="#16181d" />
       <circle class="eye" cx="69" cy="55.5" r="2.3" fill="#16181d" />
       <circle cx="51" cy="55" r="7" fill="none" stroke="var(--color-gold)" stroke-width="2" />
       <circle cx="69" cy="55" r="7" fill="none" stroke="var(--color-gold)" stroke-width="2" />
       <path d="M58 55 L62 55 M44 54 L40 52 M76 54 L80 52" stroke="var(--color-gold)" stroke-width="2" stroke-linecap="round" />
-      <path d="M60 58 q1.8 4.5 -1 6.5" fill="none" stroke="#74492e" stroke-width="2" stroke-linecap="round" />
+      <path d="M60 58 q1.8 4.5 -1 6.5" fill="none" stroke="#b5824c" stroke-width="2" stroke-linecap="round" />
       <path d="M54 69 Q60 73 66 69" fill="none" stroke="#5d3a24" stroke-width="2" stroke-linecap="round" />
     </g>
   </svg>
 )}
 
-{who === 'marco' && (
+{who === 'hafiz' && (
   <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true" class="founder">
     <clipPath id="fa-clip-m"><circle cx="60" cy="60" r="56" /></clipPath>
     <circle cx="60" cy="60" r="56" fill="#ece8da" />

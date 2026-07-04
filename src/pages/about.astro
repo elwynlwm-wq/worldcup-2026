@@ -7,24 +7,24 @@ import FounderAvatar from '../components/FounderAvatar.astro';
 
 const DESK = [
   {
-    id: 'sonny',
-    name: 'Sonny Panenka',
+    id: 'weijun',
+    name: 'Tan Wei Jun',
     role: 'Editor',
     bio: 'Decides what gets covered and writes most of the pre-match calls. Has backed a doomed dark horse at every World Cup since 2006 and sees no reason to stop.',
     sig: 'Chipped the market on Japan when everyone else had Brazil in cruise control.',
     flaw: 'Dark horses. Always the dark horses.',
   },
   {
-    id: 'ada',
-    name: 'Ada Trivela',
+    id: 'aisyah',
+    name: 'Aisyah Rahim',
     role: 'The numbers',
     bio: 'Built the forecast model and keeps the data pipeline honest. Believes a spreadsheet can love football too, and that xG is a description, not an excuse.',
     sig: 'The 28% draw term — her favourite number on the whole site.',
     flaw: "Refuses to model penalty shootouts. \"Coin flips don't need a spreadsheet.\"",
   },
   {
-    id: 'marco',
-    name: 'Marco Rabona',
+    id: 'hafiz',
+    name: 'Hafiz Ismail',
     role: 'Teams & players',
     bio: 'Writes the team analytics and player deep dives. Watches the full 90 of games nobody else will, then tells you which full-back quietly won it.',
     sig: 'Flagged the quiet left-back three games before the pundits did.',
@@ -98,8 +98,8 @@ const jsonLd = [
       <div class="mt-2 space-y-3 text-[15px] leading-[1.65]" style="color:var(--color-ink-2)">
         <p>
           This started as a group chat argument. The first 48-team World Cup was coming, one of us had a
-          rating model, one of us had opinions about Morocco's midfield, and none of us could find a site
-          that showed an honest forecast for every fixture without trying to sell a betting slip on the way.
+          rating model, one of us had opinions about Morocco's midfield, and none of us — despite living seven
+          time zones from the stadiums — could find a site that showed an honest forecast for every fixture without trying to sell a betting slip on the way.
           So we built one.
         </p>
         <p>
@@ -119,8 +119,8 @@ const jsonLd = [
     <section class="mt-7 max-w-[680px]">
       <h2 class="font-display text-[22px] font-black tracking-[-0.5px]">The desk</h2>
       <p class="mt-1 text-[14px]" style="color:#6f6655">
-        We write under pen names — we're a small group of friends who'd rather the football did the talking.
-        The work is ours; the names are borrowed from the game.
+        We're a small crew of friends in Southeast Asia, which for this World Cup means alarms at 3am
+        and predictions filed before sunrise. We write under pen names — we'd rather the football did the talking.
       </p>
       <div class="mt-3 grid gap-3 sm:grid-cols-3">
         {DESK.map((p) => (
