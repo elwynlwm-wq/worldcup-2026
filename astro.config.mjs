@@ -9,18 +9,20 @@ import tailwindcss from '@tailwindcss/vite';
 // (@astrojs/cloudflare) and mark only those routes as server-rendered.
 // See docs/architecture.md and docs/stack.md.
 export default defineConfig({
-  // IMPORTANT: set this to the production domain before launch — sitemap,
-  // canonical URLs and OG tags all derive from it. See docs/seo.md.
-  // Currently the Cloudflare Pages preview URL; switch to the real domain
-  // once it's attached.
-  site: 'https://worldcup-2026-now.pages.dev',
+  // Production domain — sitemap, canonical URLs and OG tags all derive from it.
+  // Apex on Cloudflare (DNS moved to CF so the apex CNAME-flattens to Pages).
+  // See docs/seo.md.
+  site: 'https://worldcupanalyzer.io',
 
   output: 'static',
 
   integrations: [
     preact({ compat: true }),
     mdx(),
-    sitemap(),
+    // Keep utility pages out of the sitemap — /search is a tool, not content.
+    sitemap({
+      filter: (page) => !/\/search\/?$/.test(page),
+    }),
   ],
 
   vite: {

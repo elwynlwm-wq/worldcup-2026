@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 
-# Update the host to the production domain before launch (must match `site`
-# in astro.config.mjs). See docs/seo.md.
-Sitemap: https://example.com/sitemap-index.xml
+# Utility routes with no index value
+Disallow: /search
+
+Sitemap: https://worldcupanalyzer.io/sitemap-index.xml
