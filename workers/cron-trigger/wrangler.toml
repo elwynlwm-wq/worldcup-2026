@@ -2,10 +2,10 @@ name = "worldcup-2026-cron-trigger"
 main = "src/index.ts"
 compatibility_date = "2026-07-01"
 
-# Hourly at :17. CF cron is reliable; it dispatches the GitHub Actions workflow
-# that does the actual data refresh + deploy + D1 publish.
+# Every 30 min (:00 and :30). CF cron is reliable; it dispatches the GitHub
+# Actions workflow that does the actual data refresh + deploy + D1 publish.
 [triggers]
-crons = ["17 * * * *"]
+crons = ["*/30 * * * *"]
 
 [vars]
 GH_OWNER = "elwynlwm-wq"
