@@ -32,7 +32,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    "AFC",
    3,
    -1,
-   "contention"
+   "eliminated"
   ],
   [
    "Czechia",
@@ -41,7 +41,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    1,
    -4,
    "eliminated"
-  ]
+  ],
  ],
  "B": [
   [
@@ -75,7 +75,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    1,
    -8,
    "eliminated"
-  ]
+  ],
  ],
  "C": [
   [
@@ -100,7 +100,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    "UEFA",
    3,
    -3,
-   "contention"
+   "eliminated"
   ],
   [
    "Haiti",
@@ -109,7 +109,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    0,
    -6,
    "eliminated"
-  ]
+  ],
  ],
  "D": [
   [
@@ -134,7 +134,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    "CONMEBOL",
    4,
    -2,
-   "contention"
+   "best_third"
   ],
   [
    "Turkiye",
@@ -143,7 +143,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    3,
    -2,
    "eliminated"
-  ]
+  ],
  ],
  "E": [
   [
@@ -177,7 +177,7 @@ export const GROUPS: Record<string, GroupRow[]> = {
    1,
    -8,
    "eliminated"
-  ]
+  ],
  ],
  "F": [
   [
@@ -211,83 +211,83 @@ export const GROUPS: Record<string, GroupRow[]> = {
    0,
    -10,
    "eliminated"
-  ]
+  ],
  ],
  "G": [
+  [
+   "Belgium",
+   "BEL",
+   "UEFA",
+   5,
+   4,
+   "winner"
+  ],
   [
    "Egypt",
    "EGY",
    "CAF",
-   4,
+   5,
    2,
-   "contention"
+   "runner_up"
   ],
   [
    "Iran",
    "IRN",
    "AFC",
-   2,
+   3,
    0,
-   "contention"
-  ],
-  [
-   "Belgium",
-   "BEL",
-   "UEFA",
-   2,
-   0,
-   "contention"
+   "eliminated"
   ],
   [
    "New Zealand",
    "NZL",
    "OFC",
    1,
-   -2,
-   "contention"
-  ]
+   -6,
+   "eliminated"
+  ],
  ],
  "H": [
   [
    "Spain",
    "ESP",
    "UEFA",
-   4,
-   4,
-   "contention"
+   7,
+   5,
+   "winner"
+  ],
+  [
+   "Cape Verde",
+   "CPV",
+   "CAF",
+   3,
+   0,
+   "runner_up"
   ],
   [
    "Uruguay",
    "URU",
    "CONMEBOL",
    2,
-   0,
-   "contention"
-  ],
-  [
-   "Cape Verde",
-   "CPV",
-   "CAF",
-   2,
-   0,
-   "contention"
+   -1,
+   "eliminated"
   ],
   [
    "Saudi Arabia",
    "KSA",
    "AFC",
-   1,
+   2,
    -4,
-   "contention"
-  ]
+   "eliminated"
+  ],
  ],
  "I": [
   [
    "France",
    "FRA",
    "UEFA",
-   6,
-   5,
+   9,
+   8,
    "winner"
   ],
   [
@@ -295,66 +295,66 @@ export const GROUPS: Record<string, GroupRow[]> = {
    "NOR",
    "UEFA",
    6,
-   4,
+   1,
    "runner_up"
   ],
   [
    "Senegal",
    "SEN",
    "CAF",
-   0,
-   -3,
-   "eliminated"
+   3,
+   2,
+   "best_third"
   ],
   [
    "Iraq",
    "IRQ",
    "AFC",
    0,
-   -6,
+   -11,
    "eliminated"
-  ]
+  ],
  ],
  "J": [
   [
    "Argentina",
    "ARG",
    "CONMEBOL",
-   6,
-   5,
+   9,
+   7,
    "winner"
   ],
   [
    "Austria",
    "AUT",
    "UEFA",
-   3,
+   4,
    0,
-   "contention"
+   "runner_up"
   ],
   [
    "Algeria",
    "ALG",
    "CAF",
-   3,
+   4,
    -2,
-   "contention"
+   "best_third"
   ],
   [
    "Jordan",
    "JOR",
    "AFC",
    0,
-   -3,
+   -5,
    "eliminated"
-  ]
+  ],
  ],
  "K": [
   [
    "Colombia",
    "COL",
    "CONMEBOL",
-   6,
+   7,
    3,
    "winner"
   ],
@@ -362,65 +362,63 @@ export const GROUPS: Record<string, GroupRow[]> = {
    "Portugal",
    "POR",
    "UEFA",
-   4,
    5,
-   "contention"
+   5,
+   "runner_up"
   ],
   [
    "DR Congo",
    "COD",
    "CAF",
+   4,
    1,
-   -1,
-   "contention"
+   "best_third"
   ],
   [
    "Uzbekistan",
    "UZB",
    "AFC",
    0,
-   -7,
+   -9,
    "eliminated"
-  ]
+  ],
  ],
  "L": [
   [
    "England",
    "ENG",
    "UEFA",
+   7,
    4,
-   2,
-   "contention"
+   "winner"
+  ],
+  [
+   "Croatia",
+   "CRO",
+   "UEFA",
+   6,
+   0,
+   "runner_up"
   ],
   [
    "Ghana",
    "GHA",
    "CAF",
    4,
-   1,
-   "contention"
-  ],
-  [
-   "Croatia",
-   "CRO",
-   "UEFA",
-   3,
-   -1,
-   "contention"
+   0,
+   "best_third"
   ],
   [
    "Panama",
    "PAN",
    "CONCACAF",
    0,
-   -2,
+   -4,
    "eliminated"
-  ]
- ]
+  ],
+ ],
 };
 
-/** [home, away, date, venue, city] */
-export type R32Row = [string, string, string, string, string];
 export const REAL_R32: R32Row[] = [
  [
   "South Africa",

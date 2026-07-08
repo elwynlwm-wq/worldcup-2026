@@ -6,8 +6,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
 import Flag from '../../components/Flag.astro';
+import { getKnockoutStatus } from '../../lib/warehouse';
 
 const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
+const ko = getKnockoutStatus();
 const statusLabel: Record<string, string> = {
   winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (3rd)',
   contention: 'Still alive', eliminated: 'Eliminated',
@@ -33,7 +35,7 @@ const statusLabel: Record<string, string> = {
         <a href={`/teams/${t.id}/`} class="flex items-center gap-[13px] border-b px-4 py-[11px]" style="border-color:var(--color-line-2)">
           <span class="font-display w-[26px] text-center text-[16px] font-black" style="color:var(--color-ink-4)">{i + 1}</span>
           <Flag team={t.id} w={34} />
-          <span class="min-w-0 flex-1"><b class="text-[15px]">{t.name}</b><span class="ml-2 text-[12px]" style="color:var(--color-ink-3)">{statusLabel[t.status] ?? ''}</span></span>
+          <span class="min-w-0 flex-1"><b class="text-[15px]">{t.name}</b><span class="ml-2 text-[12px]" style="color:var(--color-ink-3)">{ko[t.id]?.label ?? statusLabel[t.status] ?? ''}</span></span>
           <span class="hidden flex-none sm:block" style="width:120px">
             <span class="block h-[8px] overflow-hidden rounded-[5px]" style="background:#f0e9db"><span class="block h-full rounded-[5px]" style={`width:${t.strength}%;background:linear-gradient(90deg,#1f3fbf,#f3b50a)`}></span></span>
           </span>

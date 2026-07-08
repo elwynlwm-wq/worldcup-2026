@@ -8,7 +8,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Avatar from '../../components/analysis/Avatar.astro';
 import { provider } from '../../lib/provider';
-import { getPlayerTiers, getAfFixtures } from '../../lib/warehouse';
+import { getPlayerTiers, getAfFixtures, getKnockoutStatus } from '../../lib/warehouse';
 import { teamColors } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
@@ -24,6 +24,7 @@ const { teamId } = Astro.props;
 const t = provider.getTeam(teamId)!;
 const squad = provider.getSquad(teamId);
 const { c1 } = teamColors(teamId);
+const ko = getKnockoutStatus()[teamId];
 
 const statusLabel: Record<string, string> = {
   winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (best 3rd)',
@@ -90,7 +91,7 @@ const jsonLd = {
       <div class="relative z-[2]">
         <div class="font-display text-[40px] font-black tracking-tight" style="text-shadow:0 2px 12px rgba(0,0,0,.35)">{t.name}</div>
         <div class="mt-1 text-sm font-bold" style="opacity:.95;text-shadow:0 1px 6px rgba(0,0,0,.4)">
-          Group {t.groupLetter} · {t.confederation} · {statusLabel[t.status] ?? t.status}
+          Group {t.groupLetter} · {t.confederation} · {ko?.label ?? statusLabel[t.status] ?? t.status}
         </div>
         <div class="mt-1.5 text-sm" style="opacity:.9;text-shadow:0 1px 6px rgba(0,0,0,.4)">Coach: {t.coachName ?? '—'}</div>
       </div>

@@ -263,3 +263,33 @@ const afLineups = afLineupsData as Record<string, Record<string, SsLineup & { co
 export function getActualLineups(fixtureId: number): Record<string, SsLineup & { coach?: string }> | null {
   return afLineups[String(fixtureId)] ?? null;
 }
+
+// Knockout progress per team, derived from the live AF fixtures (two-plane:
+// results come from the warehouse, not the frozen group snapshot). A team is
+// "alive" if it still has a not-yet-played fixture; otherwise it exited at the
+// furthest round it actually played.
+export interface KnockoutInfo { alive: boolean; stage: string; label: string; }
+const KO_ORDER: Record<string, number> = { group: 0, r32: 1, r16: 2, qf: 3, sf: 4, final: 5 };
+const KO_ALIVE: Record<string, string> = { qf: 'Quarter-finals', sf: 'Semi-finals', final: 'Final' };
+const KO_OUT: Record<string, string> = { group: 'Eliminated', r32: 'Out · round of 32', r16: 'Out · last 16', qf: 'Out · quarter-finals', sf: 'Out · semi-finals' };
+export function getKnockoutStatus(): Record<string, KnockoutInfo> {
+  const by: Record<string, { played: Set<string>; upcoming: Set<string> }> = {};
+  for (const m of afFixtures) {
+    const ended = FINISHED_STATUSES.has(m.status);
+    for (const id of [m.homeTeamId, m.awayTeamId]) {
+      const b = (by[id] ??= { played: new Set<string>(), upcoming: new Set<string>() });
+      (ended ? b.played : b.upcoming).add(m.stage);
+    }
+  }
+  const out: Record<string, KnockoutInfo> = {};
+  for (const [id, b] of Object.entries(by)) {
+    const next = [...b.upcoming].sort((a, c) => KO_ORDER[a] - KO_ORDER[c]);
+    if (next.length) {
+      out[id] = { alive: true, stage: next[0], label: KO_ALIVE[next[0]] ?? 'Still alive' };
+    } else {
+      const exit = [...b.played].sort((a, c) => KO_ORDER[c] - KO_ORDER[a])[0] ?? 'group';
+      out[id] = { alive: false, stage: exit, label: KO_OUT[exit] ?? 'Eliminated' };
+    }
+  }
+  return out;
+}

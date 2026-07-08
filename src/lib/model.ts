@@ -281,7 +281,7 @@ export function buildDb(): Db {
       hosts: ['United States', 'Canada', 'Mexico'],
       startDate: '2026-06-11',
       endDate: '2026-07-19',
-      currentStage: 'r32',
+      currentStage: 'qf',
       numTeams: 48,
       format: { numGroups: 12, teamsPerGroup: 4, qualifyPerGroup: 2, bestThirdPlaceQualifiers: 8 },
     },
