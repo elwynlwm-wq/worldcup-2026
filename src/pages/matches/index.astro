@@ -7,11 +7,13 @@ import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
 import { loadWarehouse } from '../../lib/warehouse.d1';
 import Flag from '../../components/Flag.astro';
+import WatchLiveChip from '../../components/WatchLiveChip.astro';
 
 // SSR: fixtures/results read live from D1 (edge-cached). See routeRules in astro.config.
 export const prerender = false;
 
 const wh = await loadWarehouse();
+const { showStreamPromo } = Astro.locals; // A/B: Sportify "Watch on Sportify" chip on upcoming cards
 const getTeam = (id: string) => provider.getTeam(id)!;
 const upcoming = wh.getUpcomingFixtures(12).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
 const recent = wh.getRecentResults(20).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
@@ -51,10 +53,13 @@ const nextStage = upcoming[0] ? stageLabel[upcoming[0].stage] : 'Knockouts';
             const h = getTeam(m.homeTeamId), a = getTeam(m.awayTeamId);
             const f = fc(h.id, a.id);
             return (
+              <div class="relative">
+                {/* Chip outside the card <a> — no nested anchors. A/B variant B only. */}
+                {showStreamPromo && <WatchLiveChip phase="upcoming" class="absolute right-[13px] top-[13px] z-[1]" />}
               <a href={`/matches/${matchSlug(m)}`} class="kb-card-hover block rounded-[16px] border p-[17px]" style="background:var(--color-surface);border-color:var(--color-line-2)">
                 <div class="flex items-center justify-between">
                   <span class="text-[11px] font-bold uppercase tracking-[.6px]" style="color:var(--color-ink-3)">{dateLabel(m.date)} · {stageLabel[m.stage]}</span>
-                  <span class="text-[11px]" style="color:var(--color-ink-4)">{m.venue ?? ''}</span>
+                  <span class="text-[11px] pr-[76px]" style="color:var(--color-ink-4)">{m.venue ?? ''}</span>
                 </div>
                 <div class="mb-1 mt-[13px] flex items-center gap-[9px]"><Flag team={h.id} w={34} /><b class="text-[16px]">{h.name}</b></div>
                 <div class="flex items-center gap-[9px]"><Flag team={a.id} w={34} /><b class="text-[16px]">{a.name}</b></div>
@@ -63,6 +68,7 @@ const nextStage = upcoming[0] ? stageLabel[upcoming[0].stage] : 'Knockouts';
                 </div>
                 <div class="mt-2 text-[13px] font-bold" style="color:var(--color-ink-2)">{f.line} · tap to vote</div>
               </a>
+              </div>
             );
           })}
         </div>

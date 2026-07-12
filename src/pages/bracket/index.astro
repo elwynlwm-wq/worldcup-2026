@@ -6,11 +6,13 @@ import { provider } from '../../lib/provider';
 import { loadWarehouse } from '../../lib/warehouse.d1';
 import standingsData from '../../../data-pipeline/warehouse/export/standings.json';
 import Flag from '../../components/Flag.astro';
+import WatchLiveChip from '../../components/WatchLiveChip.astro';
 
 // SSR: reads live fixtures/data from D1 (edge-cached).
 export const prerender = false;
 
 const wh = await loadWarehouse();
+const { showStreamPromo } = Astro.locals; // A/B: Sportify "Watch" chip on live/upcoming ties
 const getTeam = (id: string) => provider.getTeam(id);
 const fixtures = wh.getAfFixtures();
 
@@ -76,9 +78,14 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
                   );
                 }
                 const h = getTeam(m.homeTeamId)!, a = getTeam(m.awayTeamId)!;
-                const isLive = wh.lifecycle(m.status) === 'live';
+                const phase = wh.lifecycle(m.status);
+                const isLive = phase === 'live';
+                // A/B variant B: Sportify chip on live + upcoming ties (never on ended).
+                const showChip = showStreamPromo && phase !== 'ended';
                 return (
-                  <div class="kb-tie">
+                  <div class="kb-tie relative">
+                    {/* Chip sits OUTSIDE the card <a> (no nested anchors) — absolute, top-right. */}
+                    {showChip && <WatchLiveChip phase={phase === 'live' ? 'live' : 'upcoming'} class="absolute right-[9px] top-[8px] z-[1]" />}
                     <a href={matchHref(m)} class="kb-tie-card kb-card-hover rounded-[11px] border px-[11px] py-[9px]" style={`background:var(--color-surface);border-color:${isLive ? 'var(--color-clay)' : '#e9e1d2'}`}>
                       {isLive ? (
                         <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-clay)">● {wh.liveLabel(m.status, m.elapsed)}</div>

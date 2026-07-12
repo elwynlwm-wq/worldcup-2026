@@ -14,6 +14,7 @@ import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
 import { loadWarehouse } from '../../lib/warehouse.d1';
 import Flag from '../../components/Flag.astro';
+import WatchLiveChip from '../../components/WatchLiveChip.astro';
 import { storyForMatch, KIND_META } from '../../lib/stories';
 import PlayerModal from '../../components/PlayerModal.astro';
 import CommunityCTA from '../../components/CommunityCTA.astro';
@@ -40,6 +41,9 @@ const a = provider.getTeam(m.awayTeamId)!;
 const phase = wh.lifecycle(m.status);
 const ended = phase === 'ended';
 const live = phase === 'live';
+// A/B: Sportify "Watch" chip in the header for live + upcoming (not ended).
+const { showStreamPromo } = Astro.locals;
+const showChip = showStreamPromo && !ended;
 
 const pr = predict(h, a);
 const pct = (x: number) => Math.round(x * 100);
@@ -229,6 +233,7 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
         )}
         {live && <div class="font-display mt-0.5 text-[10px] font-extrabold uppercase tracking-wide" style="color:var(--color-clay)">● Live{m.elapsed ? ` · ${m.elapsed}'` : ''}</div>}
         {ended && <div class="font-display mt-0.5 text-[10px] font-extrabold uppercase tracking-wide" style="color:var(--color-ink-4)">Full time</div>}
+        {showChip && <div class="mt-2 flex justify-center"><WatchLiveChip phase={live ? 'live' : 'upcoming'} size="md" /></div>}
       </div>
       <a href={`/teams/${a.id}/`} class="group flex min-w-0 flex-1 items-center justify-end gap-2.5">
         <b class="font-display text-right text-[17px] tracking-tight group-hover:underline">{a.name}</b>

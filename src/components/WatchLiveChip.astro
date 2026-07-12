@@ -1,0 +1,32 @@
+---
+// "Watch live" promo chip → Sportify. Rendered ONLY for A/B variant B (the caller
+// gates on Astro.locals.showStreamPromo). Sportify handles licensed-territory
+// routing on their side, so we always link out; restricted users are bounced to
+// the community/chat by sportifylive.io itself.
+//
+// Usage (caller decides visibility):
+//   {showStreamPromo && phase !== 'ended' && <WatchLiveChip phase={phase} />}
+//
+// phase: 'live' → "▶ Watch live" (watch THIS match now)
+//        'upcoming' → "▶ Watch on Sportify" (soft CTA for a game not yet on)
+interface Props {
+  phase: 'live' | 'upcoming';
+  size?: 'sm' | 'md';
+  class?: string;
+}
+const { phase, size = 'sm', class: cls = '' } = Astro.props;
+const HREF = 'https://sportifylive.io/';
+const label = phase === 'live' ? 'Watch live' : 'Watch on Sportify';
+const pad = size === 'md' ? 'px-[10px] py-[5px] text-[11px]' : 'px-[8px] py-[3px] text-[10px]';
+---
+<a
+  href={HREF}
+  target="_blank"
+  rel="noopener sponsored"
+  data-stream-cta={phase}
+  class={`inline-flex flex-none items-center gap-[5px] rounded-full font-display font-extrabold uppercase tracking-[.4px] transition-transform hover:-translate-y-[1px] ${pad} ${cls}`}
+  style="background:var(--color-clay);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)"
+  aria-label={`${label} on Sportify (opens in a new tab)`}
+>
+  <span aria-hidden="true">▶</span>{label}
+</a>
