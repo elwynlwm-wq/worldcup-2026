@@ -44,9 +44,25 @@ function main() {
   // references during CREATE/INSERT never hit a missing table.
   for (const t of tables) out.push(`DROP TABLE IF EXISTS "${t.name}";`);
 
+  // CREATE every table BEFORE any INSERT, with inline FK clauses stripped.
+  // `wrangler d1 execute --local` splits the file into batches; PRAGMA
+  // foreign_keys=OFF only sticks for the first batch's connection, so later
+  // batches re-enable FK enforcement and the alphabetical INSERT order trips
+  // constraints (a child row inserted before its parent). The warehouse is
+  // already integrity-valid (it came from a consistent DB), so FK *enforcement*
+  // at seed time buys nothing — we drop the REFERENCES/FOREIGN KEY clauses from
+  // the dumped DDL only (the source schema.sql keeps them). Remote D1 ignores
+  // FK pragmas anyway, so this is purely a load-robustness change.
+  const stripFks = (sql: string) =>
+    sql
+      // inline column-level:  `col TEXT REFERENCES other(id)`  →  `col TEXT`
+      .replace(/\s+REFERENCES\s+"?\w+"?\s*\([^)]*\)/gi, '')
+      // table-level:  `, FOREIGN KEY (col) REFERENCES other(id)`
+      .replace(/,\s*FOREIGN KEY\s*\([^)]*\)\s*REFERENCES\s+"?\w+"?\s*\([^)]*\)/gi, '');
+  for (const t of tables) out.push(`${stripFks(t.sql)};`);
+
   let totalRows = 0;
   for (const t of tables) {
-    out.push(`${t.sql};`);
     const cols = (db.prepare(`PRAGMA table_info("${t.name}")`).all() as { name: string }[]).map((c) => c.name);
     const colList = cols.map((c) => `"${c}"`).join(',');
     const rows = db.prepare(`SELECT ${colList} FROM "${t.name}"`).all() as Record<string, unknown>[];

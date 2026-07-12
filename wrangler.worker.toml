@@ -1,0 +1,24 @@
+# Cloudflare Workers config for the SSR site (@astrojs/cloudflare).
+#
+# Separate from the root wrangler.toml (which stays Pages-shaped for the existing
+# pipeline: publish:d1 + `pages deploy`). During the Pages→Workers migration this
+# deploys as a SEPARATE worker (`worldcup-2026-site`) so it can be tested on
+# *.workers.dev before worldcupanalyzer.io is cut over from the old Pages project.
+#
+# Deploy:  npx wrangler deploy -c wrangler.worker.toml   (after `npm run build`)
+# Dev:     npm run dev   (adapter's platformProxy reads this file for bindings)
+name = "worldcup-2026-site"
+compatibility_date = "2026-07-01"
+compatibility_flags = ["nodejs_compat"]
+
+# NOTE: no `main`/`assets` here — the Astro Cloudflare adapter generates the
+# worker entry (dist/_worker.js) and wires assets itself at build time. This
+# file supplies bindings only (D1), which the adapter's vite plugin reads for
+# dev (platformProxy) and merges into the deploy output.
+
+# D1 — the live warehouse the SSR read path queries (src/lib/warehouse.d1.ts).
+# Same database the pipeline publishes to (bound as WAREHOUSE over there).
+[[d1_databases]]
+binding = "DB"
+database_name = "worldcup-site"
+database_id = "fa7b603e-53e3-450f-adc4-a1e3133adaaa"

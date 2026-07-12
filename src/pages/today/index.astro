@@ -7,14 +7,18 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
-import { getUpcomingFixtures } from '../../lib/warehouse';
+import { getUpcomingFixtures } from '../../lib/warehouse.d1';
 import { teamGrad, teamColors } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
 
+// SSR: this page reads live fixtures from D1 on Cloudflare Workers at request
+// time (edge-cached — see Astro.cache below), instead of build-time JSON.
+export const prerender = false;
+
 const getTeam = (id: string) => provider.getTeam(id)!;
 
-const upcoming = getUpcomingFixtures(6).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
+const upcoming = (await getUpcomingFixtures(6)).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
 const top = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
 const contenders = top.slice(0, 6);
 const todayMatch = upcoming[0] ?? null;

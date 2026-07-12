@@ -5,16 +5,20 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
-import { getPlayerTiers } from '../../lib/warehouse';
+import { loadWarehouse } from '../../lib/warehouse.d1';
 import Avatar from '../../components/analysis/Avatar.astro';
 import Flag from '../../components/Flag.astro';
 import PlayerModal from '../../components/PlayerModal.astro';
 import { playerTriggerAttrs } from '../../lib/playerModal';
 
+// SSR: reads live fixtures/data from D1 (edge-cached).
+export const prerender = false;
+
+const wh = await loadWarehouse();
 const teams = provider.getTeams();
 const teamById = new Map(teams.map((t) => [t.id, t]));
 const all = provider.getAllPlayers()
-  .map((p) => ({ ...p, photo: getPlayerTiers(p.id)?.photo ?? null }))
+  .map((p) => ({ ...p, photo: wh.getPlayerTiers(p.id)?.photo ?? null }))
   .sort((a, b) => b.goals - a.goals);
 // Cap the listing for weight; the full set is reachable via team pages.
 const players = all.slice(0, 120);

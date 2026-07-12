@@ -8,15 +8,19 @@ import PredictBoard from '../components/PredictBoard.tsx';
 import type { Tie } from '../components/PredictBoard.tsx';
 import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
-import { getUpcomingFixtures, getOddsPair } from '../lib/warehouse';
+import { loadWarehouse } from '../lib/warehouse.d1';
 import { MARKET_OUTRIGHT, MARKET_ASOF } from '../data/market';
 
+// SSR: reads live fixtures/data from D1 (edge-cached).
+export const prerender = false;
+
+const wh = await loadWarehouse();
 const getTeam = (id: string) => provider.getTeam(id);
 const stageLabel: Record<string, string> = { group: 'Group', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: '3rd place' };
 const dateLabel = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '');
 
 function marketPct(hId: string, aId: string) {
-  const op = getOddsPair(hId, aId);
+  const op = wh.getOddsPair(hId, aId);
   if (!op || !op.books?.length) return null;
   let H = 0, D = 0, A = 0;
   for (const b of op.books) { const ih = 1 / b.home, id = 1 / b.draw, ia = 1 / b.away; const s = ih + id + ia; H += ih / s; D += id / s; A += ia / s; }
@@ -25,7 +29,7 @@ function marketPct(hId: string, aId: string) {
   return { h: Math.round(h * 100), d: Math.round(d * 100), a: Math.round(a * 100) };
 }
 
-const fixtures = getUpcomingFixtures(10).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
+const fixtures = wh.getUpcomingFixtures(10).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
 const ties: Tie[] = fixtures.map((m) => {
   const h = getTeam(m.homeTeamId)!, a = getTeam(m.awayTeamId)!;
   const pr = predict(h, a);

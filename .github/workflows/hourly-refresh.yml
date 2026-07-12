@@ -1,21 +1,24 @@
 name: Hourly data refresh
 
-# Runs every hour: pulls fresh fixtures/results/odds from API-Football (+ SofaScore),
-# rebuilds the warehouse, re-exports the site JSON, commits it, deploys the site,
-# and publishes the full warehouse to Cloudflare D1 for the writer agents.
+# SSR architecture: the site reads Cloudflare D1 at request time, so a data
+# refresh only needs to (1) pull durable state back from D1, (2) rebuild the
+# warehouse from the APIs, and (3) publish it to D1. It does NOT commit JSON,
+# rebuild the site, or deploy — SSR pages pick up new data automatically (the
+# edge cache revalidates within its stale-while-revalidate window). Site deploys
+# happen on code/article changes via deploy-site.yml, not on hourly data.
 on:
   # Triggered EXTERNALLY by the Cloudflare Cron Worker (workers/cron-trigger) —
   # GitHub's own scheduled/cron trigger has been unreliable, so CF's reliable
-  # cron dispatches this hourly instead. Also runnable manually from the Actions tab.
+  # cron dispatches this every 30 min. Also runnable manually from the Actions tab.
   workflow_dispatch: {}
   # (No `schedule:` block on purpose — see workers/cron-trigger.)
 
 concurrency:
   group: hourly-refresh
-  cancel-in-progress: false # never interrupt a publish mid-flight
+  cancel-in-progress: false # never interrupt a D1 publish mid-flight
 
-permissions:
-  contents: write # to commit the refreshed JSON exports
+# No `contents: write` — we no longer commit anything. Durable state (KO−1h
+# freeze snapshots + odds history) now lives in D1, pulled back each run.
 
 jobs:
   refresh:
@@ -35,18 +38,14 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install site deps
-        run: npm ci
-
       - name: Install pipeline deps
         working-directory: data-pipeline
         run: npm ci
 
-      # The pipeline's fetchers cache raw responses under data-pipeline/sources/.
-      # REFRESH=1 re-fetches only the live fixtures list + standings; per-fixture
-      # detail is cached by id, so warm runs fetch only newly-finished matches.
-      # Restore + save are split so the cache persists even if a run fails
-      # partway (the cold start fetches ~all finished fixtures and can 429).
+      # Raw API responses are cached by fixture id under data-pipeline/sources/ so
+      # warm runs fetch only newly-changed fixtures. Split restore/save so a partial
+      # cold run (which can 429) still persists what it fetched. This is a pure
+      # speed cache — losing it just makes one run slower, never loses data.
       - name: Restore fetch cache
         id: fetch-cache
         uses: actions/cache/restore@v4
@@ -55,15 +54,21 @@ jobs:
           key: af-sources-v1
           restore-keys: af-sources-
 
+      # Pull durable state (KO−1h freeze snapshots + odds-movement history) BACK
+      # from remote D1 into the local JSON stores, so the build accumulates onto
+      # the prior state instead of starting empty. D1 is the persistent home now;
+      # this makes the round-trip (pull → merge new captures → publish) closed.
+      # Must run BEFORE build:warehouse. Safe on first run (falls back to empty).
+      - name: Pull durable state from D1
+        working-directory: data-pipeline
+        run: npm run pull:durable
+
       - name: Refresh warehouse (fetch → build → export)
         working-directory: data-pipeline
         run: |
           npm run build:warehouse
           npm run export
 
-      # Save the (now warmer) fetch cache — always(), so even a partial cold run
-      # persists what it managed to fetch and the next run resumes warmer. Rolling
-      # key so each run overwrites the newest snapshot.
       - name: Save fetch cache
         if: always()
         uses: actions/cache/save@v4
@@ -71,24 +76,10 @@ jobs:
           path: data-pipeline/sources
           key: af-sources-v1-${{ github.run_id }}
 
+      # The single output that makes the live site fresh: publish the full
+      # warehouse to D1 (full replace, incl. the merged durable state). SSR pages
+      # read this on the next request within the cache's SWR window. No commit,
+      # no rebuild, no deploy.
       - name: Publish warehouse to Cloudflare D1
         working-directory: data-pipeline
         run: npm run publish:d1
-
-      - name: Commit refreshed JSON exports
-        run: |
-          git config user.name  "kickabout-bot"
-          git config user.email "bot@kickabout.local"
-          git add data-pipeline/warehouse/export data-pipeline/warehouse/vote-snapshots.json data-pipeline/warehouse/odds-snapshots.json data-pipeline/warehouse/odds-history.json
-          if git diff --cached --quiet; then
-            echo "No data changes this run."
-          else
-            git commit -m "chore(data): hourly refresh $(date -u +'%Y-%m-%dT%H:%MZ')"
-            git push
-          fi
-
-      - name: Build site
-        run: npm run build
-
-      - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy ./dist --project-name=worldcup-2026-now --branch=main --commit-dirty=true

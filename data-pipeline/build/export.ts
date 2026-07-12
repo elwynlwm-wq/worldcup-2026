@@ -233,6 +233,43 @@ function main() {
   }
   writeFileSync(ODDS_SNAPSHOT_PATH, JSON.stringify(oddsSnapshots, null, 0));
 
+  // ---- Persist the freeze captures into warehouse.db so publish-d1 ships them
+  // to D1 (their durable home now that we no longer git-commit the JSON stores).
+  // export.ts's own `db` handle is READONLY (line 26), so we open a SECOND,
+  // writable connection just for these two tables. Full replace each run: clear
+  // then re-insert the whole (accumulated) snapshot set. pull-durable.ts reads
+  // these back from remote D1 at the next run's start, so they accumulate.
+  {
+    const wdb = new Database(DB_PATH);
+    const insVote = wdb.prepare(
+      `INSERT INTO vote_snapshot (pair_key,home_id,away_id,vote_home,vote_draw,vote_away,frozen_at)
+       VALUES (@pair_key,@home_id,@away_id,@vote_home,@vote_draw,@vote_away,@frozen_at)`,
+    );
+    const insOddsSnap = wdb.prepare(
+      `INSERT INTO odds_snapshot (pair_key,home_id,away_id,bookmaker,home_odd,draw_odd,away_odd,frozen_at)
+       VALUES (@pair_key,@home_id,@away_id,@bookmaker,@home_odd,@draw_odd,@away_odd,@frozen_at)`,
+    );
+    wdb.transaction(() => {
+      wdb.prepare(`DELETE FROM vote_snapshot`).run();
+      wdb.prepare(`DELETE FROM odds_snapshot`).run();
+      for (const [key, s] of Object.entries(snapshots)) {
+        insVote.run({
+          pair_key: key, home_id: s.homeId, away_id: s.awayId,
+          vote_home: s.home, vote_draw: s.draw, vote_away: s.away, frozen_at: s.frozenAt,
+        });
+      }
+      for (const [key, s] of Object.entries(oddsSnapshots)) {
+        for (const b of s.books) {
+          insOddsSnap.run({
+            pair_key: key, home_id: s.homeId, away_id: s.awayId, bookmaker: b.bookmaker,
+            home_odd: b.home, draw_odd: b.draw, away_odd: b.away, frozen_at: s.frozenAt,
+          });
+        }
+      }
+    })();
+    wdb.close();
+  }
+
   // odds-by-pair.json — frozen snapshot preferred, else live. Sorted by home
   // price (favourites' books first is irrelevant; site sorts/highlights).
   const oddsByPair: Record<string, any> = {};

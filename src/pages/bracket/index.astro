@@ -3,12 +3,16 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
-import { getAfFixtures, lifecycle, liveLabel } from '../../lib/warehouse';
+import { loadWarehouse } from '../../lib/warehouse.d1';
 import standingsData from '../../../data-pipeline/warehouse/export/standings.json';
 import Flag from '../../components/Flag.astro';
 
+// SSR: reads live fixtures/data from D1 (edge-cached).
+export const prerender = false;
+
+const wh = await loadWarehouse();
 const getTeam = (id: string) => provider.getTeam(id);
-const fixtures = getAfFixtures();
+const fixtures = wh.getAfFixtures();
 
 // The knockout tree: fixed slot count per round (16→8→4→2→1). Each round renders
 // ALL its slots — a confirmed tie or a TBD placeholder — so the tree stays whole
@@ -72,12 +76,12 @@ const groupNames = Object.keys(standings).filter((g) => /^Group [A-L]$/.test(g))
                   );
                 }
                 const h = getTeam(m.homeTeamId)!, a = getTeam(m.awayTeamId)!;
-                const isLive = lifecycle(m.status) === 'live';
+                const isLive = wh.lifecycle(m.status) === 'live';
                 return (
                   <div class="kb-tie">
                     <a href={matchHref(m)} class="kb-tie-card kb-card-hover rounded-[11px] border px-[11px] py-[9px]" style={`background:var(--color-surface);border-color:${isLive ? 'var(--color-clay)' : '#e9e1d2'}`}>
                       {isLive ? (
-                        <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-clay)">● {liveLabel(m.status, m.elapsed)}</div>
+                        <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-clay)">● {wh.liveLabel(m.status, m.elapsed)}</div>
                       ) : (
                         <div class="mb-1.5 h-[11px] text-[9px] font-extrabold uppercase tracking-[.4px]" style="color:var(--color-ink-4)">{dateLabel(m.date)}</div>
                       )}
