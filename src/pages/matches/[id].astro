@@ -12,30 +12,32 @@ import ShowdownPanel from '../../components/ShowdownPanel.astro';
 import MatchPitch from '../../components/MatchPitch.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
-import { getAfFixtures, getSsPair, getH2H, getMatchDetail, getOddsPair, getActualLineups, lifecycle, FINISHED_STATUSES } from '../../lib/warehouse';
+import { loadWarehouse } from '../../lib/warehouse.d1';
 import Flag from '../../components/Flag.astro';
 import { storyForMatch, KIND_META } from '../../lib/stories';
 import PlayerModal from '../../components/PlayerModal.astro';
 import CommunityCTA from '../../components/CommunityCTA.astro';
 import { getCollection } from 'astro:content';
 
-// Status taxonomy is shared with the bracket via warehouse.ts (single source).
-const FINISHED = FINISHED_STATUSES;
+// SSR: one live page per fixture, resolved from the URL slug at request time and
+// read from D1 (edge-cached). Replaces the build-time getStaticPaths enumeration.
+export const prerender = false;
 
-export function getStaticPaths() {
-  // One page per AF fixture with both teams mapped — every game, any status.
-  return getAfFixtures()
-    .filter((m) => provider.getTeam(m.homeTeamId) && provider.getTeam(m.awayTeamId))
-    .map((m) => ({
-      params: { id: `${m.homeTeamId}-vs-${m.awayTeamId}-${m.stage}` },
-      props: { m },
-    }));
-}
+const wh = await loadWarehouse();
+// Status taxonomy is shared with the bracket via warehouse.d1 (single source).
+const FINISHED = wh.FINISHED_STATUSES;
 
-const { m } = Astro.props;
+// Resolve the fixture from the /<home>-vs-<away>-<stage> slug. 404 if unknown.
+const slug = Astro.params.id!;
+const m = wh.getAfFixtures().find(
+  (f) => `${f.homeTeamId}-vs-${f.awayTeamId}-${f.stage}` === slug
+    && provider.getTeam(f.homeTeamId) && provider.getTeam(f.awayTeamId),
+);
+if (!m) return Astro.rewrite('/404');
+
 const h = provider.getTeam(m.homeTeamId)!;
 const a = provider.getTeam(m.awayTeamId)!;
-const phase = lifecycle(m.status);
+const phase = wh.lifecycle(m.status);
 const ended = phase === 'ended';
 const live = phase === 'live';
 
@@ -43,23 +45,23 @@ const pr = predict(h, a);
 const pct = (x: number) => Math.round(x * 100);
 
 // SofaScore predicted signals (votes + lineups), oriented to home/away.
-const ss = getSsPair(h.id, a.id);
+const ss = wh.getSsPair(h.id, a.id);
 let fans: { home: number; away: number } | null = null;
 if (ss?.votes) {
   fans = ss.votes.homeId === h.id ? { home: ss.votes.home, away: ss.votes.away } : { home: ss.votes.away, away: ss.votes.home };
 }
 // Lineups: finished matches show the ACTUAL XIs that played (AF), upcoming/live
 // show the SofaScore predicted XI. Fall back to predicted if no actual exists.
-const actual = ended ? getActualLineups(m.id) : null;
+const actual = ended ? wh.getActualLineups(m.id) : null;
 const luHome = actual?.[h.id] ?? ss?.lineups?.[h.id] ?? null;
 const luAway = actual?.[a.id] ?? ss?.lineups?.[a.id] ?? null;
 const lineupsAreActual = !!(actual?.[h.id]?.starters?.length && actual?.[a.id]?.starters?.length);
 const hasLineups = !!(luHome?.starters?.length && luAway?.starters?.length);
 
-const h2h = getH2H(h.id, a.id);
+const h2h = wh.getH2H(h.id, a.id);
 
 // ended-match detail: real goals + stats
-const md = ended ? getMatchDetail(m.id) : null;
+const md = ended ? wh.getMatchDetail(m.id) : null;
 const goals = (md?.goals ?? []).slice().sort((x, y) => x.minute - y.minute);
 const homeGoals = goals.filter((g) => g.teamId === h.id);
 const awayGoals = goals.filter((g) => g.teamId === a.id);
@@ -82,7 +84,7 @@ const statRows = STAT_DISPLAY.map(([key, label]) => {
 
 // Derived Last-5 form per team from finished AF fixtures (real data only).
 function lastFive(teamId: string): ('W' | 'D' | 'L')[] {
-  return getAfFixtures()
+  return wh.getAfFixtures()
     .filter((f) => FINISHED.has(f.status) && (f.homeTeamId === teamId || f.awayTeamId === teamId))
     .filter((f) => f.homeScore != null && f.awayScore != null)
     .sort((x, y) => (x.date < y.date ? 1 : -1))
@@ -99,7 +101,7 @@ const formAway = lastFive(a.id);
 
 // Season aggregates per team from ALL finished AF fixtures (real data only).
 function seasonAgg(teamId: string) {
-  const games = getAfFixtures()
+  const games = wh.getAfFixtures()
     .filter((f) => FINISHED.has(f.status) && (f.homeTeamId === teamId || f.awayTeamId === teamId))
     .filter((f) => f.homeScore != null && f.awayScore != null);
   const n = games.length;
@@ -161,7 +163,7 @@ const bookRank = (name: string) => {
   const i = PREFERRED_BOOKS.indexOf(name);
   return i === -1 ? Number.MAX_SAFE_INTEGER : i;
 };
-const oddsPair = getOddsPair(h.id, a.id);
+const oddsPair = wh.getOddsPair(h.id, a.id);
 type OddsBookRow = { bookmaker: string; h: number; d: number; a: number };
 const oddsBooks: OddsBookRow[] = (() => {
   if (!oddsPair) return [];
@@ -260,7 +262,7 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
           <span class="h-1.5 w-1.5 rounded-full" style="background:var(--color-ink-4)"></span>Before kick-off
         </div>
       )}
-      <ShowdownPanel home={h} away={a} fans={fans} mode="prediction" frozen={ended || live} />
+      <ShowdownPanel home={h} away={a} wh={wh} fans={fans} mode="prediction" frozen={ended || live} />
 
       {/* Bookmaker odds — real 1X2 prices as market context for the forecast (no
           "best price" flagging; we're not a betting tipster). Only shown when the
@@ -400,7 +402,7 @@ const pillBg = (r: string) => (r === 'W' ? '#138a5e' : r === 'L' ? '#b23b2e' : '
 
     {/* ============ INSIGHTS ============ */}
     <section data-mpanel="insights" style="display:none">
-      <ShowdownPanel home={h} away={a} fans={fans} mode="insights" frozen={ended || live} />
+      <ShowdownPanel home={h} away={a} wh={wh} fans={fans} mode="insights" frozen={ended || live} />
     </section>
 
     {/* more reads — related articles other than the one already in the banner */}

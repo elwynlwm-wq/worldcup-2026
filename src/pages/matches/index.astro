@@ -5,12 +5,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
 import { predict } from '../../lib/model';
-import { getUpcomingFixtures, getRecentResults } from '../../lib/warehouse';
+import { loadWarehouse } from '../../lib/warehouse.d1';
 import Flag from '../../components/Flag.astro';
 
+// SSR: fixtures/results read live from D1 (edge-cached). See routeRules in astro.config.
+export const prerender = false;
+
+const wh = await loadWarehouse();
 const getTeam = (id: string) => provider.getTeam(id)!;
-const upcoming = getUpcomingFixtures(12).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
-const recent = getRecentResults(20).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
+const upcoming = wh.getUpcomingFixtures(12).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
+const recent = wh.getRecentResults(20).filter((m) => getTeam(m.homeTeamId) && getTeam(m.awayTeamId));
 
 const dateLabel = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '');
 const stageLabel: Record<string, string> = { group: 'Group', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: '3rd place' };

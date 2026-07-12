@@ -8,7 +8,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Avatar from '../../components/analysis/Avatar.astro';
 import { provider } from '../../lib/provider';
-import { getPlayerTiers, getAfFixtures, getKnockoutStatus } from '../../lib/warehouse';
+import { loadWarehouse } from '../../lib/warehouse.d1';
 import { teamColors } from '../../data/teamColors';
 import Flag from '../../components/Flag.astro';
 import { getCollection } from 'astro:content';
@@ -16,15 +16,16 @@ import { storyMeta, KIND_META } from '../../lib/stories';
 import PlayerModal from '../../components/PlayerModal.astro';
 import { playerTriggerAttrs } from '../../lib/playerModal';
 
-export function getStaticPaths() {
-  return provider.getTeams().map((t) => ({ params: { id: t.id }, props: { teamId: t.id } }));
-}
+// SSR: reads live fixtures/data from D1 (edge-cached).
+export const prerender = false;
 
-const { teamId } = Astro.props;
-const t = provider.getTeam(teamId)!;
+const teamId = Astro.params.id!;
+const t = provider.getTeam(teamId);
+if (!t) return Astro.rewrite('/404');
+const wh = await loadWarehouse();
 const squad = provider.getSquad(teamId);
 const { c1 } = teamColors(teamId);
-const ko = getKnockoutStatus()[teamId];
+const ko = wh.getKnockoutStatus()[teamId];
 
 const statusLabel: Record<string, string> = {
   winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (best 3rd)',
@@ -38,12 +39,12 @@ const kpis = [
   { value: t.points + ' pts', label: 'Group form' },
 ];
 
-const tiersById = new Map(squad.map((p) => [p.id, getPlayerTiers(p.id)]));
+const tiersById = new Map(squad.map((p) => [p.id, wh.getPlayerTiers(p.id)]));
 const stars = squad.slice().sort((a, b) => b.goals - a.goals).slice(0, 3);
 
 // All of this team's matches (played + upcoming), chronological. Played → match
 // One unified match page per fixture — same URL whether upcoming or played.
-const matches = getAfFixtures()
+const matches = wh.getAfFixtures()
   .filter((m) => m.homeTeamId === teamId || m.awayTeamId === teamId)
   .filter((m) => provider.getTeam(m.homeTeamId) && provider.getTeam(m.awayTeamId))
   .sort((x, y) => (x.date < y.date ? -1 : 1));

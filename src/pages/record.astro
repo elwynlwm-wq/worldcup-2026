@@ -7,7 +7,12 @@ import MarginDoodle from '../components/MarginDoodle.astro';
 import Flag from '../components/Flag.astro';
 import { provider } from '../lib/provider';
 import { predict } from '../lib/model';
-import { getAfFixtures, getOddsPair, FINISHED_STATUSES } from '../lib/warehouse';
+import { loadWarehouse } from '../lib/warehouse.d1';
+
+// SSR: reads live fixtures/data from D1 (edge-cached).
+export const prerender = false;
+
+const wh = await loadWarehouse();
 
 type Graded = {
   h: ReturnType<typeof provider.getTeam>; a: ReturnType<typeof provider.getTeam>;
@@ -18,8 +23,8 @@ type Graded = {
   slug: string;
 };
 
-const rows: Graded[] = getAfFixtures()
-  .filter((m) => FINISHED_STATUSES.has(m.status) && m.homeScore != null && m.awayScore != null)
+const rows: Graded[] = wh.getAfFixtures()
+  .filter((m) => wh.FINISHED_STATUSES.has(m.status) && m.homeScore != null && m.awayScore != null)
   .filter((m) => provider.getTeam(m.homeTeamId) && provider.getTeam(m.awayTeamId))
   .sort((x, y) => (x.date < y.date ? 1 : -1))
   .map((m) => {
@@ -32,7 +37,7 @@ const rows: Graded[] = getAfFixtures()
 
     let marketFavId: string | null = null;
     let marketPct: number | null = null;
-    const op = getOddsPair(h.id, a.id);
+    const op = wh.getOddsPair(h.id, a.id);
     if (op && op.books.length) {
       const flip = op.homeId !== h.id;
       const imp = (sel: 'home' | 'away') =>

@@ -6,10 +6,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MarginDoodle from '../../components/MarginDoodle.astro';
 import { provider } from '../../lib/provider';
 import Flag from '../../components/Flag.astro';
-import { getKnockoutStatus } from '../../lib/warehouse';
+import { loadWarehouse } from '../../lib/warehouse.d1';
 
+// SSR: reads live fixtures/data from D1 (edge-cached).
+export const prerender = false;
+
+const wh = await loadWarehouse();
 const teams = provider.getTeams().slice().sort((a, b) => b.adjRating - a.adjRating);
-const ko = getKnockoutStatus();
+const ko = wh.getKnockoutStatus();
 const statusLabel: Record<string, string> = {
   winner: 'Group winners', runner_up: 'Through (2nd)', best_third: 'Through (3rd)',
   contention: 'Still alive', eliminated: 'Eliminated',

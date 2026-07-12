@@ -313,6 +313,32 @@ CREATE TABLE af_odds_history (
 );
 CREATE INDEX idx_afoddshist_fixture ON af_odds_history(fixture_id);
 
+-- KO-1h FREEZE CAPTURES — the fan votes + bookmaker odds as they stood one hour
+-- before kick-off, captured once per fixture and never overwritten (see
+-- build/export.ts). These are the accountable pre-match values the site renders
+-- instead of the live-drifting ones. Like af_odds_history, they must outlive the
+-- per-run schema DROP/CREATE, but WITHOUT a git commit: they are persisted in D1
+-- (published every run via publish-d1.ts) and pulled back at run start
+-- (build/pull-durable.ts) into the JSON stores export.ts reads. Keyed by the
+-- sorted, unordered team pair "[a,b].sort().join('__')".
+CREATE TABLE vote_snapshot (
+  pair_key   TEXT PRIMARY KEY,               -- sorted "<a>__<b>" team pair
+  home_id    TEXT, away_id TEXT,             -- orientation at freeze time
+  vote_home  INTEGER, vote_draw INTEGER, vote_away INTEGER,
+  frozen_at  INTEGER                         -- unix ms when captured
+);
+
+-- One row per bookmaker per pair (a pair has many books), so NO single-column
+-- PK — the pair_key is not unique here. Same freeze semantics as vote_snapshot.
+CREATE TABLE odds_snapshot (
+  pair_key   TEXT,                           -- sorted "<a>__<b>" team pair
+  home_id    TEXT, away_id TEXT,             -- orientation at freeze time
+  bookmaker  TEXT,
+  home_odd   REAL, draw_odd REAL, away_odd REAL,
+  frozen_at  INTEGER                         -- unix ms when captured
+);
+CREATE INDEX idx_oddssnap_pair ON odds_snapshot(pair_key);
+
 -- ---------------------------------------------------------------------------
 -- SofaScore (scraped via RapidAPI) — DEV SOURCE ONLY, own namespace.
 -- The predicted signals nothing else gives: who-will-win fan votes + PREDICTED

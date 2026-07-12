@@ -5,7 +5,7 @@
 // table. Pick state is client-side (localStorage), the rest is static.
 import type { Team } from '../lib/model';
 import { predict } from '../lib/model';
-import { getTeamPlayers } from '../lib/warehouse';
+import type { Warehouse } from '../lib/warehouse.d1';
 import { provider } from '../lib/provider';
 import Flag from './Flag.astro';
 import Avatar from './analysis/Avatar.astro';
@@ -14,6 +14,9 @@ import { playerTriggerAttrs } from '../lib/playerModal';
 interface Props {
   home: Team;
   away: Team;
+  /** The request-scoped D1 warehouse handle, loaded once by the parent SSR page
+   *  and passed down so this panel doesn't re-query. */
+  wh: Warehouse;
   /** fan vote counts (SofaScore), already oriented home/away */
   fans?: { home: number; away: number } | null;
   /** which slice to render — the H2H page splits the panel across tabs.
@@ -25,7 +28,7 @@ interface Props {
    *  pre-match snapshot, so we label it rather than invite voting. */
   frozen?: boolean;
 }
-const { home, away, fans = null, mode = 'full', frozen = false } = Astro.props;
+const { home, away, wh, fans = null, mode = 'full', frozen = false } = Astro.props;
 
 const showPoll = mode !== 'insights';
 const showFactors = mode !== 'prediction';
@@ -42,7 +45,7 @@ const POSNAME: Record<string, string> = { GK: 'GK', DF: 'DF', MF: 'MF', FW: 'FW'
 const starsFor = (teamId: string) =>
   provider.getSquad(teamId).slice().sort((a, b) => b.goals - a.goals).slice(0, 3);
 const photoFor = (() => {
-  const all = [...getTeamPlayers(home.id), ...getTeamPlayers(away.id)];
+  const all = [...wh.getTeamPlayers(home.id), ...wh.getTeamPlayers(away.id)];
   const byName = new Map(all.map((p) => [p.name, p.photo]));
   return (name: string) => byName.get(name) ?? null;
 })();
