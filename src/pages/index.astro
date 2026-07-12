@@ -15,6 +15,7 @@ import { MARKET_OUTRIGHT, MARKET_ASOF } from '../data/market';
 export const prerender = false;
 
 const wh = await loadWarehouse();
+const { showStreamPromo } = Astro.locals; // A/B: passed into the PredictBoard island for the Sportify chip
 const getTeam = (id: string) => provider.getTeam(id);
 const stageLabel: Record<string, string> = { group: 'Group', r32: 'Round of 32', r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', third_place: '3rd place' };
 const dateLabel = (iso: string) => (iso ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(new Date(iso)) : '');
@@ -70,7 +71,7 @@ const maxBook = Math.max(...outright.map((r) => r.book));
     </div>
 
     <div style="margin-top:22px">
-      <PredictBoard client:load ties={ties} />
+      <PredictBoard client:load ties={ties} showStreamPromo={showStreamPromo} />
       <p style="margin-top:8px;font-size:12px;color:var(--color-ink-3)">Model: transparent Elo forecast. Market: live bookmaker consensus. Not betting advice. · <a href="/articles" style="color:var(--color-royal);font-weight:700">Read the stories →</a></p>
     </div>
 

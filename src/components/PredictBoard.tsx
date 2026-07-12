@@ -33,7 +33,32 @@ function Bar({ h, d, a }: { h: number; d: number; a: number }) {
 }
 const lbl: any = { display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--color-ink-3)', marginBottom: 4, fontFamily: 'var(--font-display)' };
 
-export default function PredictBoard({ ties }: { ties: Tie[] }) {
+// A/B: Sportify "Watch on Sportify" chip, gated by showStreamPromo (variant B).
+// Home ties are all upcoming, so we render the upcoming-phase CTA. Kept inline
+// (this is a Preact island; it can't import the .astro chip). Mirrors
+// WatchLiveChip.astro's link + styling.
+function WatchChip() {
+  return (
+    <a
+      href="https://sportifylive.io/"
+      target="_blank"
+      rel="noopener sponsored"
+      data-stream-cta="upcoming"
+      class="font-display"
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 5, flex: 'none',
+        borderRadius: 999, padding: '3px 8px', fontSize: 10, fontWeight: 800,
+        textTransform: 'uppercase', letterSpacing: '.4px', textDecoration: 'none',
+        background: 'var(--color-clay)', color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,.18)',
+      }}
+      aria-label="Watch on Sportify (opens in a new tab)"
+    >
+      <span aria-hidden="true">▶</span>Watch on Sportify
+    </a>
+  );
+}
+
+export default function PredictBoard({ ties, showStreamPromo = false }: { ties: Tie[]; showStreamPromo?: boolean }) {
   const [picks, setPicks] = useState<Record<number, Pick>>({});
   useEffect(() => { try { const s = localStorage.getItem('kb-picks'); if (s) setPicks(JSON.parse(s)); } catch {} }, []);
   useEffect(() => { try { localStorage.setItem('kb-picks', JSON.stringify(picks)); } catch {} }, [picks]);
@@ -48,7 +73,7 @@ export default function PredictBoard({ ties }: { ties: Tie[] }) {
 
   const btn = (): any => ({
     borderRadius: 10, padding: '10px 8px', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13,
-    border: '1px solid var(--color-line)', cursor: 'pointer', background: '#fff', color: 'var(--color-ink)',
+    border: '1px solid var(--color-line)', cursor: 'pointer', background: 'var(--color-surface)', color: 'var(--color-ink)',
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
   });
 
@@ -74,12 +99,16 @@ export default function PredictBoard({ ties }: { ties: Tie[] }) {
           const aM = pk && pk !== 'draw' && (pk === 'home') === mFavHome;
           const aK = pk && pk !== 'draw' && (pk === 'home') === kFavHome;
           return (
-            <div style={{ borderRadius: 16, border: '1px solid var(--color-line-2)', background: '#fff', padding: 16 }}>
+            <div style={{ borderRadius: 16, border: '1px solid var(--color-line-2)', background: 'var(--color-surface)', padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                 <span class="font-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800 }}><Flag id={t.home.id} /> {t.home.name}</span>
                 <span class="font-display" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.4px', color: 'var(--color-ink-3)', textAlign: 'center' }}>{t.date}<br />{t.stage}</span>
                 <span class="font-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800 }}>{t.away.name} <Flag id={t.away.id} /></span>
               </div>
+
+              {showStreamPromo && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10 }}><WatchChip /></div>
+              )}
 
               {hasK && (
                 <div style={{ marginTop: 12 }}>
