@@ -6,8 +6,8 @@ interface Props {
   variant?: 'story' | 'match';
   href?: string;
 }
-const { variant = 'story', href = 'https://sportifylive.io/chat' } = Astro.props;
-// External link → open in a new tab, and keep the opener/referrer safe.
+// Default through /go for conversion tracking; override href if needed.
+const { variant = 'story', href = '/go/sportify-chat' } = Astro.props;
 const isExternal = /^https?:\/\//.test(href);
 const copy = variant === 'match'
   ? {

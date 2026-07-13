@@ -40,8 +40,7 @@ const lbl: any = { display: 'flex', justifyContent: 'space-between', fontSize: 1
 function WatchChip() {
   return (
     <a
-      href="https://sportifylive.io/"
-      target="_blank"
+      href="/go/sportify"
       rel="noopener sponsored"
       data-stream-cta="upcoming"
       class="font-display"
