@@ -11,6 +11,15 @@ name = "worldcup-2026-site"
 compatibility_date = "2026-07-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Workers Logs — persist console.log/errors to Cloudflare's observability platform
+# so they're queryable in the dashboard (Workers & Pages → this worker → Logs) and
+# tailable with `wrangler tail`. head_sampling_rate = 1 captures 100% of requests
+# (fine at a fan site's volume; dial down later if log volume/cost grows). Powers
+# visibility into the A/B bucketing + pageview tracking in src/middleware.ts.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 # NOTE: no `main`/`assets` here — the Astro Cloudflare adapter generates the
 # worker entry (dist/_worker.js) and wires assets itself at build time. This
 # file supplies bindings only (D1), which the adapter's vite plugin reads for
