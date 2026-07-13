@@ -35,7 +35,7 @@ When something is ambiguous, ask: *does this change because a person wrote it, o
 
 ## Deploy
 
-Target is **Cloudflare Pages** (push to deploy; conventions set when we connect the project). Don't deploy with a personal token; let the Git integration handle it.
+The site is a **Cloudflare Worker** (SSR from D1), worker `worldcup-2026-site`. Push code/content to `main` → `.github/workflows/deploy-site.yml` builds + deploys. Manual: `npm run deploy`. The old **Pages** project was retired at cutover. (Root `wrangler.toml` is now D1-only — it's the pipeline's `d1 execute` config, not a deploy target.)
 
 ## Common task: write an article
 

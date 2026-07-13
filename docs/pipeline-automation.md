@@ -31,7 +31,7 @@ Repo → Settings → Secrets and variables → Actions → **New repository sec
 
 **Minting the Cloudflare API token:** dash.cloudflare.com → My Profile → API Tokens →
 Create Token → Custom token, with permissions:
-- **Account → Cloudflare Pages → Edit** (site deploy)
+- **Account → Workers Scripts → Edit** (site deploy — the site is a Worker now, not Pages)
 - **Account → D1 → Edit** (warehouse publish)
 
 Scope it to your account. That one token covers both steps.

@@ -11,7 +11,7 @@ The site is being built as **two planes** (see [docs/architecture.md](./docs/arc
 
 ### Stack (chosen for now — see [docs/stack.md](./docs/stack.md))
 
-Astro · Preact (islands) · MDX (Content Collections) · Tailwind + Typography · Cloudflare Pages (hosting) + Workers (data plane).
+Astro · Preact (islands) · MDX (Content Collections) · Tailwind + Typography · Cloudflare Workers (SSR host + data plane, reading D1).
 
 ## Docs
 
@@ -47,7 +47,11 @@ npm run preview  # serve the production build
 
 ## Deploy
 
-Target is **Cloudflare Pages**: push to the repo → Cloudflare builds and deploys (branch/preview conventions set when we connect the project).
+The site is a **Cloudflare Worker** (SSR via `@astrojs/cloudflare`), worker
+`worldcup-2026-site`. Pushing code/content to `main` triggers `.github/workflows/deploy-site.yml`
+(build → `wrangler deploy`). To deploy by hand: `npm run deploy` (build +
+`wrangler deploy -c dist/server/wrangler.json`). The old Cloudflare **Pages**
+project was retired at the SSR-from-D1 cutover.
 
 ## Working together
 

@@ -10,7 +10,7 @@
 | Interactivity | **Preact** (via `@astrojs/preact`) | React-fluent for our AI workflow, ~3KB instead of ~45KB |
 | Content | **MDX** via Astro Content Collections | Markdown our AI writes natively, plus embeddable components |
 | Styling | **Tailwind CSS + `@tailwindcss/typography`** | Fast to author, no runtime cost, polished article prose for free |
-| Host | **Cloudflare Pages** | Free collaboration, same platform as our backend compute |
+| Host | **Cloudflare Workers** (SSR) | Same platform as our backend compute; SSR reads live from D1. (Started on Pages; migrated to Workers at the SSR-from-D1 cutover.) |
 | Backend (data plane) | **Cloudflare Workers** (+ KV/D1 as needed) | Compute for live/derived data, same ecosystem, generous free tier |
 | SEO tooling | sitemap, canonical URLs, JSON-LD structured data, OG images | Baked in from day one — see [seo.md](./seo.md) |
 

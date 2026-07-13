@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "astro": "astro",
-    "cf-types": "wrangler types -c wrangler.worker.toml"
+    "cf-types": "wrangler types -c wrangler.worker.toml",
+    "deploy": "npm run cf-types && npm run build && wrangler deploy -c dist/server/wrangler.json"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.2",

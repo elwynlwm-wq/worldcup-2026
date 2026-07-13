@@ -1,11 +1,16 @@
-# Cloudflare config for the site (Pages) + the writer-facing warehouse (D1).
-# Used by: `wrangler pages deploy ./dist` and `wrangler d1 execute ...`.
-name = "worldcup-2026-now"
+# D1 config for the data pipeline's remote publish.
+#
+# This is NOT a deploy target — the site is a Cloudflare Worker (see
+# wrangler.worker.toml, deployed from dist/server/wrangler.json). This file exists
+# solely so the pipeline's `wrangler d1 execute --config=<this>` calls know the
+# `worldcup-site` D1 database: publish-d1.ts (npm run publish:d1) and
+# pull-durable.ts. The Pages project (worldcup-2026-now) was retired at cutover.
+#
+# Same database the Worker reads (bound as DB in wrangler.worker.toml); here it's
+# bound WAREHOUSE because the pipeline WRITES it (full replace each hourly run).
+name = "worldcup-2026-warehouse-d1"
 compatibility_date = "2026-07-01"
-pages_build_output_dir = "dist"
 
-# D1 — the live warehouse the editorial/writer agents read. The pipeline
-# publishes the full built SQLite here each run (full replace).
 [[d1_databases]]
 binding = "WAREHOUSE"
 database_name = "worldcup-site"
