@@ -3,7 +3,6 @@ import preact from '@astrojs/preact';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import cloudflare from '@astrojs/cloudflare';
-import { cacheCloudflare } from '@astrojs/cloudflare/cache';
 import tailwindcss from '@tailwindcss/vite';
 
 // Static by default, SSR where the data plane needs it. `output: 'static'` keeps
@@ -31,28 +30,24 @@ export default defineConfig({
     configPath: 'wrangler.worker.toml',
   }),
 
-  // Edge caching for SSR routes — this REPLACES the 30-min full-site rebuild.
-  // Data pages render from D1 but are cached at Cloudflare's edge and revalidated
-  // in the background (stale-while-revalidate), so readers get near-static speed
-  // with fresh data. The pipeline invalidates by tag when new data lands (Phase 3).
-  cache: { provider: cacheCloudflare() },
-  // Every SSR route is edge-cached: served fresh for `maxAge`, then served stale
-  // for up to `swr` more seconds while a background request revalidates. Tagged
-  // so the pipeline can purge the right pages on publish (Phase 3). All data pages
-  // share the 'fixtures' tag (anything touching results/status); pages that never
-  // change on a data refresh could use longer windows, but 2m/10m is a safe
-  // default that keeps content within a couple minutes of D1 with near-static speed.
-  routeRules: {
-    '/': { maxAge: 120, swr: 600, tags: ['fixtures'] },
-    '/today': { maxAge: 120, swr: 600, tags: ['fixtures', 'today'] },
-    '/matches': { maxAge: 120, swr: 600, tags: ['fixtures'] },
-    '/matches/[...id]': { maxAge: 120, swr: 600, tags: ['fixtures'] },
-    '/teams/[...id]': { maxAge: 300, swr: 900, tags: ['fixtures'] },
-    '/bracket': { maxAge: 120, swr: 600, tags: ['fixtures'] },
-    '/players': { maxAge: 600, swr: 1800, tags: ['fixtures'] },
-    '/power': { maxAge: 600, swr: 1800, tags: ['fixtures'] },
-    '/record': { maxAge: 300, swr: 900, tags: ['fixtures'] },
-  },
+  // NOTE: edge caching for SSR routes is intentionally DISABLED while the A/B
+  // stream promo runs. It previously used `cache: cacheCloudflare()` + per-route
+  // `routeRules` (maxAge/swr), which made the adapter emit
+  //   Cloudflare-CDN-Cache-Control: public, max-age=120, stale-while-revalidate=600
+  // Cloudflare's edge obeys THAT header and does not key the cache on our A/B
+  // cookie (Vary: Cookie is not honored for cache-key purposes), so it cached one
+  // variant's HTML and served it to everyone — a visitor got pinned to whichever
+  // variant first warmed the cache, and since the cached page carried no
+  // Set-Cookie the worker never re-ran to reassign. That is the "always B / no
+  // cookie on refresh" bug.
+  //
+  // With no cache provider / routeRules, the adapter falls back to
+  // `Cloudflare-CDN-Cache-Control: no-store` (see @astrojs/cloudflare
+  // utils/handler.js), so every SSR route runs the worker per request and the A/B
+  // bucket is always honored. Tradeoff: data pages render per-request from D1
+  // instead of being edge-cached ~2m. FOLLOW-UP to restore edge caching: fold the
+  // A/B bucket into the cache KEY (Workers Cache API keyed on variant) instead of
+  // relying on Vary, then re-enable routeRules. See docs/architecture.md.
 
   integrations: [
     preact({ compat: true }),

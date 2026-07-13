@@ -52,11 +52,33 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
 
-  // Cache-safety: the edge cache must key on the bucket. Advertise that responses
-  // vary by the ab_stream cookie so A and B are stored/served as distinct entries
-  // and never cross-contaminate. (Variant is also in the cookie the visitor sends,
-  // so their sticky bucket and the cached copy always agree.)
+  // Cache-safety for cookie-bucketed A/B pages.
+  //
+  // THE BUG THIS FIXES: on a RETURN visit (cookie already set) the response has no
+  // Set-Cookie, so Cloudflare's edge caches it per astro.config routeRules (observed
+  // cf-cache-status: HIT on `/`). But the edge does NOT reliably honor `Vary: Cookie`
+  // as part of the cache key, so whichever variant first warmed the cache is then
+  // served to EVERYONE regardless of their bucket — the "always B" symptom.
+  //
+  // THE FIX (deliberate tradeoff): `private, no-store` opts every SSR route out of
+  // BOTH the shared edge cache and the browser cache, so each request re-runs this
+  // worker and its own bucket is always honored. This DISABLES the edge caching the
+  // SSR migration set up (routeRules maxAge/swr no longer take effect) — data pages
+  // now render per-request. Chosen for A/B correctness now; a follow-up can restore
+  // edge caching by folding the bucket into the cache KEY (Workers Cache API keyed on
+  // variant) instead of relying on Vary. See docs/architecture.md cache notes.
+  //
+  // NOTE: after deploying this, PURGE the existing cached pages (they were cached
+  // before no-store shipped and will keep serving until evicted).
   response.headers.append('Vary', 'Cookie');
+  response.headers.set('Cache-Control', 'private, no-store');
+  response.headers.set('Pragma', 'no-cache');
+  // Cloudflare reads its OWN header (Cloudflare-CDN-Cache-Control) for edge-cache
+  // decisions and it takes precedence over Cache-Control at the edge. The Astro
+  // adapter emits it from astro.config routeRules (e.g. "public, max-age=120,
+  // stale-while-revalidate=600"), which would keep the edge caching (and serving
+  // cross-bucket) despite our no-store. Override it so the edge also stops caching.
+  response.headers.set('Cloudflare-CDN-Cache-Control', 'private, no-store');
 
   return response;
 });
